@@ -5,7 +5,7 @@ import { AppRoutes } from "./routes/AppRoutes";
 function App() {
   return (
     <QueryProvider>
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.VITE_BASE_PATH || "/"}>
         <AppRoutes />
       </BrowserRouter>
     </QueryProvider>
