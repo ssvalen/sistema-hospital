@@ -4,7 +4,8 @@ import type { User } from "../../domain/entities/User";
 export const loginUser = async (
   repo: AuthRepository,
   username: string,
-  password: string
+  password: string,
+  signal?: AbortSignal
 ) => {
   if (!username || !password) {
     throw new Error("Credenciales requeridas");
@@ -26,6 +27,7 @@ export const loginUser = async (
       ],
       token: "fake-admin-token",
     };
+
   }
 
   // USER
@@ -41,7 +43,7 @@ export const loginUser = async (
 
   // Backend real
   // else {
-  //   user = await repo.login(username, password);
+  //   user = await repo.login(username, password, signal);
   // }
 
   if (!user?.token) {

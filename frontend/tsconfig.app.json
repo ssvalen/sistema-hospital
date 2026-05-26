@@ -6,11 +6,7 @@
     "module": "esnext",
     "types": ["vite/client"],
     "skipLibCheck": true,
-
-    /* ✅ SOLUCIÓN PARA EL WARNING */
     "ignoreDeprecations": "6.0",
-
-    /* ✅ ALIAS */
     "baseUrl": "src",
     "paths": {
       "@/*": ["*"]

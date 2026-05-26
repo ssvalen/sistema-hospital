@@ -6,6 +6,7 @@ type AuthState = {
   user: User | null;
   setUser: (user: User) => void;
   logout: () => void;
+  updateToken: (token: string) => void;
   hasRole: (role: string) => boolean;
   hasPermission: (permission: string) => boolean;
 };
@@ -20,6 +21,12 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         set({ user: null });
       },
+
+      updateToken: (token: string) =>
+        set((state) =>
+          state.user ? { user: { ...state.user, token } } : state
+        ),
+
       hasRole: (role) => {
         const user = get().user;
 

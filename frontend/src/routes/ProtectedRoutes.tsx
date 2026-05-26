@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "../modules/auth/store/authStore";
+import { isTokenExpired } from "@/shared/utils/jwt";
 
 type Props = {
   allowedRoles?: string[];
@@ -16,9 +17,17 @@ export const ProtectedRoute = ({
   if (!hasHydrated) {
     return <div>Cargando...</div>;
   }
+
   if (!user) {
     return <Navigate to="/login" replace />;
   }
+
+  //activar esto cuando se implemente api
+  // if (user.token && isTokenExpired(user.token)) {
+  //   const logout = useAuthStore((s) => s.logout);
+  //   logout();
+  //   return <Navigate to="/login" replace />;
+  // }
 
   // VALIDAR ROLES
   if (allowedRoles?.length) {

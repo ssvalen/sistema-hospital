@@ -1,14 +1,19 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import LoginPage from "@/modules/auth/ui/pages/LoginPage";
-
+// Rutas
+import { ProtectedRoute } from "@/routes/ProtectedRoutes";
+import { PublicRoute } from "@/routes/PublicRoute";
+// Layouts
 import AuthLayout from "@/layouts/AuthLayout";
+import LoginPage from "@/modules/auth/ui/pages/LoginPage";
+// Admin
 import AdminLayout from "@/layouts/AdminLayout";
+// User
 import UserLayout from "@/layouts/UserLayout";
 
-import { ProtectedRoute } from "@/routes/ProtectedRoutes";
-
+// Pages generales
 import NotFound from "@/shared/pages/NotFound";
+import LogoutPage from "@/shared/pages/LogoutPage";
 
 const AdminDashboard = () => <h1>Admin Dashboard</h1>;
 const UserDashboard = () => <h1>User Dashboard</h1>;
@@ -19,10 +24,16 @@ export const AppRoutes = () => {
   return (
     <Routes>
 
+
       {/* AUTH */}
-      <Route element={<AuthLayout />}>
-        <Route path="/login" element={<LoginPage />} />
+      <Route element={<PublicRoute />}>
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<LoginPage />} />
+        </Route>
       </Route>
+
+      {/* LOGOUT */}
+      <Route path="/logout" element={<LogoutPage />} />
 
       {/* ADMIN ROUTES */}
       <Route
