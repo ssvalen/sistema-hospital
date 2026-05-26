@@ -2,6 +2,7 @@
 export type User = {
   id: number;
   username: string;
-  role: "admin" | "doctor" | "nurse";
+  roles: string[];
+  permissions: string[];
   token: string;
 };

@@ -1,5 +1,5 @@
-
 import type { AuthRepository } from "../interfaces/AuthRepository";
+import type { User } from "../../domain/entities/User";
 
 export const loginUser = async (
   repo: AuthRepository,
@@ -10,9 +10,41 @@ export const loginUser = async (
     throw new Error("Credenciales requeridas");
   }
 
-  const user = await repo.login(username, password);
+  let user: User | null = null;
 
-  if (!user.token) {
+  // ADMIN
+  if (username === "admin" && password === "admin") {
+    user = {
+      id: 1,
+      username: "admin",
+      roles: ["admin"],
+      permissions: [
+        "users.view",
+        "users.create",
+        "users.edit",
+        "reports.view",
+      ],
+      token: "fake-admin-token",
+    };
+  }
+
+  // USER
+  if (username === "user" && password === "user") {
+    user = {
+      id: 2,
+      username: "user",
+      roles: ["user"],
+      permissions: ["profile.view"],
+      token: "fake-user-token",
+    };
+  }
+
+  // Backend real
+  // else {
+  //   user = await repo.login(username, password);
+  // }
+
+  if (!user?.token) {
     throw new Error("Autenticación fallida");
   }
 
