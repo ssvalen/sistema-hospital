@@ -1,15 +1,59 @@
-import { Outlet } from "react-router-dom";
+import {
+  useState,
+} from "react";
+
+import {
+  Outlet,
+} from "react-router-dom";
+
+import AppHeader from "@/shared/components/layout/AppHeader";
+import AppSidebar from "@/shared/components/layout/AppSidebar";
+
+import { userRoutes } from "@/routes/userRoutes";
 
 const UserLayout = () => {
-  return (
-    <div>
-      <nav className="border-b p-4">
-        Navbar Usuario
-      </nav>
 
-      <main className="p-6">
-        <Outlet />
-      </main>
+  const [
+    sidebarOpen,
+    setSidebarOpen,
+  ] = useState(false);
+
+  return (
+    <div className="h-screen flex bg-slate-100 overflow-hidden">
+
+      <AppSidebar
+        title="MediCore"
+        subtitle="Portal Usuario"
+        routes={userRoutes}
+        open={sidebarOpen}
+        onClose={() =>
+          setSidebarOpen(false)
+        }
+      />
+
+      <div className="flex-1 flex flex-col overflow-hidden">
+
+        <AppHeader
+          title="Portal de Usuario"
+          subtitle="Gestión personal y consultas"
+          onMenuClick={() =>
+            setSidebarOpen(true)
+          }
+        />
+
+        <main
+          className="
+            flex-1
+            overflow-auto
+            p-4
+            md:p-6
+          "
+        >
+          <Outlet />
+        </main>
+
+      </div>
+
     </div>
   );
 };

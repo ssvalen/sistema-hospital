@@ -1,15 +1,59 @@
-import { Outlet } from "react-router-dom";
+import {
+  useState,
+} from "react";
+
+import {
+  Outlet,
+} from "react-router-dom";
+
+import AppHeader from "@/shared/components/layout/AppHeader";
+import AppSidebar from "@/shared/components/layout/AppSidebar";
+
+import { adminRoutes } from "@/routes/adminRoutes";
 
 const AdminLayout = () => {
-  return (
-    <div className="flex min-h-screen">
-      <aside className="w-64 border-r p-4">
-        Sidebar Admin
-      </aside>
 
-      <main className="flex-1 p-6">
-        <Outlet />
-      </main>
+  const [
+    sidebarOpen,
+    setSidebarOpen,
+  ] = useState(false);
+
+  return (
+    <div className="h-screen flex bg-slate-100 overflow-hidden">
+
+      <AppSidebar
+        title="MediCore"
+        subtitle="Sistema Hospitalario"
+        routes={adminRoutes}
+        open={sidebarOpen}
+        onClose={() =>
+          setSidebarOpen(false)
+        }
+      />
+
+      <div className="flex-1 flex flex-col overflow-hidden">
+
+        <AppHeader
+          title="Panel Administrativo"
+          subtitle="Gestión hospitalaria y monitoreo general"
+          onMenuClick={() =>
+            setSidebarOpen(true)
+          }
+        />
+
+        <main
+          className="
+            flex-1
+            overflow-auto
+            p-4
+            md:p-6
+          "
+        >
+          <Outlet />
+        </main>
+
+      </div>
+
     </div>
   );
 };
