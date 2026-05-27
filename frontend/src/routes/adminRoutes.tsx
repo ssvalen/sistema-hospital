@@ -6,26 +6,27 @@ import {
 
 import type { SidebarRoute } from "@/shared/types/sidebarRoute";
 
-const DummyPage = ({
-  title,
-}: {
-  title: string;
-}) => {
-  return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold">
-        {title}
-      </h1>
-    </div>
-  );
-};
+import RolesPages from "@/modules/admin/ui/pages/RolesPages";
+import RoleFormPage from "@/modules/admin/ui/pages/RoleFormPage";
+import PermissionsPage from "@/modules/admin/ui/pages/PermissionsPage";
+import UsersPage from "@/modules/admin/ui/pages/UsersPage";
+
+const DummyPage = ({ title }: { title: string }) => (
+  <div className="p-6">
+    <h1 className="text-3xl font-bold">{title}</h1>
+  </div>
+);
+
+const DashboardPage = () => <DummyPage title="Dashboard" />;
+const PatientsPage = () => <DummyPage title="Pacientes" />;
+const AppointmentsPage = () => <DummyPage title="Citas" />;
+const MedicalRecordsPage = () => <DummyPage title="Expedientes" />;
+const ReportsPage = () => <DummyPage title="Reportes" />;
 
 export const adminRoutes: SidebarRoute[] = [
   {
-    path: "/admin",
-    element: () => (
-      <DummyPage title="Dashboard" />
-    ),
+    path: "",
+    element: DashboardPage,
     label: "Dashboard",
     icon: faChartLine,
     permissions: [],
@@ -37,38 +38,25 @@ export const adminRoutes: SidebarRoute[] = [
     showInSidebar: true,
     children: [
       {
-        path: "/admin/patients",
-        element: () => (
-          <DummyPage title="Pacientes" />
-        ),
+        path: "patients",
+        element: PatientsPage,
         label: "Pacientes",
-        permissions: [
-          "patients.view",
-        ],
+        permissions: ["patients.view"],
       },
       {
-        path: "/admin/appointments",
-        element: () => (
-          <DummyPage title="Citas" />
-        ),
+        path: "appointments",
+        element: AppointmentsPage,
         label: "Citas",
-        permissions: [
-          "appointments.view",
-        ],
+        permissions: ["appointments.view"],
       },
       {
-        path: "/admin/medical-records",
-        element: () => (
-          <DummyPage title="Expedientes" />
-        ),
+        path: "medical-records",
+        element: MedicalRecordsPage,
         label: "Expedientes",
-        permissions: [
-          "records.view",
-        ],
+        permissions: ["records.view"],
       },
     ],
   },
-
   {
     label: "Administración",
     icon: faFileLines,
@@ -76,25 +64,39 @@ export const adminRoutes: SidebarRoute[] = [
     permissions: ["admin.manager"],
     children: [
       {
-        path: "/admin/roles",
-        element: () => (
-          <DummyPage title="Usuarios" />
-        ),
+        path: "roles",
+        element: RolesPages,
         label: "Roles",
-        permissions: [
-          "admin.manager.roles",
-        ],
+        permissions: ["admin.manager.roles"],
+      },
+      {
+        path: "roles/new",
+        element: RoleFormPage,
+        label: "Crear Rol",
+        permissions: ["admin.manager.roles"],
+        showInSidebar: false,
+      },
+      {
+        path: "roles/:id",
+        element: RoleFormPage,
+        label: "Editar Rol",
+        permissions: ["admin.manager.roles"],
+        showInSidebar: false,
       },
 
       {
-        path: "/admin/reports",
-        element: () => (
-          <DummyPage title="Reportes" />
-        ),
-        label: "Reportes",
-        permissions: [
-          "reports.view",
-        ],
+        path: "permissions",
+        element: PermissionsPage,
+        label: "Permisos",
+        showInSidebar: true,
+        permissions: ["admin.manager.roles"],
+      },
+
+      {
+        path: "users",
+        element: UsersPage,
+        label: "Usuarios",
+        permissions: ["reports.view"],
       },
     ],
   },

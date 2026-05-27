@@ -1,5 +1,3 @@
-// src/layouts/shared/components/AppSidebarDropdown.tsx
-
 import { useMemo, useState } from "react";
 
 import {
@@ -125,7 +123,7 @@ const AppSidebarDropdown = ({
               filteredRoutes.map(
                 (route) => {
 
-                  if (!route.path) {
+                  if (!route.path || route.showInSidebar == false) {
                     return null;
                   }
 

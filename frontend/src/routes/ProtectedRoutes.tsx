@@ -1,15 +1,16 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "../modules/auth/store/authStore";
-import { isTokenExpired } from "@/shared/utils/jwt";
 
 type Props = {
   allowedRoles?: string[];
   requiredPermissions?: string[];
+  children?: React.ReactNode;
 };
 
 export const ProtectedRoute = ({
   allowedRoles,
   requiredPermissions,
+  children,
 }: Props) => {
   const user = useAuthStore((state) => state.user);
   const hasHydrated = useAuthStore.persist.hasHydrated();
@@ -22,17 +23,25 @@ export const ProtectedRoute = ({
     return <Navigate to="/login" replace />;
   }
 
-  //activar esto cuando se implemente api
+  // activar esto cuando se implemente api
   // if (user.token && isTokenExpired(user.token)) {
   //   const logout = useAuthStore((s) => s.logout);
   //   logout();
   //   return <Navigate to="/login" replace />;
   // }
 
-  // VALIDAR ROLES
+  const userRoles = Array.isArray(user.roles)
+    ? user.roles.map((r: any) => String(r).toLowerCase())
+    : [];
+
+  const userPermissions = Array.isArray(user.permissions)
+    ? user.permissions
+    : [];
+
+  // ROLES
   if (allowedRoles?.length) {
-    const hasRole = user.roles.some((role) =>
-      allowedRoles.includes(role)
+    const hasRole = userRoles.some((role) =>
+      allowedRoles.map((r) => r.toLowerCase()).includes(role)
     );
 
     if (!hasRole) {
@@ -40,10 +49,10 @@ export const ProtectedRoute = ({
     }
   }
 
-  // VALIDAR PERMISOS
+  // PERMISO S
   if (requiredPermissions?.length) {
-    const hasPermissions = requiredPermissions.every((permission) =>
-      user.permissions.includes(permission)
+    const hasPermissions = requiredPermissions.every((p) =>
+      userPermissions.includes(p)
     );
 
     if (!hasPermissions) {
@@ -51,5 +60,5 @@ export const ProtectedRoute = ({
     }
   }
 
-  return <Outlet />;
+  return children ? <>{children}</> : <Outlet />;
 };
