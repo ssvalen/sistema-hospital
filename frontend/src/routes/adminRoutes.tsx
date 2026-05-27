@@ -73,15 +73,16 @@ export const adminRoutes: SidebarRoute[] = [
     label: "Administración",
     icon: faFileLines,
     showInSidebar: true,
+    permissions: ["admin.manager"],
     children: [
       {
-        path: "/admin/users",
+        path: "/admin/roles",
         element: () => (
           <DummyPage title="Usuarios" />
         ),
-        label: "Usuarios",
+        label: "Roles",
         permissions: [
-          "users.view",
+          "admin.manager.roles",
         ],
       },
 

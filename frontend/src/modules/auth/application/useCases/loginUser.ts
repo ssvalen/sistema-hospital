@@ -20,6 +20,8 @@ export const loginUser = async (
       username: "admin",
       roles: ["admin"],
       permissions: [
+        "admin.manager",
+        "admin.manager.roles",
         "users.view",
         "users.create",
         "users.edit",

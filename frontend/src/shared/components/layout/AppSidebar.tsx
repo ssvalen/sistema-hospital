@@ -166,15 +166,11 @@ const AppSidebar = ({
           {
             routes.map((route) => {
 
-              if (
-                !route.showInSidebar
-              ) {
+              if (!route.showInSidebar) {
                 return null;
               }
 
-              if (
-                route.children
-              ) {
+              if (route.children && canAccessRoute(route.permissions)) {
                 return (
                   <AppSidebarDropdown
                     key={route.label}
@@ -187,17 +183,11 @@ const AppSidebar = ({
                 );
               }
 
-              if (
-                !route.path
-              ) {
+              if (!route.path) {
                 return null;
               }
 
-              if (
-                !canAccessRoute(
-                  route.permissions
-                )
-              ) {
+              if (!canAccessRoute(route.permissions)) {
                 return null;
               }
 
