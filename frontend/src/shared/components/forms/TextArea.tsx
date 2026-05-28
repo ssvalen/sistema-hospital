@@ -1,12 +1,10 @@
-// src/shared/components/forms/Textarea.tsx
-
 import React from "react";
 
 interface Props extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   error?: string;
 }
 
-const Textarea: React.FC<Props> = ({ error, className = "", ...props }) => {
+const TextArea: React.FC<Props> = ({ error, className = "", ...props }) => {
   return (
     <textarea
       {...props}
@@ -33,4 +31,4 @@ const Textarea: React.FC<Props> = ({ error, className = "", ...props }) => {
   );
 };
 
-export default Textarea;
+export default TextArea;

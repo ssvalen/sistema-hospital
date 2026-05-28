@@ -26,7 +26,8 @@ export const loginUser = async (
         "users.create",
         "users.edit",
         "reports.view",
-        "appointments.view"
+        "appointments.view",
+        "patients.view"
       ],
       token: "fake-admin-token",
     };

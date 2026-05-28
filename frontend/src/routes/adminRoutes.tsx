@@ -10,6 +10,13 @@ import RolesPages from "@/modules/admin/ui/pages/RolesPages";
 import RoleFormPage from "@/modules/admin/ui/pages/RoleFormPage";
 import PermissionsPage from "@/modules/admin/ui/pages/PermissionsPage";
 import UsersPage from "@/modules/admin/ui/pages/UsersPage";
+import PatientsPage from "@/modules/patients/ui/pages/PatientsPage";
+import CreatePatientPage from "@/modules/patients/ui/pages/PatientFormPage";
+import PatientDetailsPage from "@/modules/patients/ui/pages/PatientDetailsPage";
+import PatientFormPage from "@/modules/patients/ui/pages/PatientFormPage";
+import AppointmentFormPage from "@/modules/appointments/ui/pages/AppointmentFormPage";
+import AppointmentCalendarPage from "@/modules/appointments/ui/pages/AppointmentCalendarPage";
+import AppointmentDetailsPage from "@/modules/appointments/ui/pages/AppointmentDetailsPage";
 
 const DummyPage = ({ title }: { title: string }) => (
   <div className="p-6">
@@ -18,10 +25,6 @@ const DummyPage = ({ title }: { title: string }) => (
 );
 
 const DashboardPage = () => <DummyPage title="Dashboard" />;
-const PatientsPage = () => <DummyPage title="Pacientes" />;
-const AppointmentsPage = () => <DummyPage title="Citas" />;
-const MedicalRecordsPage = () => <DummyPage title="Expedientes" />;
-const ReportsPage = () => <DummyPage title="Reportes" />;
 
 export const adminRoutes: SidebarRoute[] = [
   {
@@ -44,16 +47,50 @@ export const adminRoutes: SidebarRoute[] = [
         permissions: ["patients.view"],
       },
       {
+        path: "patients/create",
+        element: CreatePatientPage,
+        label: "Crear paciente",
+        showInSidebar: false,
+        permissions: ["patients.view"],
+      },
+      {
+        path: "patients/:id/edit",
+        element: PatientFormPage,
+        label: "Editar paciente",
+        showInSidebar: false,
+        // permissions: ["patients.edit"],
+      },
+
+      {
+        path: "patients/:id",
+        element: PatientDetailsPage,
+        label: "Detalle paciente",
+        showInSidebar: false,
+        permissions: ["patients.view"],
+      },
+      // Citas
+      {
         path: "appointments",
-        element: AppointmentsPage,
-        label: "Citas",
+        element: AppointmentCalendarPage,
+        label: "Citas médicas",
         permissions: ["appointments.view"],
       },
       {
-        path: "medical-records",
-        element: MedicalRecordsPage,
-        label: "Expedientes",
-        permissions: ["records.view"],
+        path: "appointments/new",
+        element: AppointmentFormPage,
+        showInSidebar: false,
+      },
+
+      {
+        path: "appointments/:id",
+        element: AppointmentDetailsPage,
+        showInSidebar: false,
+      },
+
+      {
+        path: "appointments/:id/edit",
+        element: AppointmentFormPage,
+        showInSidebar: false,
       },
     ],
   },
