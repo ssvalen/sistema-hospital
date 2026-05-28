@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: backend
+  
+  datasource:
+    url: jdbc:mysql://localhost:3307/?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Guatemala&characterEncoding=UTF-8
+    username: keycloak_user
+    password: keycloak_password_456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      max-lifetime: 600000
+      idle-timeout: 300000
+      connection-test-query: SELECT 1
+      pool-name: HikariPool-MyApp
+  
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        physical_naming_strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+        generate_statistics: false
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+        hbm2ddl.auto: update
+    hibernate:
+      ddl-auto: update  
+
+logging:
+  level:
+    com.zaxxer.hikari: DEBUG  
+    org.hibernate.SQL: DEBUG  
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE 
+    org.springframework.jdbc: DEBUG
