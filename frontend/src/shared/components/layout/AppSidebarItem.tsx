@@ -1,5 +1,3 @@
-// src/layouts/shared/components/AppSidebarItem.tsx
-
 import { NavLink } from "react-router-dom";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

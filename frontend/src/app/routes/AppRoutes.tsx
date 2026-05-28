@@ -1,100 +1,84 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
-// Rutas
 import { ProtectedRoute } from "@/routes/ProtectedRoutes";
 import { PublicRoute } from "@/routes/PublicRoute";
-// Layouts
-import AuthLayout from "@/layouts/AuthLayout";
-import LoginPage from "@/modules/auth/ui/pages/LoginPage";
-// Admin
+
 import AdminLayout from "@/layouts/AdminLayout";
-// User
+import AuthLayout from "@/layouts/AuthLayout";
 import UserLayout from "@/layouts/UserLayout";
 
-// Pages generales
+import LoginPage from "@/modules/auth/ui/pages/LoginPage";
 import NotFound from "@/shared/pages/NotFound";
-import LogoutPage from "@/shared/pages/LogoutPage";
 
-const AdminDashboard = () => <h1>Admin Dashboard</h1>;
-const UserDashboard = () => <h1>User Dashboard</h1>;
-const UsersPage = () => <h1>Usuarios</h1>;
-const UnauthorizedPage = () => <h1>No autorizado</h1>;
+import { adminRoutes } from "@/routes/adminRoutes";
+
+const renderAdminRoutes = (routes: any[]) => {
+  return routes.flatMap((r) => {
+    // rutas con children
+    if (r.children) {
+      return r.children.map((c: any) => {
+        const Child = c.element;
+
+        return (
+          <Route
+            key={c.path}
+            path={c.path}
+            element={<Child />}
+          />
+        );
+      });
+    }
+
+    // ruta normal
+    if (!r.path) return null;
+
+    const Component = r.element;
+
+    return (
+      <Route
+        key={r.path}
+        path={r.path}
+        element={<Component />}
+      />
+    );
+  });
+};
 
 export const AppRoutes = () => {
   return (
     <Routes>
 
-
-      {/* AUTH */}
+      {/* ================= AUTH ================= */}
       <Route element={<PublicRoute />}>
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
         </Route>
       </Route>
 
-      {/* LOGOUT */}
-      <Route path="/logout" element={<LogoutPage />} />
-
-      {/* ADMIN ROUTES */}
+      {/* ================= ADMIN ================= */}
       <Route
+        path="/admin"
         element={
-          <ProtectedRoute
-            allowedRoles={["admin"]}
-          />
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminLayout />
+          </ProtectedRoute>
         }
       >
-        <Route element={<AdminLayout />}>
-
-          <Route
-            path="/admin"
-            element={<AdminDashboard />}
-          />
-
-          <Route
-            element={
-              <ProtectedRoute
-                requiredPermissions={["users.view"]}
-              />
-            }
-          >
-            <Route
-              path="/admin/users"
-              element={<UsersPage />}
-            />
-          </Route>
-
-        </Route>
+        {renderAdminRoutes(adminRoutes)}
       </Route>
 
-      {/* USER ROUTES */}
+      {/* ================= USER ================= */}
       <Route
+        path="/app"
         element={
-          <ProtectedRoute
-            allowedRoles={["user"]}
-          />
+          <ProtectedRoute allowedRoles={["user"]}>
+            <UserLayout />
+          </ProtectedRoute>
         }
-      >
-        <Route element={<UserLayout />}>
-          <Route
-            path="/app"
-            element={<UserDashboard />}
-          />
-        </Route>
-      </Route>
-
-      {/* UNAUTHORIZED */}
-      <Route
-        path="/unauthorized"
-        element={<UnauthorizedPage />}
       />
 
-      {/* DEFAULT */}
-      <Route
-        path="/"
-        element={<Navigate to="/login" replace />}
-      />
-
-      {/* 404 */}
+      {/* ================= DEFAULT ================= */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<NotFound />} />
 
     </Routes>

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import Button from "./Button";
+import Button from "./forms/Button";
 
 import { useToast } from "@/shared/hooks/useToast";
 import Toast from "@/shared/components/Toast";
@@ -15,19 +15,15 @@ import { TABLE_ICONS } from "@/shared/types/table/TableIcons";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-// PROPS
-
 interface DataTableProps<T> {
     columns: TableColumn[];
     data: T[];
     actions?: TableAction<T>[];
-
     defaultSort?: SortConfig;
 
     page: number;
     pageSize: number;
     total: number;
-
     onPageChange: (page: number) => void;
 
     fitContainer?: boolean;
@@ -37,7 +33,6 @@ interface DataTableProps<T> {
 
     rowKey?: keyof T;
 }
-
 
 const DataTable = <T extends Record<string, any>>({
     columns,
@@ -60,12 +55,7 @@ const DataTable = <T extends Record<string, any>>({
     });
 
     const { toast, showToast, hideToast } = useToast();
-
     const [filters, setFilters] = useState<Record<string, string>>({});
-
-    // =========================
-    // COPY
-    // =========================
 
     const copyToClipboard = async (text: unknown) => {
         try {
@@ -75,10 +65,6 @@ const DataTable = <T extends Record<string, any>>({
             showToast("No se pudo copiar", TOAST_TYPES.ERROR);
         }
     };
-
-    // =========================
-    // SORT
-    // =========================
 
     const handleSort = (colKey: string) => {
         setSortConfig(prev => ({
@@ -92,15 +78,10 @@ const DataTable = <T extends Record<string, any>>({
 
     const getSortIcon = (colKey: string): IconDefinition => {
         if (sortConfig.key !== colKey) return TABLE_ICONS.SORT_DEFAULT;
-
         return sortConfig.direction === "asc"
             ? TABLE_ICONS.SORT_ASC
             : TABLE_ICONS.SORT_DESC;
     };
-
-    // =========================
-    // FILTERS
-    // =========================
 
     const handleFilterChange = (key: string, value: string) => {
         const newFilters = { ...filters, [key]: value };
@@ -108,21 +89,18 @@ const DataTable = <T extends Record<string, any>>({
         onFiltersChange?.(newFilters);
     };
 
-    // =========================
-    // DATA
-    // =========================
-
     const filteredData = useMemo(() => {
         if (!data) return [];
 
-        return data.filter(row => {
-            return Object.entries(filters).every(([key, value]) => {
+        return data.filter(row =>
+            Object.entries(filters).every(([key, value]) => {
                 if (!value) return true;
+
                 return String(row[key])
                     .toLowerCase()
                     .includes(value.toLowerCase());
-            });
-        });
+            })
+        );
     }, [data, filters]);
 
     const sortedData = useMemo(() => {
@@ -145,29 +123,25 @@ const DataTable = <T extends Record<string, any>>({
         });
     }, [filteredData, sortConfig]);
 
-    // =========================
-    // PAGINATION
-    // =========================
-
     const totalPages = Math.ceil(total / pageSize);
 
     const goPrev = () => page > 1 && onPageChange(page - 1);
     const goNext = () => page < totalPages && onPageChange(page + 1);
 
-    // =========================
-    // RENDER
-    // =========================
+    const skeletonRows = Array(5).fill(null);
+    const isInitialLoading = loading && (!data || data.length === 0);
+    const isRefreshing = loading && data && data.length > 0;
 
     if (!loading && (!data || data.length === 0)) {
         return (
-            <div className="flex items-center justify-center h-[300px] text-gray-500">
+            <div className="flex items-center justify-center py-16 text-sm text-gray-500">
                 No hay datos disponibles
             </div>
         );
     }
 
     return (
-        <div className={`flex flex-col ${fitContainer ? "h-full" : "h-[calc(100vh-180px)]"}`}>
+        <div className="flex flex-col w-full rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
 
             <Toast
                 show={toast.show}
@@ -176,82 +150,144 @@ const DataTable = <T extends Record<string, any>>({
                 onClose={hideToast}
             />
 
-            <table className="w-full text-sm">
-                <thead>
-                    <tr>
-                        {columns.map(col => (
-                            <th
-                                key={col.key}
-                                onClick={() => col.sortable && handleSort(col.key)}
-                                className={col.sortable ? "cursor-pointer" : ""}
-                            >
-                                <div className="flex items-center gap-2">
-                                    {col.label}
+            <div className="flex-1 min-h-0 overflow-auto">
 
-                                    {col.sortable && (
-                                        <FontAwesomeIcon
-                                            icon={getSortIcon(col.key)}
-                                            className="opacity-60"
-                                        />
-                                    )}
-                                </div>
+                <table className="w-full text-sm text-gray-700">
 
-                                {col.hasInput && (
-                                    <input
-                                        className="mt-1 w-full border px-2 py-1"
-                                        value={filters[col.key] || ""}
-                                        onChange={(e) =>
-                                            handleFilterChange(col.key, e.target.value)
-                                        }
-                                    />
-                                )}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
+                    <thead className="sticky top-0 z-10 bg-slate-800 text-white">
 
-                <tbody>
-                    {sortedData.map((row, idx) => (
-                        <tr key={rowKey ? String(row[rowKey]) : idx}>
+                        <tr>
                             {columns.map(col => (
-                                <td key={col.key}>
-                                    {col.hasActions ? (
-                                        <div className="flex gap-2 justify-center">
-                                            {actions.map(action => (
-                                                <Button
-                                                    key={action.title}
-                                                    icon={action.icon}
-                                                    label={action.label}
-                                                    title={action.title}
-                                                    color={action.color}
-                                                    onClick={() => action.onClick(row)}
-                                                />
-                                            ))}
+                                <th
+                                    key={col.key}
+                                    className="px-4 py-3 text-left font-semibold border-b border-slate-700"
+                                >
+                                    <div
+                                        className={`flex items-center gap-2 select-none ${
+                                            col.sortable ? "cursor-pointer" : ""
+                                        } ${col.hasActions ? "justify-center" : ""}`}
+                                        onClick={() =>
+                                            col.sortable && handleSort(col.key)
+                                        }
+                                    >
+                                        <span>{col.label}</span>
+
+                                        {col.sortable && (
+                                            <FontAwesomeIcon
+                                                icon={getSortIcon(col.key)}
+                                                className="text-xs opacity-80"
+                                            />
+                                        )}
+                                    </div>
+
+                                    {col.hasInput && (
+                                        <div className="mt-2">
+                                            <input
+                                                value={filters[col.key] || ""}
+                                                onChange={(e) =>
+                                                    handleFilterChange(
+                                                        col.key,
+                                                        e.target.value
+                                                    )
+                                                }
+                                                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-xs"
+                                                placeholder="Buscar..."
+                                            />
                                         </div>
-                                    ) : (
-                                        <span
-                                            onClick={() =>
-                                                copyToClipboard(row[col.key])
-                                            }
-                                        >
-                                            {row[col.key] ?? "N/A"}
-                                        </span>
                                     )}
-                                </td>
+                                </th>
                             ))}
                         </tr>
-                    ))}
-                </tbody>
-            </table>
 
-            <div className="flex justify-between p-4">
-                <button onClick={goPrev} disabled={page === 1}>
-                    Anterior
-                </button>
+                    </thead>
 
-                <button onClick={goNext} disabled={page === totalPages}>
-                    Siguiente
-                </button>
+                    <tbody className="bg-white">
+
+                        {isInitialLoading ? (
+                            skeletonRows.map((_, idx) => (
+                                <tr key={idx}>
+                                    {columns.map(col => (
+                                        <td
+                                            key={col.key}
+                                            className="px-4 py-4 border-b border-gray-100"
+                                        >
+                                            <div className="h-4 w-3/4 animate-pulse rounded bg-gray-200" />
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))
+                        ) : (
+                            sortedData.map((row, idx) => (
+                                <tr
+                                    key={rowKey ? String(row[rowKey]) : idx}
+                                    className="hover:bg-blue-50/50 transition"
+                                >
+                                    {columns.map(col => (
+                                        <td
+                                            key={col.key}
+                                            className="px-4 py-3 border-b border-gray-100"
+                                        >
+                                            {col.hasActions ? (
+                                                <div className="flex justify-center gap-2">
+                                                    {actions.map(action => (
+                                                        <Button
+                                                            key={action.title}
+                                                            icon={action.icon}
+                                                            label={action.label}
+                                                            title={action.title}
+                                                            color={action.color}
+                                                            onClick={() =>
+                                                                action.onClick(row)
+                                                            }
+                                                        />
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <span
+                                                    onClick={() =>
+                                                        copyToClipboard(row[col.key])
+                                                    }
+                                                    className="block cursor-pointer truncate"
+                                                >
+                                                    {row[col.key] ?? "N/A"}
+                                                </span>
+                                            )}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))
+                        )}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-5 py-4 shrink-0">
+
+                <span className="text-sm text-gray-500">
+                    Página {page} de {totalPages || 1}
+                </span>
+
+                <div className="flex gap-2">
+
+                    <Button
+                        label="Anterior"
+                        color="gray"
+                        onClick={goPrev}
+                        disabled={page === 1}
+                    />
+
+                    <Button
+                        label="Siguiente"
+                        color="blue"
+                        onClick={goNext}
+                        disabled={page === totalPages}
+                    />
+
+                </div>
+
             </div>
 
         </div>

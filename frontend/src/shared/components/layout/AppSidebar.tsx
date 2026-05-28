@@ -183,11 +183,7 @@ const AppSidebar = ({
                 );
               }
 
-              if (!route.path) {
-                return null;
-              }
-
-              if (!canAccessRoute(route.permissions)) {
+              if (!canAccessRoute(route.permissions) || !route.path) {
                 return null;
               }
 
