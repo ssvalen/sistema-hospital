@@ -20,6 +20,7 @@ export interface TableColumn {
 export interface TableAction<T> {
     title: string;
     label?: string;
+    permission?: string;
     icon?: IconDefinition;
     color?: ButtonColor;
     onClick: (row: T) => void;

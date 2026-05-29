@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 import { ProtectedRoute } from "@/routes/ProtectedRoutes";
 import { PublicRoute } from "@/routes/PublicRoute";
-
+import { useAuthStore } from "@/modules/auth/store/authStore";
 import AdminLayout from "@/layouts/AdminLayout";
 import AuthLayout from "@/layouts/AuthLayout";
 import UserLayout from "@/layouts/UserLayout";
@@ -13,11 +13,30 @@ import NotFound from "@/shared/pages/NotFound";
 import { adminRoutes } from "@/routes/adminRoutes";
 
 const renderAdminRoutes = (routes: any[]) => {
+  const hasPermission = useAuthStore.getState().hasPermission
+  const user = useAuthStore.getState().user
+
   return routes.flatMap((r) => {
-    // rutas con children
+    // filtrar por permisos del padre
+    if (r.permissions?.length) {
+      const allowed = r.permissions.some((p: string) =>
+        hasPermission(p)
+      )
+
+      if (!allowed) return []
+    }
+
     if (r.children) {
-      return r.children.map((c: any) => {
-        const Child = c.element;
+      return r.children.flatMap((c: any) => {
+        if (c.permissions?.length) {
+          const allowed = c.permissions.some((p: string) =>
+            hasPermission(p)
+          )
+
+          if (!allowed) return []
+        }
+
+        const Child = c.element
 
         return (
           <Route
@@ -25,14 +44,13 @@ const renderAdminRoutes = (routes: any[]) => {
             path={c.path}
             element={<Child />}
           />
-        );
-      });
+        )
+      })
     }
 
-    // ruta normal
-    if (!r.path) return null;
+    if (!r.path) return null
 
-    const Component = r.element;
+    const Component = r.element
 
     return (
       <Route
@@ -40,9 +58,9 @@ const renderAdminRoutes = (routes: any[]) => {
         path={r.path}
         element={<Component />}
       />
-    );
-  });
-};
+    )
+  })
+}
 
 export const AppRoutes = () => {
   return (

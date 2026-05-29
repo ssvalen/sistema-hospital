@@ -18,6 +18,9 @@ import AppointmentFormPage from "@/modules/appointments/ui/pages/AppointmentForm
 import AppointmentCalendarPage from "@/modules/appointments/ui/pages/AppointmentCalendarPage";
 import AppointmentDetailsPage from "@/modules/appointments/ui/pages/AppointmentDetailsPage";
 
+import { PERMISSIONS } from "@/shared/utils/permissions";
+
+
 const DummyPage = ({ title }: { title: string }) => (
   <div className="p-6">
     <h1 className="text-3xl font-bold">{title}</h1>
@@ -44,21 +47,21 @@ export const adminRoutes: SidebarRoute[] = [
         path: "patients",
         element: PatientsPage,
         label: "Pacientes",
-        permissions: ["patients.view"],
+        permissions: [PERMISSIONS.PATIENT.MODULE_ACCESS],
       },
       {
         path: "patients/create",
         element: CreatePatientPage,
         label: "Crear paciente",
         showInSidebar: false,
-        permissions: ["patients.view"],
+        permissions: [PERMISSIONS.PATIENT.CREATE],
       },
       {
         path: "patients/:id/edit",
         element: PatientFormPage,
         label: "Editar paciente",
         showInSidebar: false,
-        // permissions: ["patients.edit"],
+        permissions: [PERMISSIONS.PATIENT.EDIT],
       },
 
       {
@@ -73,24 +76,27 @@ export const adminRoutes: SidebarRoute[] = [
         path: "appointments",
         element: AppointmentCalendarPage,
         label: "Citas médicas",
-        permissions: ["appointments.view"],
+        permissions: [PERMISSIONS.APPOINTMENT.MODULE_ACCESS],
       },
       {
         path: "appointments/new",
         element: AppointmentFormPage,
         showInSidebar: false,
+        permissions: [PERMISSIONS.APPOINTMENT.CREATE],
       },
 
       {
         path: "appointments/:id",
         element: AppointmentDetailsPage,
         showInSidebar: false,
+        permissions: [PERMISSIONS.APPOINTMENT.VIEW_DETAIL],
       },
 
       {
         path: "appointments/:id/edit",
         element: AppointmentFormPage,
         showInSidebar: false,
+        permissions: [PERMISSIONS.APPOINTMENT.EDIT],
       },
     ],
   },

@@ -146,7 +146,7 @@ const PatientDetailsPage = () => {
                     doctorFilter === "all"
                         ? true
                         : consultation.doctor ===
-                          doctorFilter;
+                        doctorFilter;
 
                 return (
                     matchesSearch &&
@@ -207,11 +207,10 @@ const PatientDetailsPage = () => {
                             </h1>
 
                             <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                    patient.active
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${patient.active
                                         ? "bg-emerald-100 text-emerald-700"
                                         : "bg-red-100 text-red-700"
-                                }`}
+                                    }`}
                             >
                                 {patient.active
                                     ? "Activo"
@@ -379,7 +378,14 @@ const PatientDetailsPage = () => {
                             icon={faUserDoctor}
                             label="Nueva consulta"
                             color="blue"
-                            onClick={() => {}}
+                            onClick={() =>
+                                navigate('/admin/appointments/new', {
+                                    state: {
+                                        patientId: patient.id,
+                                        patientName: `${patient.firstName} ${patient.lastName}`
+                                    }
+                                })
+                            }
                         />
 
                     </div>

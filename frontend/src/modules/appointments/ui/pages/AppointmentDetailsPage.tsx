@@ -1,25 +1,18 @@
 import { useNavigate, useParams } from "react-router-dom";
+import { useState } from "react";
 
 import Button from "@/shared/components/forms/Button";
-
+import Modal from "@/shared/components/Modal";
 import {
     faArrowLeft,
     faPen,
     faUser,
-    faBan
+    faBan,
+    faTriangleExclamation
 } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-type AppointmentDetails = {
-    id: string;
-    patientId: string;
-    patient: string;
-    doctor: string;
-    date: string;
-    startTime: string;
-    endTime: string;
-    reason: string;
-    status: string;
-};
+import type { AppointmentDetails } from "../../types/AppointmentDetails";
 
 const mockAppointments: Record<
     string,
@@ -54,8 +47,15 @@ const statusStyles: Record<
 
 const AppointmentDetailsPage = () => {
     const { id } = useParams();
-
     const navigate = useNavigate();
+
+    //Modal
+    const [open, setOpen] = useState(false);
+    const openCancelConfirmation = () => setOpen(true)
+    const close = () => {
+        setOpen(false);
+    };
+    //Data
 
     const data = id
         ? mockAppointments[id]
@@ -187,7 +187,7 @@ const AppointmentDetailsPage = () => {
 
                     </div>
 
-      
+
                     <div className="flex flex-col sm:flex-row xl:flex-col gap-3 xl:min-w-[220px]">
 
                         <Button
@@ -205,6 +205,7 @@ const AppointmentDetailsPage = () => {
                             icon={faBan}
                             label="Cancelar cita"
                             color="gray"
+                            onClick={openCancelConfirmation}
                             variant="outline"
                         />
 
@@ -299,7 +300,57 @@ const AppointmentDetailsPage = () => {
 
             </div>
 
+            <Modal
+                abierto={open}
+                onClose={close}
+                titulo={"Cancelar cita"}
+                size="md"
+            >
+                <div className="space-y-5">
+                    <div className="flex flex-col items-center text-center space-y-3 py-4">
+
+                        <div className="p-4 rounded-full bg-amber-50">
+                            <FontAwesomeIcon
+                                icon={faTriangleExclamation}
+                                className="text-amber-600"
+                                size="lg"
+                            />
+                        </div>
+
+                        <div>
+                            <h2 className="text-lg font-semibold text-slate-800">
+                                ¿Estás seguro de cancelar esta cita?
+                            </h2>
+
+                            <p className="text-sm text-slate-500 mt-1">
+                                Esta acción no se puede deshacer y la cita quedará marcada como cancelada.
+                            </p>
+                        </div>
+
+                    </div>
+                    <div className="flex justify-end gap-3 pt-2">
+
+                        <Button
+                            label="Cerrar"
+                            color="gray"
+                            variant="outline"
+                            onClick={close}
+                        />
+
+                        <Button
+                            label="Sí, cancelar cita"
+                            color="red"
+                            variant="solid"
+                            onClick={() => close() }
+                        />
+
+                    </div>
+
+                </div>
+            </Modal>
         </div>
+
+
     );
 };
 

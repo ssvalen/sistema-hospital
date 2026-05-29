@@ -65,7 +65,6 @@ const PermissionsPage = () => {
     if (!editing) return;
     if (!validate()) return;
 
-    // ✅ mismo patrón que UsersPage (find + comparación simple)
     const isSame =
       editing.id &&
       permissions.find(

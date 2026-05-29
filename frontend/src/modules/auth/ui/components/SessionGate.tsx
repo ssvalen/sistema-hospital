@@ -1,4 +1,4 @@
-import SessionRenewModal from "@/shared/components/SessionRenewModal";
+import SessionRenewModal from "@/shared/components/permissions/SessionRenewModal";
 import { useSessionManager } from "@/modules/auth/hooks/useSessionManager";
 
 export default function SessionGate() {
