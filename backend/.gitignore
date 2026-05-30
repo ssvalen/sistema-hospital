@@ -50,3 +50,5 @@ Thumbs.db
 .env
 *.env
 .env.*
+
+application-dev-personal.yaml
