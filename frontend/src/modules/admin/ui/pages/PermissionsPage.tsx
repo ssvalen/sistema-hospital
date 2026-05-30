@@ -12,6 +12,10 @@ import type { Permission } from "../../types/AuthTypes";
 import type { TableAction } from "@/shared/types/table/TableTypes";
 import { faKey } from "@fortawesome/free-solid-svg-icons";
 
+import { PERMISSIONS } from "@/shared/utils/permissions";
+import CanAccess from "@/shared/components/permissions/CanAccess";
+
+
 type PermissionForm = {
   id?: string;
   name: string;
@@ -65,7 +69,6 @@ const PermissionsPage = () => {
     if (!editing) return;
     if (!validate()) return;
 
-    // ✅ mismo patrón que UsersPage (find + comparación simple)
     const isSame =
       editing.id &&
       permissions.find(
@@ -116,12 +119,14 @@ const PermissionsPage = () => {
       title: "Editar",
       label: "Editar",
       color: BUTTON_COLORS.BLUE,
+      permission: PERMISSIONS.ADMIN.PERMISSIONS_EDIT,
       onClick: openEdit,
     },
     {
       title: "Inactivar",
       label: "Inactivar",
       color: BUTTON_COLORS.RED,
+      permission: PERMISSIONS.ADMIN.PERMISSIONS_INACTIVATE,
       onClick: (p) => toggleInactive(p.id),
     },
   ];
@@ -135,12 +140,14 @@ const PermissionsPage = () => {
           <p className="text-sm text-slate-500">Gestión de permisos</p>
         </div>
 
-        <Button
-          icon={faKey}
-          label="Crear permiso"
-          color="blue"
-          onClick={openCreate}
-        />
+        <CanAccess permission={PERMISSIONS.ADMIN.PERMISSIONS_CREATE}>
+          <Button
+            icon={faKey}
+            label="Crear permiso"
+            color="blue"
+            onClick={openCreate}
+          />
+        </CanAccess>
       </div>
 
       <DataTable

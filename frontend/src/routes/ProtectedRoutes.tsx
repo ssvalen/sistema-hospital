@@ -16,7 +16,7 @@ export const ProtectedRoute = ({
   const hasHydrated = useAuthStore.persist.hasHydrated();
 
   if (!hasHydrated) {
-    return <div>Cargando...</div>;
+    return null
   }
 
   if (!user) {
@@ -49,7 +49,7 @@ export const ProtectedRoute = ({
     }
   }
 
-  // PERMISO S
+  // PERMISOS
   if (requiredPermissions?.length) {
     const hasPermissions = requiredPermissions.every((p) =>
       userPermissions.includes(p)

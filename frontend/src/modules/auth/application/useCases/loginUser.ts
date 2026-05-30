@@ -1,6 +1,8 @@
 import type { AuthRepository } from "../interfaces/AuthRepository";
 import type { User } from "../../domain/entities/User";
 
+import { PERMISSIONS } from "@/shared/utils/permissions";
+
 export const loginUser = async (
   repo: AuthRepository,
   username: string,
@@ -15,19 +17,15 @@ export const loginUser = async (
 
   // ADMIN
   if (username === "admin" && password === "admin") {
+
+
     user = {
       id: 1,
       username: "admin",
       roles: ["admin"],
-      permissions: [
-        "admin.manager",
-        "admin.manager.roles",
-        "users.view",
-        "users.create",
-        "users.edit",
-        "reports.view",
-        "appointments.view"
-      ],
+      permissions: Object.values(PERMISSIONS).flatMap(module =>
+        Object.values(module)
+      ),
       token: "fake-admin-token",
     };
 

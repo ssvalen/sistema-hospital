@@ -10,6 +10,16 @@ import RolesPages from "@/modules/admin/ui/pages/RolesPages";
 import RoleFormPage from "@/modules/admin/ui/pages/RoleFormPage";
 import PermissionsPage from "@/modules/admin/ui/pages/PermissionsPage";
 import UsersPage from "@/modules/admin/ui/pages/UsersPage";
+import PatientsPage from "@/modules/patients/ui/pages/PatientsPage";
+import CreatePatientPage from "@/modules/patients/ui/pages/PatientFormPage";
+import PatientDetailsPage from "@/modules/patients/ui/pages/PatientDetailsPage";
+import PatientFormPage from "@/modules/patients/ui/pages/PatientFormPage";
+import AppointmentFormPage from "@/modules/appointments/ui/pages/AppointmentFormPage";
+import AppointmentCalendarPage from "@/modules/appointments/ui/pages/AppointmentCalendarPage";
+import AppointmentDetailsPage from "@/modules/appointments/ui/pages/AppointmentDetailsPage";
+
+import { PERMISSIONS } from "@/shared/utils/permissions";
+
 
 const DummyPage = ({ title }: { title: string }) => (
   <div className="p-6">
@@ -18,10 +28,6 @@ const DummyPage = ({ title }: { title: string }) => (
 );
 
 const DashboardPage = () => <DummyPage title="Dashboard" />;
-const PatientsPage = () => <DummyPage title="Pacientes" />;
-const AppointmentsPage = () => <DummyPage title="Citas" />;
-const MedicalRecordsPage = () => <DummyPage title="Expedientes" />;
-const ReportsPage = () => <DummyPage title="Reportes" />;
 
 export const adminRoutes: SidebarRoute[] = [
   {
@@ -41,19 +47,56 @@ export const adminRoutes: SidebarRoute[] = [
         path: "patients",
         element: PatientsPage,
         label: "Pacientes",
-        permissions: ["patients.view"],
+        permissions: [PERMISSIONS.PATIENT.MODULE_ACCESS],
       },
+      {
+        path: "patients/create",
+        element: CreatePatientPage,
+        label: "Crear paciente",
+        showInSidebar: false,
+        permissions: [PERMISSIONS.PATIENT.CREATE],
+      },
+      {
+        path: "patients/:id/edit",
+        element: PatientFormPage,
+        label: "Editar paciente",
+        showInSidebar: false,
+        permissions: [PERMISSIONS.PATIENT.EDIT],
+      },
+
+      {
+        path: "patients/:id",
+        element: PatientDetailsPage,
+        label: "Detalle paciente",
+        showInSidebar: false,
+        permissions: [PERMISSIONS.PATIENT.VIEW_DETAIL],
+      },
+      // Citas
       {
         path: "appointments",
-        element: AppointmentsPage,
-        label: "Citas",
-        permissions: ["appointments.view"],
+        element: AppointmentCalendarPage,
+        label: "Citas médicas",
+        permissions: [PERMISSIONS.APPOINTMENT.MODULE_ACCESS],
       },
       {
-        path: "medical-records",
-        element: MedicalRecordsPage,
-        label: "Expedientes",
-        permissions: ["records.view"],
+        path: "appointments/new",
+        element: AppointmentFormPage,
+        showInSidebar: false,
+        permissions: [PERMISSIONS.APPOINTMENT.CREATE],
+      },
+
+      {
+        path: "appointments/:id",
+        element: AppointmentDetailsPage,
+        showInSidebar: false,
+        permissions: [PERMISSIONS.APPOINTMENT.VIEW_DETAIL],
+      },
+
+      {
+        path: "appointments/:id/edit",
+        element: AppointmentFormPage,
+        showInSidebar: false,
+        permissions: [PERMISSIONS.APPOINTMENT.EDIT],
       },
     ],
   },
@@ -61,26 +104,26 @@ export const adminRoutes: SidebarRoute[] = [
     label: "Administración",
     icon: faFileLines,
     showInSidebar: true,
-    permissions: ["admin.manager"],
+    permissions: [PERMISSIONS.ADMIN.MODULE_ACCESS],
     children: [
       {
         path: "roles",
         element: RolesPages,
         label: "Roles",
-        permissions: ["admin.manager.roles"],
+        permissions: [PERMISSIONS.ADMIN.ROLES],
       },
       {
         path: "roles/new",
         element: RoleFormPage,
         label: "Crear Rol",
-        permissions: ["admin.manager.roles"],
+        permissions: [PERMISSIONS.ADMIN.ROLES_CREATE],
         showInSidebar: false,
       },
       {
         path: "roles/:id",
         element: RoleFormPage,
         label: "Editar Rol",
-        permissions: ["admin.manager.roles"],
+        permissions: [PERMISSIONS.ADMIN.ROLES_EDIT],
         showInSidebar: false,
       },
 
@@ -89,14 +132,14 @@ export const adminRoutes: SidebarRoute[] = [
         element: PermissionsPage,
         label: "Permisos",
         showInSidebar: true,
-        permissions: ["admin.manager.roles"],
+        permissions: [PERMISSIONS.ADMIN.PERMISSIONS],
       },
 
       {
         path: "users",
         element: UsersPage,
         label: "Usuarios",
-        permissions: ["reports.view"],
+        permissions: [PERMISSIONS.ADMIN.USERS],
       },
     ],
   },

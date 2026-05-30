@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import Button from "@/shared/components/forms/Button";
 import { faUserLock } from "@fortawesome/free-solid-svg-icons";
+import CanAccess from "@/shared/components/permissions/CanAccess";
+import { PERMISSIONS } from "@/shared/utils/permissions";
 
 const RolesPages = () => {
   const navigate = useNavigate();
@@ -53,6 +55,7 @@ const RolesPages = () => {
       title: "Editar rol",
       label: "Editar",
       color: BUTTON_COLORS.BLUE,
+      permission: PERMISSIONS.ADMIN.ROLES_EDIT,
       onClick: (role) => navigate(`/admin/roles/${role.id}`, {
         state: { role, permissions }
       }),
@@ -61,6 +64,7 @@ const RolesPages = () => {
       title: "Inactivar rol",
       label: "Inactivar",
       color: BUTTON_COLORS.RED,
+      permission: PERMISSIONS.ADMIN.INACTIVATE_ROLES,
       onClick: (role) => toggleActive(role.id),
     },
   ];
@@ -81,13 +85,15 @@ const RolesPages = () => {
             Administración de roles del sistema
           </p>
         </div>
-        <Button
-          label="Crear rol"
-          icon={faUserLock}
-          color="blue"
-          onClick={() => navigate("/admin/roles/new", {
-            state: { permissions }
-          })} />
+        <CanAccess permission={PERMISSIONS.ADMIN.ROLES_CREATE}>
+          <Button
+            label="Crear rol"
+            icon={faUserLock}
+            color="blue"
+            onClick={() => navigate("/admin/roles/new", {
+              state: { permissions }
+            })} />
+        </CanAccess>
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">

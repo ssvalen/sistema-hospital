@@ -14,6 +14,7 @@ import type {
 import { TABLE_ICONS } from "@/shared/types/table/TableIcons";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import CanAccess from "./permissions/CanAccess";
 
 interface DataTableProps<T> {
     columns: TableColumn[];
@@ -163,9 +164,8 @@ const DataTable = <T extends Record<string, any>>({
                                     className="px-4 py-3 text-left font-semibold border-b border-slate-700"
                                 >
                                     <div
-                                        className={`flex items-center gap-2 select-none ${
-                                            col.sortable ? "cursor-pointer" : ""
-                                        } ${col.hasActions ? "justify-center" : ""}`}
+                                        className={`flex items-center gap-2 select-none ${col.sortable ? "cursor-pointer" : ""
+                                            } ${col.hasActions ? "justify-center" : ""}`}
                                         onClick={() =>
                                             col.sortable && handleSort(col.key)
                                         }
@@ -230,16 +230,17 @@ const DataTable = <T extends Record<string, any>>({
                                             {col.hasActions ? (
                                                 <div className="flex justify-center gap-2">
                                                     {actions.map(action => (
-                                                        <Button
-                                                            key={action.title}
-                                                            icon={action.icon}
-                                                            label={action.label}
-                                                            title={action.title}
-                                                            color={action.color}
-                                                            onClick={() =>
-                                                                action.onClick(row)
-                                                            }
-                                                        />
+                                                        <CanAccess
+                                                            permission={action.permission}
+                                                        >
+                                                            <Button
+                                                                icon={action.icon}
+                                                                label={action.label}
+                                                                title={action.title}
+                                                                color={action.color}
+                                                                onClick={() => action.onClick(row)}
+                                                            />
+                                                        </CanAccess>
                                                     ))}
                                                 </div>
                                             ) : (
