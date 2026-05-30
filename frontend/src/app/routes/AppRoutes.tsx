@@ -13,44 +13,42 @@ import NotFound from "@/shared/pages/NotFound";
 import { adminRoutes } from "@/routes/adminRoutes";
 
 const renderAdminRoutes = (routes: any[]) => {
-  const hasPermission = useAuthStore.getState().hasPermission
-  const user = useAuthStore.getState().user
+  const hasPermission = useAuthStore.getState().hasPermission;
 
-  return routes.flatMap((r) => {
-    // filtrar por permisos del padre
+  return routes.map((r) => {
+    // Validar permisos del padre
     if (r.permissions?.length) {
       const allowed = r.permissions.some((p: string) =>
         hasPermission(p)
-      )
+      );
 
-      if (!allowed) return []
+      if (!allowed) return null;
     }
 
+    // Ruta con hijos
     if (r.children) {
-      return r.children.flatMap((c: any) => {
+      return r.children.map((c: any) => {
         if (c.permissions?.length) {
           const allowed = c.permissions.some((p: string) =>
             hasPermission(p)
-          )
+          );
 
-          if (!allowed) return []
+          if (!allowed) return null;
         }
 
-        const Child = c.element
+        const Component = c.element;
 
         return (
           <Route
             key={c.path}
             path={c.path}
-            element={<Child />}
+            element={<Component />}
           />
-        )
-      })
+        );
+      });
     }
 
-    if (!r.path) return null
-
-    const Component = r.element
+    const Component = r.element;
 
     return (
       <Route
@@ -58,9 +56,9 @@ const renderAdminRoutes = (routes: any[]) => {
         path={r.path}
         element={<Component />}
       />
-    )
-  })
-}
+    );
+  });
+};
 
 export const AppRoutes = () => {
   return (

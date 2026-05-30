@@ -69,7 +69,7 @@ export const adminRoutes: SidebarRoute[] = [
         element: PatientDetailsPage,
         label: "Detalle paciente",
         showInSidebar: false,
-        permissions: ["patients.view"],
+        permissions: [PERMISSIONS.PATIENT.VIEW_DETAIL],
       },
       // Citas
       {
@@ -104,26 +104,26 @@ export const adminRoutes: SidebarRoute[] = [
     label: "Administración",
     icon: faFileLines,
     showInSidebar: true,
-    permissions: ["admin.manager"],
+    permissions: [PERMISSIONS.ADMIN.MODULE_ACCESS],
     children: [
       {
         path: "roles",
         element: RolesPages,
         label: "Roles",
-        permissions: ["admin.manager.roles"],
+        permissions: [PERMISSIONS.ADMIN.ROLES],
       },
       {
         path: "roles/new",
         element: RoleFormPage,
         label: "Crear Rol",
-        permissions: ["admin.manager.roles"],
+        permissions: [PERMISSIONS.ADMIN.ROLES_CREATE],
         showInSidebar: false,
       },
       {
         path: "roles/:id",
         element: RoleFormPage,
         label: "Editar Rol",
-        permissions: ["admin.manager.roles"],
+        permissions: [PERMISSIONS.ADMIN.ROLES_EDIT],
         showInSidebar: false,
       },
 
@@ -132,14 +132,14 @@ export const adminRoutes: SidebarRoute[] = [
         element: PermissionsPage,
         label: "Permisos",
         showInSidebar: true,
-        permissions: ["admin.manager.roles"],
+        permissions: [PERMISSIONS.ADMIN.PERMISSIONS],
       },
 
       {
         path: "users",
         element: UsersPage,
         label: "Usuarios",
-        permissions: ["reports.view"],
+        permissions: [PERMISSIONS.ADMIN.USERS],
       },
     ],
   },

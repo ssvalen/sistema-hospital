@@ -5,7 +5,8 @@ export const APPOINTMENT_PERMISSIONS = {
     FILTER: 'appointment.filter',
     VIEW_DETAIL: 'appointment.view.detail',
     VIEW_PATIENT_RECORD: 'appointment.view.patient.record',
-    ATTEND: 'appointment.view.attend'
+    ATTEND: 'appointment.view.attend',
+    CANCEL: 'appointment.cancel',
 
 } as const
 

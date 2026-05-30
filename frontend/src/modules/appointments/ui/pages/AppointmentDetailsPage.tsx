@@ -8,11 +8,14 @@ import {
     faPen,
     faUser,
     faBan,
-    faTriangleExclamation
+    faTriangleExclamation,
+    faStethoscope
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import type { AppointmentDetails } from "../../types/AppointmentDetails";
+import { PERMISSIONS } from "@/shared/utils/permissions";
+import CanAccess from "@/shared/components/permissions/CanAccess";
 
 const mockAppointments: Record<
     string,
@@ -109,16 +112,18 @@ const AppointmentDetailsPage = () => {
                         }
                     />
 
-                    <Button
-                        icon={faPen}
-                        label="Editar"
-                        color="blue"
-                        onClick={() =>
-                            navigate(
-                                `/admin/appointments/${id}/edit`
-                            )
-                        }
-                    />
+                    <CanAccess permission={PERMISSIONS.APPOINTMENT.EDIT}>
+                        <Button
+                            icon={faPen}
+                            label="Editar"
+                            color="blue"
+                            onClick={() =>
+                                navigate(
+                                    `/admin/appointments/${id}/edit`
+                                )
+                            }
+                        />
+                    </CanAccess>
 
                 </div>
 
@@ -189,25 +194,39 @@ const AppointmentDetailsPage = () => {
 
 
                     <div className="flex flex-col sm:flex-row xl:flex-col gap-3 xl:min-w-[220px]">
-
-                        <Button
-                            icon={faUser}
-                            label="Ver expediente"
-                            color="gray"
-                            onClick={() =>
-                                navigate(
-                                    `/admin/patients/${data.patientId}`
-                                )
-                            }
-                        />
-
-                        <Button
-                            icon={faBan}
-                            label="Cancelar cita"
-                            color="gray"
-                            onClick={openCancelConfirmation}
-                            variant="outline"
-                        />
+                        <CanAccess permission={PERMISSIONS.APPOINTMENT.ATTEND}>
+                            <Button
+                                icon={faStethoscope}
+                                label="Atender cita"
+                                color="green"
+                                onClick={() =>
+                                    navigate(
+                                        `/admin/appointments/${id}/attend`
+                                    )
+                                }
+                            />
+                        </CanAccess>
+                        <CanAccess permission={PERMISSIONS.APPOINTMENT.VIEW_PATIENT_RECORD}>
+                            <Button
+                                icon={faUser}
+                                label="Ver expediente"
+                                color="gray"
+                                onClick={() =>
+                                    navigate(
+                                        `/admin/patients/${data.patientId}`
+                                    )
+                                }
+                            />
+                        </CanAccess>
+                        <CanAccess permission={PERMISSIONS.APPOINTMENT.CANCEL}>
+                            <Button
+                                icon={faBan}
+                                label="Cancelar cita"
+                                color="gray"
+                                onClick={openCancelConfirmation}
+                                variant="outline"
+                            />
+                        </CanAccess>
 
                     </div>
 
@@ -341,7 +360,7 @@ const AppointmentDetailsPage = () => {
                             label="Sí, cancelar cita"
                             color="red"
                             variant="solid"
-                            onClick={() => close() }
+                            onClick={() => close()}
                         />
 
                     </div>

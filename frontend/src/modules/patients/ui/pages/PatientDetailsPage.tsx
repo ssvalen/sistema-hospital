@@ -6,6 +6,7 @@ import Input from "@/shared/components/forms/Input";
 import Select from "@/shared/components/forms/Select";
 import FormField from "@/shared/components/forms/FormField";
 import Toast from "@/shared/components/Toast";
+import CanAccess from "@/shared/components/permissions/CanAccess";
 
 import { useToast } from "@/shared/hooks/useToast";
 
@@ -18,6 +19,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { PERMISSIONS } from "@/shared/utils/permissions";
 
 type Consultation = {
     id: string;
@@ -208,8 +210,8 @@ const PatientDetailsPage = () => {
 
                             <span
                                 className={`px-2 py-1 rounded-full text-xs font-medium ${patient.active
-                                        ? "bg-emerald-100 text-emerald-700"
-                                        : "bg-red-100 text-red-700"
+                                    ? "bg-emerald-100 text-emerald-700"
+                                    : "bg-red-100 text-red-700"
                                     }`}
                             >
                                 {patient.active
@@ -240,17 +242,20 @@ const PatientDetailsPage = () => {
                                 )
                             }
                         />
-
-                        <Button
-                            icon={faPen}
-                            label="Editar"
-                            color="blue"
-                            onClick={() =>
-                                navigate(
-                                    `/admin/patients/${id}/edit`
-                                )
-                            }
-                        />
+                        <CanAccess
+                            permission={PERMISSIONS.PATIENT.EDIT}
+                        >
+                            <Button
+                                icon={faPen}
+                                label="Editar"
+                                color="blue"
+                                onClick={() =>
+                                    navigate(
+                                        `/admin/patients/${id}/edit`
+                                    )
+                                }
+                            />
+                        </CanAccess>
 
                     </div>
 
@@ -373,20 +378,23 @@ const PatientDetailsPage = () => {
                                 Consultas médicas registradas
                             </p>
                         </div>
-
-                        <Button
-                            icon={faUserDoctor}
-                            label="Nueva consulta"
-                            color="blue"
-                            onClick={() =>
-                                navigate('/admin/appointments/new', {
-                                    state: {
-                                        patientId: patient.id,
-                                        patientName: `${patient.firstName} ${patient.lastName}`
-                                    }
-                                })
-                            }
-                        />
+                        <CanAccess
+                            permission={PERMISSIONS.APPOINTMENT.CREATE}
+                        >
+                            <Button
+                                icon={faUserDoctor}
+                                label="Nueva consulta"
+                                color="blue"
+                                onClick={() =>
+                                    navigate('/admin/appointments/new', {
+                                        state: {
+                                            patientId: patient.id,
+                                            patientName: `${patient.firstName} ${patient.lastName}`
+                                        }
+                                    })
+                                }
+                            />
+                        </CanAccess>
 
                     </div>
 
