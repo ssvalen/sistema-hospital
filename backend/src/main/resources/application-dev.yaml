@@ -1,24 +1,29 @@
 spring:
   application:
-    name: backend
+    name: api-hospital-db
   
   datasource:
     url: jdbc:mysql://localhost:3307/?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Guatemala&characterEncoding=UTF-8
-    username: keycloak_user
-    password: keycloak_password_456
+    username: ENC(AU4+A2keKEeyr0SSTG5/CdCqY+se79B9fMkfZboLwNFyzbPhKKaWk/NGNqaKz+VaSpLgkrYvIeQmsVvFA3aqJw==)
+    password: ENC(Ncub+l5wZyDhAdc99QM/YEXpKxcOlJ33s3ityN72Yr0Mzhg10IGDCvE/rRdP1mvSe/t1JV9iuNWuCpO13983PQ==)
     driver-class-name: com.mysql.cj.jdbc.Driver
     
     hikari:
-      maximum-pool-size: 10
-      minimum-idle: 5
+      maximum-pool-size: 5
+      minimum-idle: 2
       connection-timeout: 30000
       max-lifetime: 600000
       idle-timeout: 300000
       connection-test-query: SELECT 1
       pool-name: HikariPool-MyApp
-  
+  jackson:
+    serialization:
+      FAIL_ON_EMPTY_BEANS: false
+    default-property-inclusion: non_null
+    # Limitar profundidad de serialización
+    deserialization:
+      FAIL_ON_UNKNOWN_PROPERTIES: false
   jpa:
-    database-platform: org.hibernate.dialect.MySQL8Dialect
     show-sql: true
     properties:
       hibernate:
@@ -29,13 +34,57 @@ spring:
           batch_size: 20
         order_inserts: true
         order_updates: true
-        hbm2ddl.auto: update
+        hbm2ddl.auto: none
     hibernate:
-      ddl-auto: update  
+      ddl-auto: none
 
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api/hospitaldb/v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /api/hospitaldb/swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+    display-request-duration: true
+    filter: true
+    show-actuator: false
+    writer-with-default-pretty-printer: true
+
+jasypt:
+  encryptor:
+    password: ${JASYPT_ENCRYPTOR_PASSWORD}
+    algorithm: PBEWithHMACSHA512ANDAES_256
+    iv-generator-classname: org.jasypt.iv.RandomIvGenerator
+    key-obtention-iterations: 1000
+    pool-size: 1
+    provider-name: SunJCE
+    salt-generator-classname: org.jasypt.salt.RandomSaltGenerator
+    string-output-type: base64
+#  security:
+#    oauth2:
+#      resourceserver:
+#        jwt:
+#          issuer-uri: http://keycloak:8080/realms/hotel-db
+#          jwk-set-uri: http://keycloak:8080/realms/hotel-db/protocol/openid-connect/certs
+
+#  keycloak:
+#    auth-server-url: http://keycloak:8080
+#    realm: hotel-db
+#    resource: dpi-hotel-api  # Cliente diferente para la API
+#    credentials:
+#      secret: TU_SECRETO_API
 logging:
   level:
     com.zaxxer.hikari: DEBUG  
     org.hibernate.SQL: DEBUG  
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE 
     org.springframework.jdbc: DEBUG
+
+server:
+  port: 8081
+  error:
+    include-message: always
+    include-binding-errors: always
