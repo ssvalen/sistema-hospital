@@ -65,11 +65,11 @@ services:
     ports:
       - "8081:8081"
     environment:
-      JAVA_OPTS: "-Xmx512m -Xms256m -XX:+UseG1GC -XX:+UseStringDeduplication"
-      JASYPT_ENCRYPTOR_PASSWORD:  ${JASYPT_ENCRYPTOR_PASSWORD}
-      SPRING_PROFILES_ACTIVE: dev
-      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: INFO
-      LOGGING_LEVEL_COM_ZAXKER_HIKARI: DEBUG
+      - JAVA_OPTS=-Xmx512m -Xms256m -XX:+UseG1GC -XX:+UseStringDeduplication
+      - JASYPT_ENCRYPTOR_PASSWORD=${JASYPT_ENCRYPTOR_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=dev
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK=INFO
+      - LOGGING_LEVEL_COM_ZAXKER_HIKARI=DEBUG
     depends_on:
       mysql-hospital:
         condition: service_healthy

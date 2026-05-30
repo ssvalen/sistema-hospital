@@ -12,6 +12,7 @@ import com.hospitaldb.backend.repository.administrativo.IUsuarioRolRepository;
 import com.hospitaldb.backend.repository.administrativo.IUsuarioSistemaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jasypt.encryption.StringEncryptor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,8 @@ public class UsuarioSistemaService {
     private final IUsuarioSistemaRepository usuarioRepository;
     private final IRolRepository rolRepository;
     private final IUsuarioRolRepository usuarioRolRepository;
+    private final StringEncryptor stringEncryptor;
+
 
     public List<UsuarioSistema> findAll() {
         log.info("Obteniendo todos los usuarios del sistema");

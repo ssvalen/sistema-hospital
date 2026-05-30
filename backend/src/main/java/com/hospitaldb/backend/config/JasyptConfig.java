@@ -8,6 +8,7 @@ import org.jasypt.encryption.pbe.PooledPBEStringEncryptor;
 import org.jasypt.encryption.pbe.config.SimpleStringPBEConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 @Configuration
 @RequiredArgsConstructor
@@ -18,32 +19,37 @@ public class JasyptConfig {
 
     private SimpleStringPBEConfig createPBEConfig() {
         log.info("Propiedades de jasypt: {}",jasyptProperties.toString());
+        String cleanPassword = jasyptProperties.getPassword()
+                .trim()
+                .replace("\n", "")
+                .replace("\r", "");
         SimpleStringPBEConfig config = new SimpleStringPBEConfig();
-        config.setPassword(jasyptProperties.getPassword());
+        config.setPassword(cleanPassword);
         config.setAlgorithm(jasyptProperties.getAlgorithm());
         config.setKeyObtentionIterations(jasyptProperties.getKeyObtentionIterations());
         config.setPoolSize(jasyptProperties.getPoolSize());
         config.setProviderName(jasyptProperties.getProviderName());
         config.setSaltGeneratorClassName(jasyptProperties.getSaltGeneratorClassname());
         config.setIvGeneratorClassName(jasyptProperties.getIvGeneratorClassname());
-        config.setStringOutputType(jasyptProperties.getStringOutputType());
+        config.setStringOutputType("hexadecimal");
         return config;
     }
 
     @Bean("jasyptStringEncryptor")
+    @Primary
     public StringEncryptor stringEncryptor() {
         PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();
         encryptor.setConfig(createPBEConfig());
         return encryptor;
     }
 
-    @Bean("jasyptStringDecryptor")
-    public StringEncryptor stringDecryptor() {
-        // Jasypt usa el mismo objeto para cifrar y descifrar
-        PooledPBEStringEncryptor decryptor = new PooledPBEStringEncryptor();
-        decryptor.setConfig(createPBEConfig());
-        return decryptor;
-    }
+//    @Bean("jasyptStringDecryptor")
+//    public StringEncryptor stringDecryptor() {
+//        // Jasypt usa el mismo objeto para cifrar y descifrar
+//        PooledPBEStringEncryptor decryptor = new PooledPBEStringEncryptor();
+//        decryptor.setConfig(createPBEConfig());
+//        return decryptor;
+//    }
 
     @Bean("jasyptCryptoService")
     public JasyptCryptoService jasyptCryptoService() {
