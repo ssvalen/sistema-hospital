@@ -1,5 +1,6 @@
 package com.hospitaldb.backend.entity.clinico;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -34,7 +35,7 @@ public class Medico {
     @Column(length = 150)
     private String email;
 
-    // Relación con CITAS
+    @JsonIgnore
     @OneToMany(mappedBy = "medico", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Cita> citas = new ArrayList<>();
 

@@ -41,11 +41,11 @@ public class MedicoService {
     public Medico create(MedicoRequestDTO request) {
         log.info("Creando nuevo médico: {}", request.getNombre());
 
-        if (request.getEmail() != null && medicoRepository.findByEmail(request.getEmail()).isPresent()) {
+        if (request.getEmail() != null && medicoRepository.existsMedicoByEmail(request.getEmail())) {
             throw new BusinessException("Ya existe un médico con el email: " + request.getEmail());
         }
 
-        if (request.getTelefono() != null && medicoRepository.findByTelefono(request.getTelefono()).isPresent()) {
+        if (request.getTelefono() != null && medicoRepository.existsMedicoByTelefono(request.getTelefono())) {
             throw new BusinessException("Ya existe un médico con el teléfono: " + request.getTelefono());
         }
 

@@ -1,5 +1,6 @@
 package com.hospitaldb.backend.entity.clinico;
 
+import com.hospitaldb.backend.entity.medicamentos.TratamientoMedicamento;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -34,9 +35,9 @@ public class Tratamiento {
     private Cita cita;
 
     @OneToMany(mappedBy = "tratamiento", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<com.hospitaldb.backend.entity.medicamentos.TratamientoMedicamento> tratamientoMedicamentos = new ArrayList<>();
+    private List<TratamientoMedicamento> tratamientoMedicamentos = new ArrayList<>();
 
-    public void addTratamientoMedicamento(com.hospitaldb.backend.entity.medicamentos.TratamientoMedicamento tm) {
+    public void addTratamientoMedicamento(TratamientoMedicamento tm) {
         tratamientoMedicamentos.add(tm);
         tm.setTratamiento(this);
     }

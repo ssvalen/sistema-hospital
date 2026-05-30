@@ -16,7 +16,13 @@ spring:
       idle-timeout: 300000
       connection-test-query: SELECT 1
       pool-name: HikariPool-MyApp
-  
+  jackson:
+    serialization:
+      FAIL_ON_EMPTY_BEANS: false
+    default-property-inclusion: non_null
+    # Limitar profundidad de serialización
+    deserialization:
+      FAIL_ON_UNKNOWN_PROPERTIES: false
   jpa:
     show-sql: true
     properties:

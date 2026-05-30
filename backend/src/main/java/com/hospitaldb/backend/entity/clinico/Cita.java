@@ -1,5 +1,6 @@
 package com.hospitaldb.backend.entity.clinico;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,6 +27,7 @@ public class Cita {
     @Column(length = 50)
     private String estado;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_paciente", nullable = false)
     private Paciente paciente;

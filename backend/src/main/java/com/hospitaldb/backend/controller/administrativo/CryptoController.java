@@ -14,7 +14,7 @@ import java.util.Map;
 
 @Profile("dev")
 @RestController
-@RequestMapping("/api/hoteldb/administrativo/crypto")
+@RequestMapping("/api/hospitaldb/administrativo/crypto")
 @RequiredArgsConstructor
 @Slf4j
 @CrossOrigin(origins = "*")

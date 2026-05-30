@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/hoteldb/clinico/medicos")
+@RequestMapping("/api/hospitaldb/clinico/medicos")
 @RequiredArgsConstructor
 @Slf4j
 @CrossOrigin(origins = "*")

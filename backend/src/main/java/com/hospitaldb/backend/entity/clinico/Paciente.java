@@ -1,10 +1,10 @@
 package com.hospitaldb.backend.entity.clinico;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class Paciente {
     @Column(length = 1)
     private Character genero;
 
-    // Relación con CITAS
+    @JsonIgnore
     @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Cita> citas = new ArrayList<>();
 }

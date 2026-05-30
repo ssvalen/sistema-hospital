@@ -18,7 +18,12 @@ public interface IMedicoRepository extends JpaRepository<Medico, Long> {
 
     Optional<Medico> findByEmail(String email);
 
+    boolean existsMedicoByEmail(String email);
+
     Optional<Medico> findByTelefono(String telefono);
+
+    //@Query("SELECT m FROM Medico m WHERE m.telefono = :telefono")
+    boolean existsMedicoByTelefono(String telefono);
 
     @Query("SELECT m FROM Medico m ORDER BY SIZE(m.citas) DESC")
     List<Medico> findMedicosMasActivos();
