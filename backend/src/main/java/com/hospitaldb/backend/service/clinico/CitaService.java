@@ -66,6 +66,8 @@ public class CitaService {
             throw new BusinessException("El médico ya tiene una cita agendada en esa fecha y hora");
         }
 
+        if(citaRepository.countCitasByDay(request.getIdMedico(),request.getFechaHora()) >= 5)
+            throw new BusinessException("El médico ya tiene el máximo de citas asignadas durante el día");
         Cita cita = new Cita();
         cita.setFechaHora(request.getFechaHora());
         cita.setEstado(request.getEstado() != null ? request.getEstado() : "PENDIENTE");

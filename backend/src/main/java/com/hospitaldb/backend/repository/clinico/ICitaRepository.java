@@ -1,5 +1,6 @@
 package com.hospitaldb.backend.repository.clinico;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hospitaldb.backend.entity.clinico.Cita;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -8,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -30,8 +32,8 @@ public interface ICitaRepository extends JpaRepository<Cita, Long> {
 
     long countByEstado(String estado);
 
-    @Query("SELECT DATE(c.fechaHora), COUNT(c) FROM Cita c GROUP BY DATE(c.fechaHora)")
-    List<Object[]> countCitasByDay();
+    @Query("SELECT COUNT(c) FROM Cita c WHERE c.medico.idMedico = :idMedico AND DATE(c.fechaHora) = DATE(:fechaHora) GROUP BY DATE(c.fechaHora)")
+    int countCitasByDay(@Param("idMedico") Long idMedico, @Param("fechaHora")LocalDateTime fechaHora);
 
     @Modifying
     @Transactional
