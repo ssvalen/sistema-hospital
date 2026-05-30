@@ -37,10 +37,26 @@ spring:
         hbm2ddl.auto: none
     hibernate:
       ddl-auto: none
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api/hospitaldb/v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /api/hospitaldb/swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+    display-request-duration: true
+    filter: true
+    show-actuator: false
+    writer-with-default-pretty-printer: true
+
 jasypt:
   encryptor:
-    password: ${JASYPT_ENCRYPTOR_PASSWORD}  # Se lee de variable de entorno
-    algorithm: PBEWithHMACSHA512ANDAES_256  # Algoritmo seguro
+    password: ${JASYPT_ENCRYPTOR_PASSWORD}
+    algorithm: PBEWithHMACSHA512ANDAES_256
     iv-generator-classname: org.jasypt.iv.RandomIvGenerator
     key-obtention-iterations: 1000
     pool-size: 1
