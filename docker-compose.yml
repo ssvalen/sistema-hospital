@@ -6,10 +6,10 @@ services:
     container_name: mysql-hospital
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: Upana1234
-      MYSQL_DATABASE: keycloak_db
-      MYSQL_USER: keycloak_user
-      MYSQL_PASSWORD: Keyclo@k2026
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-keycloak_db}
+      MYSQL_USER: ${MYSQL_USER:-keycloak_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
     ports:
@@ -33,12 +33,12 @@ services:
     environment:
       KC_DB: mysql
       KC_DB_URL_HOST: mysql-hospital
-      KC_DB_URL_DATABASE: keycloak_db
-      KC_DB_USERNAME: keycloak_user
-      KC_DB_PASSWORD: Keyclo@k2026
+      KC_DB_URL_DATABASE: ${MYSQL_DATABASE}
+      KC_DB_USERNAME: ${MYSQL_USER}
+      KC_DB_PASSWORD: ${MYSQL_PASSWORD}
       KC_DB_PORT: 3306
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin123
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       KC_HOSTNAME: localhost
       KC_HTTP_ENABLED: true
       KC_PROXY_HEADERS: forwarded
@@ -61,28 +61,13 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: spring-hospital-app
-    restart: unless-stopped
+    #restart: unless-stopped
     ports:
       - "8081:8081"
     environment:
       JAVA_OPTS: "-Xmx512m -Xms256m -XX:+UseG1GC -XX:+UseStringDeduplication"
-      JASYPT_ENCRYPTOR_PASSWORD: MiClaveSuperSegura2026!
-      #SPRING_PROFILES_ACTIVE: docker
-      #DB_URL: jdbc:mysql://mysql-hospital:3306/?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Guatemala
-      #DB_USERNAME: keycloak_user
-      #DB_PASSWORD: Keyclo@k2026
-      
-      # Keycloak config
-      KEYCLOAK_AUTH_SERVER_URL: http://keycloak:8080
-      KEYCLOAK_REALM: master
-      KEYCLOAK_CLIENT_ID: spring-app-client
-      KEYCLOAK_CLIENT_SECRET: tu-client-secret-aqui
-      
-      # JPA config
-      SPRING_JPA_HIBERNATE_DDL_AUTO: none
-      SPRING_JPA_SHOW_SQL: "true"
-      
-      # Logging
+      JASYPT_ENCRYPTOR_PASSWORD:  ${JASYPT_ENCRYPTOR_PASSWORD}
+      SPRING_PROFILES_ACTIVE: dev
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: INFO
       LOGGING_LEVEL_COM_ZAXKER_HIKARI: DEBUG
     depends_on:

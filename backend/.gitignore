@@ -48,3 +48,7 @@ Thumbs.db
 
 # Env files
 .env
+*.env
+.env.*
+
+application-dev-personal.yaml

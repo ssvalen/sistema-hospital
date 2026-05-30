@@ -3,9 +3,9 @@ spring:
     name: api-hospital-db
   
   datasource:
-    url: jdbc:mysql://localhost:3307/?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Guatemala&characterEncoding=UTF-8
-    username: ENC(AU4+A2keKEeyr0SSTG5/CdCqY+se79B9fMkfZboLwNFyzbPhKKaWk/NGNqaKz+VaSpLgkrYvIeQmsVvFA3aqJw==)
-    password: ENC(Ncub+l5wZyDhAdc99QM/YEXpKxcOlJ33s3ityN72Yr0Mzhg10IGDCvE/rRdP1mvSe/t1JV9iuNWuCpO13983PQ==)
+    url: jdbc:mysql://mysql-hospital:3306/?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Guatemala&characterEncoding=UTF-8
+    username: hospital_api_user
+    password: Hospital@API2026!
     driver-class-name: com.mysql.cj.jdbc.Driver
     
     hikari:
