@@ -3,6 +3,7 @@ package com.hospitaldb.backend.controller.administrativo;
 import com.hospitaldb.backend.dto.request.PermisoRequestDTO;
 import com.hospitaldb.backend.dto.response.EntityResponse;
 import com.hospitaldb.backend.dto.response.PaginatedResponse;
+import com.hospitaldb.backend.dto.response.administrativo.PermisoDTO;
 import com.hospitaldb.backend.entity.administrativo.Permiso;
 import com.hospitaldb.backend.service.administrativo.PermisoService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,25 +29,25 @@ public class PermisoController {
     private final PermisoService permisoService;
 
     @GetMapping
-    public ResponseEntity<EntityResponse<List<Permiso>>> getAll(HttpServletRequest request) {
+    public ResponseEntity<EntityResponse<List<PermisoDTO>>> getAll(HttpServletRequest request) {
         log.info("GET /api/permisos - Listando todos los permisos");
-        List<Permiso> permisos = permisoService.findAll();
+        List<PermisoDTO> permisos = permisoService.findAll();
         return ResponseEntity.ok(
                 EntityResponse.success(permisos, "Permisos obtenidos exitosamente", request.getRequestURI())
         );
     }
 
     @GetMapping("/paginado")
-    public ResponseEntity<EntityResponse<PaginatedResponse<Permiso>>> getAllPaginated(
+    public ResponseEntity<EntityResponse<PaginatedResponse<PermisoDTO>>> getAllPaginated(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
 
         log.info("GET /api/permisos/paginado - page={}, size={}", page, size);
         Pageable pageable = PageRequest.of(page, size, Sort.by("nombrePermiso").ascending());
-        Page<Permiso> pageResult = permisoService.findAll(pageable);
+        Page<PermisoDTO> pageResult = permisoService.findAll(pageable);
 
-        PaginatedResponse<Permiso> response = PaginatedResponse.<Permiso>builder()
+        PaginatedResponse<PermisoDTO> response = PaginatedResponse.<PermisoDTO>builder()
                 .content(pageResult.getContent())
                 .pageNumber(pageResult.getNumber())
                 .pageSize(pageResult.getSize())
@@ -62,33 +63,33 @@ public class PermisoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EntityResponse<Permiso>> getById(@PathVariable Long id, HttpServletRequest request) {
+    public ResponseEntity<EntityResponse<PermisoDTO>> getById(@PathVariable Long id, HttpServletRequest request) {
         log.info("GET /api/permisos/{} - Buscando permiso", id);
-        Permiso permiso = permisoService.findById(id);
+        PermisoDTO permiso = permisoService.findById(id);
         return ResponseEntity.ok(
                 EntityResponse.success(permiso, "Permiso encontrado", request.getRequestURI())
         );
     }
 
     @GetMapping("/nombre/{nombrePermiso}")
-    public ResponseEntity<EntityResponse<Permiso>> getByNombre(
+    public ResponseEntity<EntityResponse<PermisoDTO>> getByNombre(
             @PathVariable String nombrePermiso,
             HttpServletRequest request) {
 
         log.info("GET /api/permisos/nombre/{} - Buscando por nombre", nombrePermiso);
-        Permiso permiso = permisoService.findByNombre(nombrePermiso);
+        PermisoDTO permiso = permisoService.findByNombre(nombrePermiso);
         return ResponseEntity.ok(
                 EntityResponse.success(permiso, "Permiso encontrado", request.getRequestURI())
         );
     }
 
     @PostMapping
-    public ResponseEntity<EntityResponse<Permiso>> create(
+    public ResponseEntity<EntityResponse<PermisoDTO>> create(
             @Valid @RequestBody PermisoRequestDTO requestDTO,
             HttpServletRequest request) {
 
         log.info("POST /api/permisos - Creando nuevo permiso: {}", requestDTO.getNombrePermiso());
-        Permiso created = permisoService.create(requestDTO);
+        PermisoDTO created = permisoService.create(requestDTO);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 EntityResponse.success(created, "Permiso creado exitosamente", request.getRequestURI())
@@ -96,13 +97,13 @@ public class PermisoController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<EntityResponse<Permiso>> update(
+    public ResponseEntity<EntityResponse<PermisoDTO>> update(
             @PathVariable Long id,
             @Valid @RequestBody PermisoRequestDTO requestDTO,
             HttpServletRequest request) {
 
         log.info("PUT /api/permisos/{} - Actualizando permiso", id);
-        Permiso updated = permisoService.update(id, requestDTO);
+        PermisoDTO updated = permisoService.update(id, requestDTO);
 
         return ResponseEntity.ok(
                 EntityResponse.success(updated, "Permiso actualizado exitosamente", request.getRequestURI())
@@ -120,12 +121,12 @@ public class PermisoController {
     }
 
     @GetMapping("/usuario/{idUsuario}")
-    public ResponseEntity<EntityResponse<List<Permiso>>> getPermisosByUsuario(
+    public ResponseEntity<EntityResponse<List<PermisoDTO>>> getPermisosByUsuario(
             @PathVariable Long idUsuario,
             HttpServletRequest request) {
 
         log.info("GET /api/permisos/usuario/{} - Permisos del usuario", idUsuario);
-        List<Permiso> permisos = permisoService.findPermisosByUsuario(idUsuario);
+        List<PermisoDTO> permisos = permisoService.findPermisosByUsuario(idUsuario);
 
         return ResponseEntity.ok(
                 EntityResponse.success(permisos, "Permisos del usuario obtenidos", request.getRequestURI())
