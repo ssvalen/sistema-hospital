@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mysql-hospital:
     image: mysql:8.0
@@ -85,7 +83,20 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
-
+  hospital-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: hospital-frontend
+    ports:
+      - "5173:5173"
+    networks:
+      - hospital-network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - hospital-service
 volumes:
   mysql_data:
   keycloak_data:
