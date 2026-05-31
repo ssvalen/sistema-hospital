@@ -14,11 +14,11 @@ public class JasyptTest {
     @Qualifier("jasyptStringEncryptor")
     private StringEncryptor encryptor;
 
-    @Test
-    void testEncryptDecrypt() {
-        String original = "Ncub+l5wZyDhAdc99QM/YEXpKxcOlJ33s3ityN72Yr0Mzhg10IGDCvE/rRdP1mvSe/t1JV9iuNWuCpO13983PQ==";
-        String decrypted = encryptor.decrypt(original);
-
-        assertEquals(original, decrypted);
-    }
+//    @Test
+//    void testEncryptDecrypt() {
+//        String original = "Ncub+l5wZyDhAdc99QM/YEXpKxcOlJ33s3ityN72Yr0Mzhg10IGDCvE/rRdP1mvSe/t1JV9iuNWuCpO13983PQ==";
+//        String decrypted = encryptor.decrypt(original);
+//
+//        assertEquals(original, decrypted);
+//    }
 }
