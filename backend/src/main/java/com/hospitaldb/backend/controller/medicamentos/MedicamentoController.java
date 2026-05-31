@@ -3,6 +3,7 @@ package com.hospitaldb.backend.controller.medicamentos;
 import com.hospitaldb.backend.dto.request.MedicamentoRequestDTO;
 import com.hospitaldb.backend.dto.response.EntityResponse;
 import com.hospitaldb.backend.dto.response.PaginatedResponse;
+import com.hospitaldb.backend.dto.response.medicamentos.MedicamentoDTO;
 import com.hospitaldb.backend.entity.medicamentos.Medicamento;
 import com.hospitaldb.backend.service.medicamentos.MedicamentoService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,26 +29,25 @@ public class MedicamentoController {
     private final MedicamentoService medicamentoService;
 
     @GetMapping
-    public ResponseEntity<EntityResponse<List<Medicamento>>> getAll(HttpServletRequest request) {
+    public ResponseEntity<EntityResponse<List<MedicamentoDTO>>> getAll(HttpServletRequest request) {
         log.info("GET /api/medicamentos - Listando todos los medicamentos");
-        List<Medicamento> medicamentos = medicamentoService.findAll();
+        List<MedicamentoDTO> medicamentos = medicamentoService.findAll();
         return ResponseEntity.ok(
                 EntityResponse.success(medicamentos, "Medicamentos obtenidos exitosamente", request.getRequestURI())
         );
     }
 
     @GetMapping("/paginado")
-    public ResponseEntity<EntityResponse<PaginatedResponse<Medicamento>>> getAllPaginated(
+    public ResponseEntity<EntityResponse<PaginatedResponse<MedicamentoDTO>>> getAllPaginated(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            HttpServletRequest request
-    ) {
+            HttpServletRequest request) {
 
         log.info("GET /api/medicamentos/paginado - page={}, size={}", page, size);
         Pageable pageable = PageRequest.of(page, size, Sort.by("nombreComercial").ascending());
-        Page<Medicamento> pageResult = medicamentoService.findAll(pageable);
+        Page<MedicamentoDTO> pageResult = medicamentoService.findAll(pageable);
 
-        PaginatedResponse<Medicamento> response = PaginatedResponse.<Medicamento>builder()
+        PaginatedResponse<MedicamentoDTO> response = PaginatedResponse.<MedicamentoDTO>builder()
                 .content(pageResult.getContent())
                 .pageNumber(pageResult.getNumber())
                 .pageSize(pageResult.getSize())
@@ -63,22 +63,21 @@ public class MedicamentoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EntityResponse<Medicamento>> getById(@PathVariable Long id, HttpServletRequest request) {
+    public ResponseEntity<EntityResponse<MedicamentoDTO>> getById(@PathVariable Long id, HttpServletRequest request) {
         log.info("GET /api/medicamentos/{} - Buscando medicamento", id);
-        Medicamento medicamento = medicamentoService.findById(id);
+        MedicamentoDTO medicamento = medicamentoService.findById(id);
         return ResponseEntity.ok(
                 EntityResponse.success(medicamento, "Medicamento encontrado", request.getRequestURI())
         );
     }
 
     @PostMapping
-    public ResponseEntity<EntityResponse<Medicamento>> create(
+    public ResponseEntity<EntityResponse<MedicamentoDTO>> create(
             @Valid @RequestBody MedicamentoRequestDTO requestDTO,
-            HttpServletRequest request
-    ) {
+            HttpServletRequest request) {
 
         log.info("POST /api/medicamentos - Creando nuevo medicamento: {}", requestDTO.getNombreComercial());
-        Medicamento created = medicamentoService.create(requestDTO);
+        MedicamentoDTO created = medicamentoService.create(requestDTO);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 EntityResponse.success(created, "Medicamento creado exitosamente", request.getRequestURI())
@@ -86,13 +85,13 @@ public class MedicamentoController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<EntityResponse<Medicamento>> update(
+    public ResponseEntity<EntityResponse<MedicamentoDTO>> update(
             @PathVariable Long id,
             @Valid @RequestBody MedicamentoRequestDTO requestDTO,
             HttpServletRequest request) {
 
         log.info("PUT /api/medicamentos/{} - Actualizando medicamento", id);
-        Medicamento updated = medicamentoService.update(id, requestDTO);
+        MedicamentoDTO updated = medicamentoService.update(id, requestDTO);
 
         return ResponseEntity.ok(
                 EntityResponse.success(updated, "Medicamento actualizado exitosamente", request.getRequestURI())
@@ -100,10 +99,7 @@ public class MedicamentoController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<EntityResponse<Void>> delete(
-            @PathVariable Long id,
-            HttpServletRequest request
-    ) {
+    public ResponseEntity<EntityResponse<Void>> delete(@PathVariable Long id, HttpServletRequest request) {
         log.info("DELETE /api/medicamentos/{} - Eliminando medicamento", id);
         medicamentoService.delete(id);
 
@@ -113,13 +109,12 @@ public class MedicamentoController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<EntityResponse<List<Medicamento>>> search(
+    public ResponseEntity<EntityResponse<List<MedicamentoDTO>>> search(
             @RequestParam String q,
-            HttpServletRequest request
-    ) {
+            HttpServletRequest request) {
 
         log.info("GET /api/medicamentos/search - Buscando: {}", q);
-        List<Medicamento> medicamentos = medicamentoService.searchMedicamentos(q);
+        List<MedicamentoDTO> medicamentos = medicamentoService.searchMedicamentos(q);
 
         return ResponseEntity.ok(
                 EntityResponse.success(medicamentos, "Búsqueda completada", request.getRequestURI())
@@ -127,13 +122,12 @@ public class MedicamentoController {
     }
 
     @GetMapping("/nombre/{nombre}")
-    public ResponseEntity<EntityResponse<List<Medicamento>>> getByNombre(
+    public ResponseEntity<EntityResponse<List<MedicamentoDTO>>> getByNombre(
             @PathVariable String nombre,
-            HttpServletRequest request
-    ) {
+            HttpServletRequest request) {
 
         log.info("GET /api/medicamentos/nombre/{} - Buscando por nombre", nombre);
-        List<Medicamento> medicamentos = medicamentoService.searchByNombre(nombre);
+        List<MedicamentoDTO> medicamentos = medicamentoService.searchByNombre(nombre);
 
         return ResponseEntity.ok(
                 EntityResponse.success(medicamentos, "Medicamentos por nombre obtenidos", request.getRequestURI())
@@ -141,13 +135,12 @@ public class MedicamentoController {
     }
 
     @GetMapping("/principio-activo/{principioActivo}")
-    public ResponseEntity<EntityResponse<List<Medicamento>>> getByPrincipioActivo(
+    public ResponseEntity<EntityResponse<List<MedicamentoDTO>>> getByPrincipioActivo(
             @PathVariable String principioActivo,
-            HttpServletRequest request
-    ) {
+            HttpServletRequest request) {
 
         log.info("GET /api/medicamentos/principio-activo/{} - Buscando por principio activo", principioActivo);
-        List<Medicamento> medicamentos = medicamentoService.findByPrincipioActivo(principioActivo);
+        List<MedicamentoDTO> medicamentos = medicamentoService.findByPrincipioActivo(principioActivo);
 
         return ResponseEntity.ok(
                 EntityResponse.success(medicamentos, "Medicamentos por principio activo obtenidos", request.getRequestURI())
@@ -165,12 +158,22 @@ public class MedicamentoController {
     }
 
     @GetMapping("/stock-bajo")
-    public ResponseEntity<EntityResponse<List<Medicamento>>> getConStockBajo(HttpServletRequest request) {
+    public ResponseEntity<EntityResponse<List<MedicamentoDTO>>> getConStockBajo(HttpServletRequest request) {
         log.info("GET /api/medicamentos/stock-bajo - Medicamentos con stock bajo");
-        List<Medicamento> medicamentos = medicamentoService.findMedicamentosConStockBajo();
+        List<MedicamentoDTO> medicamentos = medicamentoService.findMedicamentosConStockBajo();
 
         return ResponseEntity.ok(
                 EntityResponse.success(medicamentos, "Medicamentos con stock bajo obtenidos", request.getRequestURI())
+        );
+    }
+
+    @GetMapping("/sin-inventario")
+    public ResponseEntity<EntityResponse<List<MedicamentoDTO>>> getSinInventario(HttpServletRequest request) {
+        log.info("GET /api/medicamentos/sin-inventario - Medicamentos sin inventario");
+        List<MedicamentoDTO> medicamentos = medicamentoService.findMedicamentosSinInventario();
+
+        return ResponseEntity.ok(
+                EntityResponse.success(medicamentos, "Medicamentos sin inventario obtenidos", request.getRequestURI())
         );
     }
 }

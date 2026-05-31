@@ -2,7 +2,7 @@ package com.hospitaldb.backend.controller.medicamentos;
 
 import com.hospitaldb.backend.dto.request.TratamientoMedicamentoRequestDTO;
 import com.hospitaldb.backend.dto.response.EntityResponse;
-import com.hospitaldb.backend.entity.medicamentos.TratamientoMedicamento;
+import com.hospitaldb.backend.dto.response.medicamentos.TratamientoMedicamentoDTO;
 import com.hospitaldb.backend.service.medicamentos.TratamientoMedicamentoService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -20,33 +20,34 @@ import java.util.List;
 @Slf4j
 @CrossOrigin(origins = "*")
 public class TratamientoMedicamentoController {
+
     private final TratamientoMedicamentoService tmService;
 
     @GetMapping
-    public ResponseEntity<EntityResponse<List<TratamientoMedicamento>>> getAll(HttpServletRequest request) {
+    public ResponseEntity<EntityResponse<List<TratamientoMedicamentoDTO>>> getAll(HttpServletRequest request) {
         log.info("GET /api/tratamiento-medicamentos - Listando todas las relaciones");
-        List<TratamientoMedicamento> relaciones = tmService.findAll();
+        List<TratamientoMedicamentoDTO> relaciones = tmService.findAll();
         return ResponseEntity.ok(
                 EntityResponse.success(relaciones, "Relaciones obtenidas exitosamente", request.getRequestURI())
         );
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EntityResponse<TratamientoMedicamento>> getById(@PathVariable Long id, HttpServletRequest request) {
+    public ResponseEntity<EntityResponse<TratamientoMedicamentoDTO>> getById(@PathVariable Long id, HttpServletRequest request) {
         log.info("GET /api/tratamiento-medicamentos/{} - Buscando relación", id);
-        TratamientoMedicamento relacion = tmService.findById(id);
+        TratamientoMedicamentoDTO relacion = tmService.findById(id);
         return ResponseEntity.ok(
                 EntityResponse.success(relacion, "Relación encontrada", request.getRequestURI())
         );
     }
 
     @PostMapping
-    public ResponseEntity<EntityResponse<TratamientoMedicamento>> create(
+    public ResponseEntity<EntityResponse<TratamientoMedicamentoDTO>> create(
             @Valid @RequestBody TratamientoMedicamentoRequestDTO requestDTO,
             HttpServletRequest request) {
 
         log.info("POST /api/tratamiento-medicamentos - Asignando medicamento a tratamiento");
-        TratamientoMedicamento created = tmService.create(requestDTO);
+        TratamientoMedicamentoDTO created = tmService.create(requestDTO);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 EntityResponse.success(created, "Medicamento asignado exitosamente", request.getRequestURI())
@@ -54,13 +55,13 @@ public class TratamientoMedicamentoController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<EntityResponse<TratamientoMedicamento>> update(
+    public ResponseEntity<EntityResponse<TratamientoMedicamentoDTO>> update(
             @PathVariable Long id,
             @Valid @RequestBody TratamientoMedicamentoRequestDTO requestDTO,
             HttpServletRequest request) {
 
         log.info("PUT /api/tratamiento-medicamentos/{} - Actualizando relación", id);
-        TratamientoMedicamento updated = tmService.update(id, requestDTO);
+        TratamientoMedicamentoDTO updated = tmService.update(id, requestDTO);
 
         return ResponseEntity.ok(
                 EntityResponse.success(updated, "Relación actualizada exitosamente", request.getRequestURI())
@@ -92,12 +93,12 @@ public class TratamientoMedicamentoController {
     }
 
     @GetMapping("/tratamiento/{idTratamiento}")
-    public ResponseEntity<EntityResponse<List<TratamientoMedicamento>>> getByTratamiento(
+    public ResponseEntity<EntityResponse<List<TratamientoMedicamentoDTO>>> getByTratamiento(
             @PathVariable Long idTratamiento,
             HttpServletRequest request) {
 
         log.info("GET /api/tratamiento-medicamentos/tratamiento/{} - Medicamentos del tratamiento", idTratamiento);
-        List<TratamientoMedicamento> relaciones = tmService.findByTratamiento(idTratamiento);
+        List<TratamientoMedicamentoDTO> relaciones = tmService.findByTratamiento(idTratamiento);
 
         return ResponseEntity.ok(
                 EntityResponse.success(relaciones, "Medicamentos del tratamiento obtenidos", request.getRequestURI())
@@ -105,12 +106,12 @@ public class TratamientoMedicamentoController {
     }
 
     @GetMapping("/medicamento/{idMedicamento}")
-    public ResponseEntity<EntityResponse<List<TratamientoMedicamento>>> getByMedicamento(
+    public ResponseEntity<EntityResponse<List<TratamientoMedicamentoDTO>>> getByMedicamento(
             @PathVariable Long idMedicamento,
             HttpServletRequest request) {
 
         log.info("GET /api/tratamiento-medicamentos/medicamento/{} - Tratamientos del medicamento", idMedicamento);
-        List<TratamientoMedicamento> relaciones = tmService.findByMedicamento(idMedicamento);
+        List<TratamientoMedicamentoDTO> relaciones = tmService.findByMedicamento(idMedicamento);
 
         return ResponseEntity.ok(
                 EntityResponse.success(relaciones, "Tratamientos del medicamento obtenidos", request.getRequestURI())

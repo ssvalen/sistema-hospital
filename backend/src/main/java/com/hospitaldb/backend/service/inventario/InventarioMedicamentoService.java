@@ -1,6 +1,7 @@
 package com.hospitaldb.backend.service.inventario;
 
 import com.hospitaldb.backend.dto.request.InventarioMedicamentoRequestDTO;
+import com.hospitaldb.backend.dto.response.inventario.InventarioMedicamentoDTO;
 import com.hospitaldb.backend.entity.inventario.Bodega;
 import com.hospitaldb.backend.entity.inventario.InventarioMedicamento;
 import com.hospitaldb.backend.entity.medicamentos.Medicamento;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,24 +30,29 @@ public class InventarioMedicamentoService {
     private final IMedicamentoRepository medicamentoRepository;
     private final IBodegaRepository bodegaRepository;
 
-    public List<InventarioMedicamento> findAll() {
+    public List<InventarioMedicamentoDTO> findAll() {
         log.info("Obteniendo todo el inventario");
-        return inventarioRepository.findAll();
+        List<InventarioMedicamento> inventarios = inventarioRepository.findAll();
+        return inventarios.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    public Page<InventarioMedicamento> findAll(Pageable pageable) {
+    public Page<InventarioMedicamentoDTO> findAll(Pageable pageable) {
         log.info("Obteniendo inventario paginado");
-        return inventarioRepository.findAll(pageable);
+        Page<InventarioMedicamento> pageResult = inventarioRepository.findAll(pageable);
+        return pageResult.map(this::convertToDTO);
     }
 
-    public InventarioMedicamento findById(Long id) {
+    public InventarioMedicamentoDTO findById(Long id) {
         log.info("Buscando inventario con ID: {}", id);
-        return inventarioRepository.findById(id)
+        InventarioMedicamento inventario = inventarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Inventario no encontrado con ID: " + id));
+        return convertToDTO(inventario);
     }
 
     @Transactional
-    public InventarioMedicamento create(InventarioMedicamentoRequestDTO request) {
+    public InventarioMedicamentoDTO create(InventarioMedicamentoRequestDTO request) {
         log.info("Creando nuevo registro de inventario");
 
         Medicamento medicamento = medicamentoRepository.findById(request.getIdMedicamento())
@@ -67,18 +74,19 @@ public class InventarioMedicamentoService {
         inventario.setBodega(bodega);
         inventario.setStockActual(request.getStockActual() != null ? request.getStockActual() : 0);
         inventario.setStockMinimo(request.getStockMinimo() != null ? request.getStockMinimo() : 0);
-        inventario.setUnidadMedida(request.getUnidadMedida());
+        inventario.setUnidadMedida(request.getUnidadMedida() != null ? request.getUnidadMedida() : medicamento.getUnidadMedida());
 
         InventarioMedicamento saved = inventarioRepository.save(inventario);
         log.info("Inventario creado exitosamente con ID: {}", saved.getIdInventario());
-        return saved;
+        return convertToDTO(saved);
     }
 
     @Transactional
-    public InventarioMedicamento update(Long id, InventarioMedicamentoRequestDTO request) {
+    public InventarioMedicamentoDTO update(Long id, InventarioMedicamentoRequestDTO request) {
         log.info("Actualizando inventario con ID: {}", id);
 
-        InventarioMedicamento inventario = findById(id);
+        InventarioMedicamento inventario = inventarioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Inventario no encontrado con ID: " + id));
 
         if (request.getStockActual() != null) {
             inventario.setStockActual(request.getStockActual());
@@ -94,29 +102,34 @@ public class InventarioMedicamentoService {
 
         InventarioMedicamento updated = inventarioRepository.save(inventario);
         log.info("Inventario actualizado exitosamente: {}", id);
-        return updated;
+        return convertToDTO(updated);
     }
 
     @Transactional
     public void delete(Long id) {
         log.info("Eliminando inventario con ID: {}", id);
-        InventarioMedicamento inventario = findById(id);
+        InventarioMedicamento inventario = inventarioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Inventario no encontrado con ID: " + id));
         inventarioRepository.delete(inventario);
         log.info("Inventario eliminado exitosamente: {}", id);
     }
 
     @Transactional
-    public InventarioMedicamento actualizarStock(Long id, Integer nuevoStock) {
+    public InventarioMedicamentoDTO actualizarStock(Long id, Integer nuevoStock) {
         log.info("Actualizando stock del inventario {} a {}", id, nuevoStock);
 
         if (nuevoStock < 0) {
             throw new BusinessException("El stock no puede ser negativo");
         }
 
-        InventarioMedicamento inventario = findById(id);
-        inventario.setStockActual(nuevoStock);
+        InventarioMedicamento inventario = inventarioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Inventario no encontrado con ID: " + id));
 
-        return inventarioRepository.save(inventario);
+        inventario.setStockActual(nuevoStock);
+        InventarioMedicamento updated = inventarioRepository.save(inventario);
+
+        log.info("Stock actualizado exitosamente");
+        return convertToDTO(updated);
     }
 
     @Transactional
@@ -132,24 +145,64 @@ public class InventarioMedicamentoService {
         log.info("Stock descontado exitosamente");
     }
 
-    public List<InventarioMedicamento> findByMedicamento(Long idMedicamento) {
+    public List<InventarioMedicamentoDTO> findByMedicamento(Long idMedicamento) {
         log.info("Buscando inventario del medicamento: {}", idMedicamento);
-        return inventarioRepository.findByMedicamento_IdMedicamento(idMedicamento);
+        medicamentoRepository.findById(idMedicamento)
+                .orElseThrow(() -> new ResourceNotFoundException("Medicamento no encontrado con ID: " + idMedicamento));
+
+        List<InventarioMedicamento> inventarios = inventarioRepository.findByMedicamento_IdMedicamento(idMedicamento);
+        return inventarios.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<InventarioMedicamento> findByBodega(Long idBodega) {
+    public List<InventarioMedicamentoDTO> findByBodega(Long idBodega) {
         log.info("Buscando inventario de la bodega: {}", idBodega);
-        return inventarioRepository.findByBodega_IdBodega(idBodega);
+        bodegaRepository.findById(idBodega)
+                .orElseThrow(() -> new ResourceNotFoundException("Bodega no encontrada con ID: " + idBodega));
+
+        List<InventarioMedicamento> inventarios = inventarioRepository.findByBodega_IdBodega(idBodega);
+        return inventarios.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<InventarioMedicamento> findProductosConStockBajo() {
+    public List<InventarioMedicamentoDTO> findProductosConStockBajo() {
         log.info("Buscando productos con stock bajo");
-        return inventarioRepository.findProductosConStockBajo();
+        List<InventarioMedicamento> inventarios = inventarioRepository.findProductosConStockBajo();
+        return inventarios.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<InventarioMedicamentoDTO> findProductosSinStock() {
+        log.info("Buscando productos sin stock");
+        List<InventarioMedicamento> inventarios = inventarioRepository.findProductosSinStock();
+        return inventarios.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     public Integer getStockTotalByMedicamento(Long idMedicamento) {
         log.info("Calculando stock total del medicamento: {}", idMedicamento);
         Integer stock = inventarioRepository.getStockTotalByMedicamento(idMedicamento);
         return stock != null ? stock : 0;
+    }
+
+    private InventarioMedicamentoDTO convertToDTO(InventarioMedicamento inventario) {
+        boolean necesitaReposicion = inventario.getStockActual() <= inventario.getStockMinimo();
+
+        return InventarioMedicamentoDTO.builder()
+                .idInventario(inventario.getIdInventario())
+                .idMedicamento(inventario.getMedicamento().getIdMedicamento())
+                .medicamentoNombre(inventario.getMedicamento().getNombreComercial())
+                .medicamentoPrincipioActivo(inventario.getMedicamento().getPrincipioActivo())
+                .idBodega(inventario.getBodega().getIdBodega())
+                .bodegaNombre(inventario.getBodega().getNombreBodega())
+                .stockActual(inventario.getStockActual())
+                .stockMinimo(inventario.getStockMinimo())
+                .unidadMedida(inventario.getUnidadMedida())
+                .necesitaReposicion(necesitaReposicion)
+                .build();
     }
 }
