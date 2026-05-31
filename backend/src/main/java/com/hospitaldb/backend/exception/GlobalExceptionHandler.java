@@ -5,6 +5,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -16,6 +18,38 @@ import java.util.Map;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<EntityResponse<Void>> handleAccessDenied(
+            AccessDeniedException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Access denied for request {}: {}", request.getRequestURI(), ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                EntityResponse.error(
+                        "No tienes permisos para acceder a este recurso",
+                        request.getRequestURI(),
+                        HttpStatus.FORBIDDEN.value()
+                )
+        );
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<EntityResponse<Void>> handleAuthentication(
+            AuthenticationException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Authentication error for request {}: {}", request.getRequestURI(), ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                EntityResponse.error(
+                        "No autenticado. Por favor, proporciona un token válido",
+                        request.getRequestURI(),
+                        HttpStatus.UNAUTHORIZED.value()
+                )
+        );
+    }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<EntityResponse<Void>> handleNotFound(
@@ -75,4 +109,5 @@ public class GlobalExceptionHandler {
                 EntityResponse.error("Error interno del servidor", request.getRequestURI(), HttpStatus.INTERNAL_SERVER_ERROR.value())
         );
     }
+
 }

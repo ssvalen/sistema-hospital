@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,6 +32,7 @@ public class UsuarioSistemaController {
     private final UsuarioSistemaService usuarioService;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EntityResponse<List<UsuarioSistema>>> getAll(HttpServletRequest request) {
         log.info("GET /api/usuarios - Listando todos los usuarios");
         List<UsuarioSistema> usuarios = usuarioService.findAll();
@@ -40,6 +42,7 @@ public class UsuarioSistemaController {
     }
 
     @GetMapping("/paginado")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EntityResponse<PaginatedResponse<UsuarioSistema>>> getAllPaginated(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -65,6 +68,7 @@ public class UsuarioSistemaController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EntityResponse<UsuarioSistema>> getById(@PathVariable Long id, HttpServletRequest request) {
         log.info("GET /api/usuarios/{} - Buscando usuario", id);
         UsuarioSistema usuario = usuarioService.findById(id);
@@ -98,6 +102,7 @@ public class UsuarioSistemaController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EntityResponse<UsuarioSistema>> create(
             @Valid @RequestBody UsuarioSistemaRequestDTO requestDTO,
             HttpServletRequest request) {

@@ -1,6 +1,7 @@
 package com.hospitaldb.backend.service.administrativo;
 
 import com.hospitaldb.backend.dto.request.AsignacionRolRequestDTO;
+import com.hospitaldb.backend.dto.request.KeycloakUserRequestDTO;
 import com.hospitaldb.backend.dto.request.UsuarioSistemaRequestDTO;
 import com.hospitaldb.backend.entity.administrativo.Rol;
 import com.hospitaldb.backend.entity.administrativo.UsuarioRol;
@@ -10,6 +11,7 @@ import com.hospitaldb.backend.exception.ResourceNotFoundException;
 import com.hospitaldb.backend.repository.administrativo.IRolRepository;
 import com.hospitaldb.backend.repository.administrativo.IUsuarioRolRepository;
 import com.hospitaldb.backend.repository.administrativo.IUsuarioSistemaRepository;
+import com.hospitaldb.backend.service.keycloak.KeycloakService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jasypt.encryption.StringEncryptor;
@@ -26,9 +28,14 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class UsuarioSistemaService {
     private final IUsuarioSistemaRepository usuarioRepository;
+
     private final IRolRepository rolRepository;
+
     private final IUsuarioRolRepository usuarioRolRepository;
+
     private final StringEncryptor stringEncryptor;
+
+    private final KeycloakService keycloakAdminService;
 
 
     public List<UsuarioSistema> findAll() {
@@ -63,23 +70,38 @@ public class UsuarioSistemaService {
     public UsuarioSistema create(UsuarioSistemaRequestDTO request) {
         log.info("Creando nuevo usuario: {}", request.getUsername());
 
-        if (usuarioRepository.existsByUsername(request.getUsername())) {
+        if (usuarioRepository.existsByUsername(request.getUsername())) 
             throw new BusinessException("Ya existe un usuario con el username: " + request.getUsername());
-        }
 
-        if (usuarioRepository.existsByEmail(request.getEmail())) {
+
+        if (usuarioRepository.existsByEmail(request.getEmail()))
             throw new BusinessException("Ya existe un usuario con el email: " + request.getEmail());
-        }
+
+        keycloakAdminService.createUser(buildKeycloakUserRequest(request)).block();
+        String keycloakId = keycloakAdminService.getUserId(request.getUsername());
+
+        if(keycloakId.isBlank())
+            throw new ResourceNotFoundException("Usuario no encontrado en Keycloak, verifique los logs");
 
         UsuarioSistema usuario = new UsuarioSistema();
         usuario.setUsername(request.getUsername());
         usuario.setEmail(request.getEmail());
         usuario.setActivo(request.getActivo() != null ? request.getActivo() : true);
-        usuario.setIdKeycloak(request.getIdKeycloak());
+        usuario.setIdKeycloak(keycloakId);
 
         UsuarioSistema saved = usuarioRepository.save(usuario);
         log.info("Usuario creado exitosamente con ID: {}", saved.getIdUsuario());
+
         return saved;
+    }
+
+    private KeycloakUserRequestDTO buildKeycloakUserRequest(UsuarioSistemaRequestDTO user){
+        return KeycloakUserRequestDTO.builder()
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .password(user.getPassword())
+                .enabled(user.getActivo())
+                .build();
     }
 
     @Transactional

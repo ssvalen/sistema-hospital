@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -19,7 +21,13 @@ public class UsuarioSistemaRequestDTO {
     @Email(message = "El email debe ser válido")
     private String email;
 
-    private Boolean activo;
+    @Builder.Default
+    private Boolean activo = true;
 
     private String idKeycloak;
+
+    @NotBlank(message = "Contraseña obligatoria")
+    private String password;
+
+    private List<String> realmRoles;
 }
