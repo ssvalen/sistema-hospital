@@ -37,7 +37,35 @@ spring:
         hbm2ddl.auto: none
     hibernate:
       ddl-auto: none
-
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8080/realms/hotel-db
+          jwk-set-uri: http://keycloak:8080/realms/hotel-db/protocol/openid-connect/certs
+    client:
+      registration:
+        keycloak:
+          client-id: api-hospital-db
+          client-secret: ${KEYCLOAK_CLIENT_SECRET}
+          authorization-grant-type: authorization_code
+          scope: openid, profile, email
+      provider:
+        keycloak:
+          issuer-uri: http://keycloak:8080/realms/hotel-db
+  keycloak:
+    admin:
+      realm: master
+      server-url: http://keycloak:8080
+      resource: api-hospital-db
+      client-id: admin-cli
+      password: admin123
+      user: superadmin
+      target-realm: hotel-db
+    hospital-api:
+      realm: hotel-db
+      client-id: api-hospital-db
+      client-secret: Aigf7bNFYoF6GkLkWtXaHp7mfV4k7KIi
 springdoc:
   api-docs:
     enabled: true
@@ -63,19 +91,7 @@ jasypt:
     provider-name: SunJCE
     salt-generator-classname: org.jasypt.salt.RandomSaltGenerator
     string-output-type: base64
-#  security:
-#    oauth2:
-#      resourceserver:
-#        jwt:
-#          issuer-uri: http://keycloak:8080/realms/hotel-db
-#          jwk-set-uri: http://keycloak:8080/realms/hotel-db/protocol/openid-connect/certs
 
-#  keycloak:
-#    auth-server-url: http://keycloak:8080
-#    realm: hotel-db
-#    resource: dpi-hotel-api  # Cliente diferente para la API
-#    credentials:
-#      secret: TU_SECRETO_API
 logging:
   level:
     com.zaxxer.hikari: DEBUG  
