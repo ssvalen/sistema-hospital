@@ -2,6 +2,9 @@ package com.hospitaldb.backend.service.administrativo;
 
 import com.hospitaldb.backend.dto.request.AsignacionPermisoRequestDTO;
 import com.hospitaldb.backend.dto.request.RolRequestDTO;
+import com.hospitaldb.backend.dto.response.administrativo.PermisoDTO;
+import com.hospitaldb.backend.dto.response.administrativo.RolDTO;
+import com.hospitaldb.backend.dto.response.administrativo.RolPermisoDTO;
 import com.hospitaldb.backend.entity.administrativo.Permiso;
 import com.hospitaldb.backend.entity.administrativo.Rol;
 import com.hospitaldb.backend.entity.administrativo.RolPermiso;
@@ -12,12 +15,14 @@ import com.hospitaldb.backend.repository.administrativo.IRolPermisoRepository;
 import com.hospitaldb.backend.repository.administrativo.IRolRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,30 +33,38 @@ public class RolService {
     private final IPermisoRepository permisoRepository;
     private final IRolPermisoRepository rolPermisoRepository;
 
-    public List<Rol> findAll() {
+    private final ModelMapper modelMapper;
+
+    public List<RolDTO> findAll() {
         log.info("Obteniendo todos los roles");
-        return rolRepository.findAll();
+        List<Rol> roles = rolRepository.findAll();
+        return roles.stream()
+                .map(rol -> modelMapper.map(rol, RolDTO.class))
+                .collect(Collectors.toList());
     }
 
-    public Page<Rol> findAll(Pageable pageable) {
+    public Page<RolDTO> findAll(Pageable pageable) {
         log.info("Obteniendo roles paginados");
-        return rolRepository.findAll(pageable);
+        Page<Rol> pageResult = rolRepository.findAll(pageable);
+        return pageResult.map(rol -> modelMapper.map(rol, RolDTO.class));
     }
 
-    public Rol findById(Long id) {
+    public RolDTO findById(Long id) {
         log.info("Buscando rol con ID: {}", id);
-        return rolRepository.findById(id)
+        Rol rol = rolRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con ID: " + id));
+        return modelMapper.map(rol, RolDTO.class);
     }
 
-    public Rol findByNombre(String nombreRol) {
+    public RolDTO findByNombre(String nombreRol) {
         log.info("Buscando rol por nombre: {}", nombreRol);
-        return rolRepository.findByNombreRol(nombreRol)
+        Rol rol = rolRepository.findByNombreRol(nombreRol)
                 .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con nombre: " + nombreRol));
+        return modelMapper.map(rol, RolDTO.class);
     }
 
     @Transactional
-    public Rol create(RolRequestDTO request) {
+    public RolDTO create(RolRequestDTO request) {
         log.info("Creando nuevo rol: {}", request.getNombreRol());
 
         if (rolRepository.existsByNombreRol(request.getNombreRol())) {
@@ -63,14 +76,15 @@ public class RolService {
 
         Rol saved = rolRepository.save(rol);
         log.info("Rol creado exitosamente con ID: {}", saved.getIdRol());
-        return saved;
+        return modelMapper.map(saved, RolDTO.class);
     }
 
     @Transactional
-    public Rol update(Long id, RolRequestDTO request) {
+    public RolDTO update(Long id, RolRequestDTO request) {
         log.info("Actualizando rol con ID: {}", id);
 
-        Rol rol = findById(id);
+        Rol rol = rolRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con ID: " + id));
 
         if (!rol.getNombreRol().equals(request.getNombreRol()) &&
                 rolRepository.existsByNombreRol(request.getNombreRol())) {
@@ -81,13 +95,14 @@ public class RolService {
 
         Rol updated = rolRepository.save(rol);
         log.info("Rol actualizado exitosamente: {}", id);
-        return updated;
+        return modelMapper.map(updated, RolDTO.class);
     }
 
     @Transactional
     public void delete(Long id) {
         log.info("Eliminando rol con ID: {}", id);
-        Rol rol = findById(id);
+        Rol rol = rolRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con ID: " + id));
 
         if (!rol.getUsuarioRoles().isEmpty()) {
             throw new BusinessException("No se puede eliminar un rol que tiene usuarios asignados");
@@ -102,10 +117,12 @@ public class RolService {
     }
 
     @Transactional
-    public RolPermiso asignarPermiso(AsignacionPermisoRequestDTO request) {
+    public RolPermisoDTO asignarPermiso(AsignacionPermisoRequestDTO request) {
         log.info("Asignando permiso {} al rol {}", request.getIdPermiso(), request.getIdRol());
 
-        Rol rol = findById(request.getIdRol());
+        Rol rol = rolRepository.findById(request.getIdRol())
+                .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con ID: " + request.getIdRol()));
+
         Permiso permiso = permisoRepository.findById(request.getIdPermiso())
                 .orElseThrow(() -> new ResourceNotFoundException("Permiso no encontrado con ID: " + request.getIdPermiso()));
 
@@ -119,7 +136,15 @@ public class RolService {
 
         RolPermiso saved = rolPermisoRepository.save(rolPermiso);
         log.info("Permiso asignado exitosamente");
-        return saved;
+
+        // Construir DTO de respuesta
+        return RolPermisoDTO.builder()
+                .id(saved.getId())
+                .idRol(rol.getIdRol())
+                .nombreRol(rol.getNombreRol())
+                .idPermiso(permiso.getIdPermiso())
+                .nombrePermiso(permiso.getNombrePermiso())
+                .build();
     }
 
     @Transactional
@@ -134,8 +159,17 @@ public class RolService {
         log.info("Permiso removido exitosamente");
     }
 
-    public List<Permiso> findPermisosByRol(Long idRol) {
+    public List<PermisoDTO> findPermisosByRol(Long idRol) {
         log.info("Buscando permisos del rol: {}", idRol);
-        return permisoRepository.findPermisosByRolId(idRol);
+
+        // Verificar que el rol existe
+        rolRepository.findById(idRol)
+                .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con ID: " + idRol));
+
+        List<Permiso> permisos = permisoRepository.findPermisosByRolId(idRol);
+
+        return permisos.stream()
+                .map(permiso -> modelMapper.map(permiso, PermisoDTO.class))
+                .collect(Collectors.toList());
     }
 }
