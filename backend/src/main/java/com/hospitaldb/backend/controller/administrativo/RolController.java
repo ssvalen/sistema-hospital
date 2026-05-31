@@ -115,7 +115,6 @@ public class RolController {
         );
     }
 
-
     @DeleteMapping("/{id}")
     public ResponseEntity<EntityResponse<Void>> delete(@PathVariable Long id, HttpServletRequest request) {
         log.info("DELETE /api/roles/{} - Eliminando rol", id);
@@ -126,19 +125,36 @@ public class RolController {
         );
     }
 
-    @PostMapping("/asignar-permiso")
-    public ResponseEntity<EntityResponse<RolPermisoDTO>> asignarPermiso(
+    @PostMapping("/asignar-permisos")
+    public ResponseEntity<EntityResponse<List<RolPermisoDTO>>> asignarPermisos(
             @Valid @RequestBody AsignacionPermisoRequestDTO requestDTO,
             HttpServletRequest request) {
 
-        log.info("POST /api/roles/asignar-permiso - Asignando permiso al rol");
-        RolPermisoDTO asignacion = rolService.asignarPermiso(requestDTO);
+        log.info("POST /api/roles/asignar-permisos - Asignando {} permisos al rol",
+                requestDTO.getIdPermisos() != null ? requestDTO.getIdPermisos().size() : 0);
+        List<RolPermisoDTO> asignaciones = rolService.asignarPermisos(requestDTO);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                EntityResponse.success(asignacion, "Permiso asignado exitosamente", request.getRequestURI())
+                EntityResponse.success(asignaciones, "Permisos asignados exitosamente", request.getRequestURI())
         );
     }
 
+    @DeleteMapping("/{idRol}/permisos")
+    public ResponseEntity<EntityResponse<Void>> removerPermisos(
+            @PathVariable Long idRol,
+            @RequestBody List<Long> idPermisos,
+            HttpServletRequest request) {
+
+        log.info("DELETE /api/roles/{}/permisos - Removiendo {} permisos del rol", idRol,
+                idPermisos != null ? idPermisos.size() : 0);
+        rolService.removerPermisos(idRol, idPermisos);
+
+        return ResponseEntity.ok(
+                EntityResponse.success(null, "Permisos removidos exitosamente", request.getRequestURI())
+        );
+    }
+
+    // Endpoint legacy para compatibilidad (remover un solo permiso)
     @DeleteMapping("/{idRol}/permisos/{idPermiso}")
     public ResponseEntity<EntityResponse<Void>> removerPermiso(
             @PathVariable Long idRol,

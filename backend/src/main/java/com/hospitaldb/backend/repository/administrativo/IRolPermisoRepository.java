@@ -24,7 +24,19 @@ public interface IRolPermisoRepository extends JpaRepository<RolPermiso, Long> {
 
     @Modifying
     @Transactional
+    @Query("DELETE FROM RolPermiso rp WHERE rp.rol.idRol = :idRol AND rp.permiso.idPermiso IN :idPermisos")
+    void deleteByRol_IdRolAndPermiso_IdPermisoIn(@Param("idRol") Long idRol, @Param("idPermisos") List<Long> idPermisos);
+
+    @Modifying
+    @Transactional
     void deleteByRol_IdRolAndPermiso_IdPermiso(Long idRol, Long idPermiso);
 
     long countByRol_IdRol(Long idRol);
+
+    @Query("SELECT COUNT(rp) FROM RolPermiso rp WHERE rp.rol.idRol = :idRol AND rp.permiso.idPermiso IN :idPermisos")
+    long countByRol_IdRolAndPermiso_IdPermisoIn(@Param("idRol") Long idRol, @Param("idPermisos") List<Long> idPermisos);
+
+    // Obtener los IDs de permisos que ya están asignados al rol
+    @Query("SELECT rp.permiso.idPermiso FROM RolPermiso rp WHERE rp.rol.idRol = :idRol AND rp.permiso.idPermiso IN :idPermisos")
+    List<Long> findExistingPermisoIds(@Param("idRol") Long idRol, @Param("idPermisos") List<Long> idPermisos);
 }
