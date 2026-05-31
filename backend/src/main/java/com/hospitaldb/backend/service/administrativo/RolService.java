@@ -121,11 +121,9 @@ public class RolService {
     public List<RolPermisoDTO> asignarPermisos(AsignacionPermisoRequestDTO request) {
         log.info("Asignando {} permisos al rol {}", request.getIdPermisos().size(), request.getIdRol());
 
-        // Validar que el rol existe
         Rol rol = rolRepository.findById(request.getIdRol())
                 .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con ID: " + request.getIdRol()));
 
-        // Validar que todos los permisos existen
         List<Permiso> permisos = new ArrayList<>();
         for (Long idPermiso : request.getIdPermisos()) {
             Permiso permiso = permisoRepository.findById(idPermiso)
@@ -133,7 +131,6 @@ public class RolService {
             permisos.add(permiso);
         }
 
-        // Filtrar permisos que ya están asignados
         List<Long> existingPermisoIds = rolPermisoRepository.findExistingPermisoIds(request.getIdRol(), request.getIdPermisos());
 
         if (!existingPermisoIds.isEmpty()) {
@@ -141,7 +138,6 @@ public class RolService {
             throw new BusinessException("Los permisos con IDs " + existingPermisoIds + " ya están asignados a este rol");
         }
 
-        // Asignar todos los permisos
         List<RolPermisoDTO> resultados = new ArrayList<>();
         for (Permiso permiso : permisos) {
             RolPermiso rolPermiso = new RolPermiso();
@@ -179,7 +175,6 @@ public class RolService {
     public void removerPermisos(Long idRol, List<Long> idPermisos) {
         log.info("Removiendo {} permisos del rol {}", idPermisos.size(), idRol);
 
-        // Validar que el rol existe
         Rol rol = rolRepository.findById(idRol)
                 .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con ID: " + idRol));
 
@@ -187,14 +182,12 @@ public class RolService {
             throw new BusinessException("La lista de permisos a remover no puede estar vacía");
         }
 
-        // Validar que todos los permisos existen
         for (Long idPermiso : idPermisos) {
             if (!permisoRepository.existsById(idPermiso)) {
                 throw new ResourceNotFoundException("Permiso no encontrado con ID: " + idPermiso);
             }
         }
 
-        // Verificar cuántos de esos permisos están realmente asignados
         long countAsignados = rolPermisoRepository.countByRol_IdRolAndPermiso_IdPermisoIn(idRol, idPermisos);
 
         if (countAsignados == 0) {
@@ -205,7 +198,6 @@ public class RolService {
             log.warn("Solo {} de {} permisos están asignados al rol {}", countAsignados, idPermisos.size(), idRol);
         }
 
-        // Eliminar los permisos
         rolPermisoRepository.deleteByRol_IdRolAndPermiso_IdPermisoIn(idRol, idPermisos);
         log.info("Permisos removidos exitosamente del rol {}", idRol);
     }
@@ -213,7 +205,6 @@ public class RolService {
     public List<PermisoDTO> findPermisosByRol(Long idRol) {
         log.info("Buscando permisos del rol: {}", idRol);
 
-        // Verificar que el rol existe
         rolRepository.findById(idRol)
                 .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con ID: " + idRol));
 

@@ -1,18 +1,21 @@
 package com.hospitaldb.backend.service.clinico;
 
 import com.hospitaldb.backend.dto.request.PacienteRequestDTO;
+import com.hospitaldb.backend.dto.response.clinico.PacienteDTO;
 import com.hospitaldb.backend.entity.clinico.Paciente;
 import com.hospitaldb.backend.exception.BusinessException;
 import com.hospitaldb.backend.exception.ResourceNotFoundException;
 import com.hospitaldb.backend.repository.clinico.IPacienteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,25 +25,32 @@ public class PacienteService {
 
     private final IPacienteRepository pacienteRepository;
 
-    public List<Paciente> findAll() {
+    private final ModelMapper modelMapper;
+
+    public List<PacienteDTO> findAll() {
         log.info("Obteniendo todos los pacientes");
-        return pacienteRepository.findAll();
+        List<Paciente> pacientes = pacienteRepository.findAll();
+        return pacientes.stream()
+                .map(paciente -> modelMapper.map(paciente, PacienteDTO.class))
+                .collect(Collectors.toList());
     }
 
-    public Page<Paciente> findAll(Pageable pageable) {
-        log.info("Obteniendo pacientes paginados: page={}, size={}",
-                pageable.getPageNumber(), pageable.getPageSize());
-        return pacienteRepository.findAll(pageable);
+
+    public Page<PacienteDTO> findAll(Pageable pageable) {
+        log.info("Obteniendo pacientes paginados");
+        Page<Paciente> pageResult = pacienteRepository.findAll(pageable);
+        return pageResult.map(paciente -> modelMapper.map(paciente, PacienteDTO.class));
     }
 
-    public Paciente findById(Long id) {
+    public PacienteDTO findById(Long id) {
         log.info("Buscando paciente con ID: {}", id);
-        return pacienteRepository.findById(id)
+        Paciente paciente = pacienteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado con ID: " + id));
+        return modelMapper.map(paciente, PacienteDTO.class);
     }
 
     @Transactional
-    public Paciente create(PacienteRequestDTO request) {
+    public PacienteDTO create(PacienteRequestDTO request) {
         log.info("Creando nuevo paciente: {}", request.getNombre());
 
         if (request.getTelefono() != null && pacienteRepository.findByTelefono(request.getTelefono()).isPresent()) {
@@ -57,19 +67,19 @@ public class PacienteService {
 
         Paciente saved = pacienteRepository.save(paciente);
         log.info("Paciente creado exitosamente con ID: {}", saved.getIdPaciente());
-        return saved;
+        return modelMapper.map(saved, PacienteDTO.class);
     }
 
     @Transactional
-    public Paciente update(Long id, PacienteRequestDTO request) {
+    public PacienteDTO update(Long id, PacienteRequestDTO request) {
         log.info("Actualizando paciente con ID: {}", id);
 
-        Paciente paciente = findById(id);
+        Paciente paciente = pacienteRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado con ID: " + id));
 
-        if (request.getTelefono() != null && !request.getTelefono().equals(paciente.getTelefono())) {
-            if (pacienteRepository.findByTelefono(request.getTelefono()).isPresent()) {
-                throw new BusinessException("Ya existe un paciente con el teléfono: " + request.getTelefono());
-            }
+        if (request.getTelefono() != null && !request.getTelefono().equals(paciente.getTelefono()) &&
+                pacienteRepository.findByTelefono(request.getTelefono()).isPresent()) {
+            throw new BusinessException("Ya existe un paciente con el teléfono: " + request.getTelefono());
         }
 
         paciente.setNombre(request.getNombre());
@@ -81,34 +91,47 @@ public class PacienteService {
 
         Paciente updated = pacienteRepository.save(paciente);
         log.info("Paciente actualizado exitosamente: {}", id);
-        return updated;
+        return modelMapper.map(updated, PacienteDTO.class);
     }
 
     @Transactional
     public void delete(Long id) {
         log.info("Eliminando paciente con ID: {}", id);
-        Paciente paciente = findById(id);
+        Paciente paciente = pacienteRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado con ID: " + id));
         pacienteRepository.delete(paciente);
         log.info("Paciente eliminado exitosamente: {}", id);
     }
 
-    public List<Paciente> searchByNombre(String nombre) {
+    public List<PacienteDTO> searchByNombre(String nombre) {
         log.info("Buscando pacientes por nombre: {}", nombre);
-        return pacienteRepository.findByNombreContainingIgnoreCaseOrApellidoContainingIgnoreCase(nombre, nombre);
+        List<Paciente> pacientes = pacienteRepository.findByNombreContainingIgnoreCaseOrApellidoContainingIgnoreCase(nombre, nombre);
+        return pacientes.stream()
+                .map(paciente -> modelMapper.map(paciente, PacienteDTO.class))
+                .collect(Collectors.toList());
     }
 
-    public List<Paciente> findByGenero(Character genero) {
+    public List<PacienteDTO> findByGenero(Character genero) {
         log.info("Buscando pacientes por género: {}", genero);
-        return pacienteRepository.findByGenero(genero);
+        List<Paciente> pacientes = pacienteRepository.findByGenero(genero);
+        return pacientes.stream()
+                .map(paciente -> modelMapper.map(paciente, PacienteDTO.class))
+                .collect(Collectors.toList());
     }
 
-    public List<Paciente> findPacientesConCitas() {
+    public List<PacienteDTO> findPacientesConCitas() {
         log.info("Obteniendo pacientes con citas");
-        return pacienteRepository.findPacientesConCitas();
+        List<Paciente> pacientes = pacienteRepository.findPacientesConCitas();
+        return pacientes.stream()
+                .map(paciente -> modelMapper.map(paciente, PacienteDTO.class))
+                .collect(Collectors.toList());
     }
 
-    public List<Paciente> findPacientesSinCitas() {
+    public List<PacienteDTO> findPacientesSinCitas() {
         log.info("Obteniendo pacientes sin citas");
-        return pacienteRepository.findPacientesSinCitas();
+        List<Paciente> pacientes = pacienteRepository.findPacientesSinCitas();
+        return pacientes.stream()
+                .map(paciente -> modelMapper.map(paciente, PacienteDTO.class))
+                .collect(Collectors.toList());
     }
 }
