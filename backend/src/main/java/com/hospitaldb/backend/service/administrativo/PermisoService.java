@@ -1,18 +1,21 @@
 package com.hospitaldb.backend.service.administrativo;
 
 import com.hospitaldb.backend.dto.request.PermisoRequestDTO;
+import com.hospitaldb.backend.dto.response.administrativo.PermisoDTO;
 import com.hospitaldb.backend.entity.administrativo.Permiso;
 import com.hospitaldb.backend.exception.BusinessException;
 import com.hospitaldb.backend.exception.ResourceNotFoundException;
 import com.hospitaldb.backend.repository.administrativo.IPermisoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,30 +24,38 @@ import java.util.List;
 public class PermisoService {
     private final IPermisoRepository permisoRepository;
 
-    public List<Permiso> findAll() {
+    private final ModelMapper modelMapper;
+
+    public List<PermisoDTO> findAll() {
         log.info("Obteniendo todos los permisos");
-        return permisoRepository.findAll();
+        List<Permiso> permisos = permisoRepository.findAll();
+        return permisos.stream()
+                .map(permiso -> modelMapper.map(permiso, PermisoDTO.class))
+                .collect(Collectors.toList());
     }
 
-    public Page<Permiso> findAll(Pageable pageable) {
+    public Page<PermisoDTO> findAll(Pageable pageable) {
         log.info("Obteniendo permisos paginados");
-        return permisoRepository.findAll(pageable);
+        Page<Permiso> pageResult = permisoRepository.findAll(pageable);
+        return pageResult.map(permiso -> modelMapper.map(permiso, PermisoDTO.class));
     }
 
-    public Permiso findById(Long id) {
+    public PermisoDTO findById(Long id) {
         log.info("Buscando permiso con ID: {}", id);
-        return permisoRepository.findById(id)
+        Permiso permiso = permisoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Permiso no encontrado con ID: " + id));
+        return modelMapper.map(permiso, PermisoDTO.class);
     }
 
-    public Permiso findByNombre(String nombrePermiso) {
+    public PermisoDTO findByNombre(String nombrePermiso) {
         log.info("Buscando permiso por nombre: {}", nombrePermiso);
-        return permisoRepository.findByNombrePermiso(nombrePermiso)
+        Permiso permiso = permisoRepository.findByNombrePermiso(nombrePermiso)
                 .orElseThrow(() -> new ResourceNotFoundException("Permiso no encontrado con nombre: " + nombrePermiso));
+        return modelMapper.map(permiso, PermisoDTO.class);
     }
 
     @Transactional
-    public Permiso create(PermisoRequestDTO request) {
+    public PermisoDTO create(PermisoRequestDTO request) {
         log.info("Creando nuevo permiso: {}", request.getNombrePermiso());
 
         if (permisoRepository.existsByNombrePermiso(request.getNombrePermiso())) {
@@ -56,14 +67,15 @@ public class PermisoService {
 
         Permiso saved = permisoRepository.save(permiso);
         log.info("Permiso creado exitosamente con ID: {}", saved.getIdPermiso());
-        return saved;
+        return modelMapper.map(saved, PermisoDTO.class);
     }
 
     @Transactional
-    public Permiso update(Long id, PermisoRequestDTO request) {
+    public PermisoDTO update(Long id, PermisoRequestDTO request) {
         log.info("Actualizando permiso con ID: {}", id);
 
-        Permiso permiso = findById(id);
+        Permiso permiso = permisoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Permiso no encontrado con ID: " + id));
 
         if (!permiso.getNombrePermiso().equals(request.getNombrePermiso()) &&
                 permisoRepository.existsByNombrePermiso(request.getNombrePermiso())) {
@@ -74,13 +86,14 @@ public class PermisoService {
 
         Permiso updated = permisoRepository.save(permiso);
         log.info("Permiso actualizado exitosamente: {}", id);
-        return updated;
+        return modelMapper.map(updated, PermisoDTO.class);
     }
 
     @Transactional
     public void delete(Long id) {
         log.info("Eliminando permiso con ID: {}", id);
-        Permiso permiso = findById(id);
+        Permiso permiso = permisoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Permiso no encontrado con ID: " + id));
 
         if (!permiso.getRolPermisos().isEmpty()) {
             throw new BusinessException("No se puede eliminar un permiso que está asignado a roles");
@@ -90,8 +103,11 @@ public class PermisoService {
         log.info("Permiso eliminado exitosamente: {}", id);
     }
 
-    public List<Permiso> findPermisosByUsuario(Long idUsuario) {
+    public List<PermisoDTO> findPermisosByUsuario(Long idUsuario) {
         log.info("Buscando permisos del usuario: {}", idUsuario);
-        return permisoRepository.findPermisosByUsuarioId(idUsuario);
+        List<Permiso> permisos = permisoRepository.findPermisosByUsuarioId(idUsuario);
+        return permisos.stream()
+                .map(permiso -> modelMapper.map(permiso, PermisoDTO.class))
+                .collect(Collectors.toList());
     }
 }
