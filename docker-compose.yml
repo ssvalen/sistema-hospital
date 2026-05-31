@@ -46,6 +46,7 @@ services:
       KC_HEALTH_ENABLED: true
     command: 
       - "start-dev"  
+      - --import-realm
     ports:
       - "8080:8080"   
     depends_on:
@@ -61,6 +62,7 @@ services:
       - hospital-network
     volumes:
       - keycloak_data:/opt/keycloak/data
+      - ./realms/hotel-db-realm.json:/opt/keycloak/data/import/hotel-db-realm.json
 
   hospital-service:
     build:
