@@ -1,18 +1,21 @@
 package com.hospitaldb.backend.service.clinico;
 
 import com.hospitaldb.backend.dto.request.MedicoRequestDTO;
+import com.hospitaldb.backend.dto.response.clinico.MedicoDTO;
 import com.hospitaldb.backend.entity.clinico.Medico;
 import com.hospitaldb.backend.exception.BusinessException;
 import com.hospitaldb.backend.exception.ResourceNotFoundException;
 import com.hospitaldb.backend.repository.clinico.IMedicoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,24 +24,30 @@ import java.util.List;
 public class MedicoService {
     private final IMedicoRepository medicoRepository;
 
-    public List<Medico> findAll() {
+    private final ModelMapper modelMapper;
+
+    public List<MedicoDTO> findAll() {
         log.info("Obteniendo todos los médicos");
-        return medicoRepository.findAll();
+        List<Medico> medicos = medicoRepository.findAll();
+        return medicos.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    public Page<Medico> findAll(Pageable pageable) {
+    public Page<MedicoDTO> findAll(Pageable pageable) {
         log.info("Obteniendo médicos paginados");
-        return medicoRepository.findAll(pageable);
+        Page<Medico> pageResult = medicoRepository.findAll(pageable);
+        return pageResult.map(this::convertToDTO);
     }
 
-    public Medico findById(Long id) {
+    public MedicoDTO findById(Long id) {
         log.info("Buscando médico con ID: {}", id);
-        return medicoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Médico no encontrado con ID: " + id));
+        Medico medico = findMedicoEntityById(id);
+        return convertToDTO(medico);
     }
 
     @Transactional
-    public Medico create(MedicoRequestDTO request) {
+    public MedicoDTO create(MedicoRequestDTO request) {
         log.info("Creando nuevo médico: {}", request.getNombre());
 
         if (request.getEmail() != null && medicoRepository.existsMedicoByEmail(request.getEmail())) {
@@ -58,20 +67,18 @@ public class MedicoService {
 
         Medico saved = medicoRepository.save(medico);
         log.info("Médico creado exitosamente con ID: {}", saved.getIdMedico());
-        return saved;
+        return convertToDTO(saved);
     }
 
     @Transactional
-    public Medico update(Long id, MedicoRequestDTO request) {
+    public MedicoDTO update(Long id, MedicoRequestDTO request) {
         log.info("Actualizando médico con ID: {}", id);
 
-        Medico medico = findById(id);
+        Medico medico = findMedicoEntityById(id);
 
-        if (request.getEmail() != null && !request.getEmail().equals(medico.getEmail())) {
-            if (medicoRepository.findByEmail(request.getEmail()).isPresent()) {
-                throw new BusinessException("Ya existe un médico con el email: " + request.getEmail());
-            }
-            medico.setEmail(request.getEmail());
+        if (request.getEmail() != null && !request.getEmail().equals(medico.getEmail()) &&
+                medicoRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new BusinessException("Ya existe un médico con el email: " + request.getEmail());
         }
 
         medico.setNombre(request.getNombre());
@@ -82,15 +89,24 @@ public class MedicoService {
             medico.setTelefono(request.getTelefono());
         }
 
+        if (request.getEmail() != null) {
+            medico.setEmail(request.getEmail());
+        }
+
         Medico updated = medicoRepository.save(medico);
         log.info("Médico actualizado exitosamente: {}", id);
-        return updated;
+        return convertToDTO(updated);
+    }
+
+    private Medico findMedicoEntityById(Long id){
+        return medicoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Médico no encontrado con ID: " + id));
     }
 
     @Transactional
     public void delete(Long id) {
         log.info("Eliminando médico con ID: {}", id);
-        Medico medico = findById(id);
+        Medico medico = findMedicoEntityById(id);
 
         if (!medico.getCitas().isEmpty()) {
             throw new BusinessException("No se puede eliminar un médico que tiene citas asociadas");
@@ -100,18 +116,57 @@ public class MedicoService {
         log.info("Médico eliminado exitosamente: {}", id);
     }
 
-    public List<Medico> findByEspecialidad(String especialidad) {
+    public List<MedicoDTO> findByEspecialidad(String especialidad) {
         log.info("Buscando médicos por especialidad: {}", especialidad);
-        return medicoRepository.findByEspecialidadIgnoreCase(especialidad);
+        List<Medico> medicos = medicoRepository.findByEspecialidadIgnoreCase(especialidad);
+        return medicos.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<Medico> findMedicosDisponibles(Long maxCitas) {
+    public List<MedicoDTO> findMedicosDisponibles(Long maxCitas) {
         log.info("Buscando médicos con menos de {} citas", maxCitas);
-        return medicoRepository.findMedicosDisponibles(maxCitas);
+        List<Medico> medicos = medicoRepository.findMedicosDisponibles(maxCitas);
+        return medicos.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     public List<String> findAllEspecialidades() {
         log.info("Obteniendo todas las especialidades");
         return medicoRepository.findAllEspecialidades();
+    }
+
+    public List<MedicoDTO> findMedicosMasActivos() {
+        log.info("Obteniendo médicos más activos");
+        List<Medico> medicos = medicoRepository.findMedicosMasActivos();
+        return medicos.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<MedicoDTO> findMedicosSinCitas() {
+        log.info("Obteniendo médicos sin citas");
+        List<Medico> medicos = medicoRepository.findMedicosSinCitas();
+        return medicos.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<Object[]> countCitasByEspecialidad() {
+        log.info("Contando citas por especialidad");
+        return medicoRepository.countCitasByEspecialidad();
+    }
+
+    private MedicoDTO convertToDTO(Medico medico) {
+        return MedicoDTO.builder()
+                .idMedico(medico.getIdMedico())
+                .nombre(medico.getNombre())
+                .apellido(medico.getApellido())
+                .especialidad(medico.getEspecialidad())
+                .telefono(medico.getTelefono())
+                .email(medico.getEmail())
+                .cantidadCitas(medico.getCitas() != null ? medico.getCitas().size() : 0)
+                .build();
     }
 }

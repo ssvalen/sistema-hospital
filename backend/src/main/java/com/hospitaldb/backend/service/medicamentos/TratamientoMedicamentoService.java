@@ -1,6 +1,7 @@
 package com.hospitaldb.backend.service.medicamentos;
 
 import com.hospitaldb.backend.dto.request.TratamientoMedicamentoRequestDTO;
+import com.hospitaldb.backend.dto.response.medicamentos.TratamientoMedicamentoDTO;
 import com.hospitaldb.backend.entity.clinico.Tratamiento;
 import com.hospitaldb.backend.entity.medicamentos.Medicamento;
 import com.hospitaldb.backend.entity.medicamentos.TratamientoMedicamento;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,19 +27,23 @@ public class TratamientoMedicamentoService {
     private final ITratamientoRepository tratamientoRepository;
     private final IMedicamentoRepository medicamentoRepository;
 
-    public List<TratamientoMedicamento> findAll() {
+    public List<TratamientoMedicamentoDTO> findAll() {
         log.info("Obteniendo todas las relaciones tratamiento-medicamento");
-        return tmRepository.findAll();
+        List<TratamientoMedicamento> relaciones = tmRepository.findAll();
+        return relaciones.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    public TratamientoMedicamento findById(Long id) {
+    public TratamientoMedicamentoDTO findById(Long id) {
         log.info("Buscando relación con ID: {}", id);
-        return tmRepository.findById(id)
+        TratamientoMedicamento tm = tmRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Relación no encontrada con ID: " + id));
+        return convertToDTO(tm);
     }
 
     @Transactional
-    public TratamientoMedicamento create(TratamientoMedicamentoRequestDTO request) {
+    public TratamientoMedicamentoDTO create(TratamientoMedicamentoRequestDTO request) {
         log.info("Asignando medicamento a tratamiento");
 
         Tratamiento tratamiento = tratamientoRepository.findById(request.getIdTratamiento())
@@ -62,14 +68,16 @@ public class TratamientoMedicamentoService {
 
         TratamientoMedicamento saved = tmRepository.save(tm);
         log.info("Medicamento asignado exitosamente al tratamiento");
-        return saved;
+        return convertToDTO(saved);
     }
 
+
     @Transactional
-    public TratamientoMedicamento update(Long id, TratamientoMedicamentoRequestDTO request) {
+    public TratamientoMedicamentoDTO update(Long id, TratamientoMedicamentoRequestDTO request) {
         log.info("Actualizando relación con ID: {}", id);
 
-        TratamientoMedicamento tm = findById(id);
+        TratamientoMedicamento tm = tmRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Relación no encontrada con ID: " + id));
 
         if (request.getDosis() != null) {
             tm.setDosis(request.getDosis());
@@ -81,13 +89,14 @@ public class TratamientoMedicamentoService {
 
         TratamientoMedicamento updated = tmRepository.save(tm);
         log.info("Relación actualizada exitosamente");
-        return updated;
+        return convertToDTO(updated);
     }
 
     @Transactional
     public void delete(Long id) {
         log.info("Eliminando relación con ID: {}", id);
-        TratamientoMedicamento tm = findById(id);
+        TratamientoMedicamento tm = tmRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Relación no encontrada con ID: " + id));
         tmRepository.delete(tm);
         log.info("Relación eliminada exitosamente");
     }
@@ -99,19 +108,38 @@ public class TratamientoMedicamentoService {
         log.info("Relación eliminada exitosamente");
     }
 
-    public List<TratamientoMedicamento> findByTratamiento(Long idTratamiento) {
+    public List<TratamientoMedicamentoDTO> findByTratamiento(Long idTratamiento) {
         log.info("Buscando medicamentos del tratamiento: {}", idTratamiento);
-        return tmRepository.findByTratamiento_IdTratamiento(idTratamiento);
+        List<TratamientoMedicamento> relaciones = tmRepository.findByTratamiento_IdTratamiento(idTratamiento);
+        return relaciones.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<TratamientoMedicamento> findByMedicamento(Long idMedicamento) {
+    public List<TratamientoMedicamentoDTO> findByMedicamento(Long idMedicamento) {
         log.info("Buscando tratamientos del medicamento: {}", idMedicamento);
-        return tmRepository.findByMedicamento_IdMedicamento(idMedicamento);
+        List<TratamientoMedicamento> relaciones = tmRepository.findByMedicamento_IdMedicamento(idMedicamento);
+        return relaciones.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     public Integer getCantidadTotalRecetada(Long idMedicamento) {
         log.info("Calculando cantidad total recetada del medicamento: {}", idMedicamento);
         Integer cantidad = tmRepository.sumCantidadByMedicamento(idMedicamento);
         return cantidad != null ? cantidad : 0;
+    }
+
+    private TratamientoMedicamentoDTO convertToDTO(TratamientoMedicamento tm) {
+        return TratamientoMedicamentoDTO.builder()
+                .id(tm.getId())
+                .idTratamiento(tm.getTratamiento().getIdTratamiento())
+                .tratamientoDescripcion(tm.getTratamiento().getDescripcion())
+                .idMedicamento(tm.getMedicamento().getIdMedicamento())
+                .medicamentoNombre(tm.getMedicamento().getNombreComercial())
+                .medicamentoPrincipioActivo(tm.getMedicamento().getPrincipioActivo())
+                .dosis(tm.getDosis())
+                .cantidad(tm.getCantidad())
+                .build();
     }
 }

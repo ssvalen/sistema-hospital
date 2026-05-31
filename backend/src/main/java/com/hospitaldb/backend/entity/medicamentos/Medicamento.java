@@ -28,22 +28,10 @@ public class Medicamento {
     @Column(name = "unidad_medida", length = 50)
     private String unidadMedida;
 
-    // Relación con TRATAMIENTO_MEDICAMENTO
     @OneToMany(mappedBy = "medicamento", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<TratamientoMedicamento> tratamientoMedicamentos = new ArrayList<>();
 
-    // Relación con INVENTARIO_MEDICAMENTO (desde esquema inventario_db)
     @OneToMany(mappedBy = "medicamento", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<com.hospitaldb.backend.entity.inventario.InventarioMedicamento> inventarios = new ArrayList<>();
 
-    // Métodos helper
-    public void addTratamientoMedicamento(TratamientoMedicamento tm) {
-        tratamientoMedicamentos.add(tm);
-        tm.setMedicamento(this);
-    }
-
-    public void addInventario(com.hospitaldb.backend.entity.inventario.InventarioMedicamento inventario) {
-        inventarios.add(inventario);
-        inventario.setMedicamento(this);
-    }
 }

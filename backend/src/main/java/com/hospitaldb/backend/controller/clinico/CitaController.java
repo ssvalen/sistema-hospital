@@ -3,7 +3,7 @@ package com.hospitaldb.backend.controller.clinico;
 import com.hospitaldb.backend.dto.request.CitaRequestDTO;
 import com.hospitaldb.backend.dto.response.EntityResponse;
 import com.hospitaldb.backend.dto.response.PaginatedResponse;
-import com.hospitaldb.backend.entity.clinico.Cita;
+import com.hospitaldb.backend.dto.response.clinico.CitaDTO;
 import com.hospitaldb.backend.service.clinico.CitaService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -28,25 +28,25 @@ public class CitaController {
     private final CitaService citaService;
 
     @GetMapping
-    public ResponseEntity<EntityResponse<List<Cita>>> getAll(HttpServletRequest request) {
+    public ResponseEntity<EntityResponse<List<CitaDTO>>> getAll(HttpServletRequest request) {
         log.info("GET /api/citas - Listando todas las citas");
-        List<Cita> citas = citaService.findAll();
+        List<CitaDTO> citas = citaService.findAll();
         return ResponseEntity.ok(
                 EntityResponse.success(citas, "Citas obtenidas exitosamente", request.getRequestURI())
         );
     }
 
     @GetMapping("/paginado")
-    public ResponseEntity<EntityResponse<PaginatedResponse<Cita>>> getAllPaginated(
+    public ResponseEntity<EntityResponse<PaginatedResponse<CitaDTO>>> getAllPaginated(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
 
         log.info("GET /api/citas/paginado - page={}, size={}", page, size);
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "fechaHora"));
-        Page<Cita> pageResult = citaService.findAll(pageable);
+        Page<CitaDTO> pageResult = citaService.findAll(pageable);
 
-        PaginatedResponse<Cita> response = PaginatedResponse.<Cita>builder()
+        PaginatedResponse<CitaDTO> response = PaginatedResponse.<CitaDTO>builder()
                 .content(pageResult.getContent())
                 .pageNumber(pageResult.getNumber())
                 .pageSize(pageResult.getSize())
@@ -62,49 +62,49 @@ public class CitaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EntityResponse<Cita>> getById(@PathVariable Long id, HttpServletRequest request) {
+    public ResponseEntity<EntityResponse<CitaDTO>> getById(@PathVariable Long id, HttpServletRequest request) {
         log.info("GET /api/citas/{} - Buscando cita", id);
-        Cita cita = citaService.findById(id);
+        CitaDTO cita = citaService.findById(id);
         return ResponseEntity.ok(
-                EntityResponse.success(cita, "Cita encontrada", request.getRequestURI())
+                EntityResponse.success(cita, "CitaDTO encontrada", request.getRequestURI())
         );
     }
 
     @PostMapping
-    public ResponseEntity<EntityResponse<Cita>> create(
+    public ResponseEntity<EntityResponse<CitaDTO>> create(
             @Valid @RequestBody CitaRequestDTO requestDTO,
             HttpServletRequest request) {
 
         log.info("POST /api/citas - Creando nueva cita");
-        Cita created = citaService.create(requestDTO);
+        CitaDTO created = citaService.create(requestDTO);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                EntityResponse.success(created, "Cita creada exitosamente", request.getRequestURI())
+                EntityResponse.success(created, "CitaDTO creada exitosamente", request.getRequestURI())
         );
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<EntityResponse<Cita>> update(
+    public ResponseEntity<EntityResponse<CitaDTO>> update(
             @PathVariable Long id,
             @Valid @RequestBody CitaRequestDTO requestDTO,
             HttpServletRequest request) {
 
         log.info("PUT /api/citas/{} - Actualizando cita", id);
-        Cita updated = citaService.update(id, requestDTO);
+        CitaDTO updated = citaService.update(id, requestDTO);
 
         return ResponseEntity.ok(
-                EntityResponse.success(updated, "Cita actualizada exitosamente", request.getRequestURI())
+                EntityResponse.success(updated, "CitaDTO actualizada exitosamente", request.getRequestURI())
         );
     }
 
     @PatchMapping("/{id}/cancelar")
-    public ResponseEntity<EntityResponse<Cita>> cancel(@PathVariable Long id, HttpServletRequest request) {
+    public ResponseEntity<EntityResponse<CitaDTO>> cancel(@PathVariable Long id, HttpServletRequest request) {
         log.info("PATCH /api/citas/{}/cancelar - Cancelando cita", id);
         citaService.cancel(id);
-        Cita cita = citaService.findById(id);
+        CitaDTO cita = citaService.findById(id);
 
         return ResponseEntity.ok(
-                EntityResponse.success(cita, "Cita cancelada exitosamente", request.getRequestURI())
+                EntityResponse.success(cita, "CitaDTO cancelada exitosamente", request.getRequestURI())
         );
     }
 
@@ -114,17 +114,17 @@ public class CitaController {
         citaService.delete(id);
 
         return ResponseEntity.ok(
-                EntityResponse.success(null, "Cita eliminada exitosamente", request.getRequestURI())
+                EntityResponse.success(null, "CitaDTO eliminada exitosamente", request.getRequestURI())
         );
     }
 
     @GetMapping("/paciente/{idPaciente}")
-    public ResponseEntity<EntityResponse<List<Cita>>> getByPaciente(
+    public ResponseEntity<EntityResponse<List<CitaDTO>>> getByPaciente(
             @PathVariable Long idPaciente,
             HttpServletRequest request) {
 
         log.info("GET /api/citas/paciente/{} - Citas del paciente", idPaciente);
-        List<Cita> citas = citaService.findByPaciente(idPaciente);
+        List<CitaDTO> citas = citaService.findByPaciente(idPaciente);
 
         return ResponseEntity.ok(
                 EntityResponse.success(citas, "Citas del paciente obtenidas", request.getRequestURI())
@@ -132,12 +132,12 @@ public class CitaController {
     }
 
     @GetMapping("/medico/{idMedico}")
-    public ResponseEntity<EntityResponse<List<Cita>>> getByMedico(
+    public ResponseEntity<EntityResponse<List<CitaDTO>>> getByMedico(
             @PathVariable Long idMedico,
             HttpServletRequest request) {
 
         log.info("GET /api/citas/medico/{} - Citas del médico", idMedico);
-        List<Cita> citas = citaService.findByMedico(idMedico);
+        List<CitaDTO> citas = citaService.findByMedico(idMedico);
 
         return ResponseEntity.ok(
                 EntityResponse.success(citas, "Citas del médico obtenidas", request.getRequestURI())
@@ -145,12 +145,12 @@ public class CitaController {
     }
 
     @GetMapping("/estado/{estado}")
-    public ResponseEntity<EntityResponse<List<Cita>>> getByEstado(
+    public ResponseEntity<EntityResponse<List<CitaDTO>>> getByEstado(
             @PathVariable String estado,
             HttpServletRequest request) {
 
         log.info("GET /api/citas/estado/{} - Citas por estado", estado);
-        List<Cita> citas = citaService.findByEstado(estado);
+        List<CitaDTO> citas = citaService.findByEstado(estado);
 
         return ResponseEntity.ok(
                 EntityResponse.success(citas, "Citas filtradas por estado", request.getRequestURI())
@@ -158,12 +158,12 @@ public class CitaController {
     }
 
     @GetMapping("/paciente/{idPaciente}/futuras")
-    public ResponseEntity<EntityResponse<List<Cita>>> getCitasFuturasByPaciente(
+    public ResponseEntity<EntityResponse<List<CitaDTO>>> getCitasFuturasByPaciente(
             @PathVariable Long idPaciente,
             HttpServletRequest request) {
 
         log.info("GET /api/citas/paciente/{}/futuras - Citas futuras del paciente", idPaciente);
-        List<Cita> citas = citaService.findCitasFuturasByPaciente(idPaciente);
+        List<CitaDTO> citas = citaService.findCitasFuturasByPaciente(idPaciente);
 
         return ResponseEntity.ok(
                 EntityResponse.success(citas, "Citas futuras obtenidas", request.getRequestURI())

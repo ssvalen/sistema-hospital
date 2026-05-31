@@ -1,6 +1,7 @@
 package com.hospitaldb.backend.service.clinico;
 
 import com.hospitaldb.backend.dto.request.CitaRequestDTO;
+import com.hospitaldb.backend.dto.response.clinico.CitaDTO;
 import com.hospitaldb.backend.entity.clinico.Cita;
 import com.hospitaldb.backend.entity.clinico.Medico;
 import com.hospitaldb.backend.entity.clinico.Paciente;
@@ -11,6 +12,7 @@ import com.hospitaldb.backend.repository.clinico.IMedicoRepository;
 import com.hospitaldb.backend.repository.clinico.IPacienteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,25 +31,35 @@ public class CitaService {
     private final ICitaRepository citaRepository;
     private final IPacienteRepository pacienteRepository;
     private final IMedicoRepository medicoRepository;
+    private final ModelMapper modelMapper;
 
-    public List<Cita> findAll() {
+    public List<CitaDTO> findAll() {
         log.info("Obteniendo todas las citas");
-        return citaRepository.findAll();
+        List<Cita> citas = citaRepository.findAll();
+        return citas.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    public Page<Cita> findAll(Pageable pageable) {
+    public Page<CitaDTO> findAll(Pageable pageable) {
         log.info("Obteniendo citas paginadas");
-        return citaRepository.findAll(pageable);
+        Page<Cita> pageResult = citaRepository.findAll(pageable);
+        return pageResult.map(this::convertToDTO);
     }
 
-    public Cita findById(Long id) {
+    public CitaDTO findById(Long id) {
         log.info("Buscando cita con ID: {}", id);
+        Cita cita = findCitaEntityById(id);
+        return convertToDTO(cita);
+    }
+
+    private Cita findCitaEntityById(Long id){
         return citaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cita no encontrada con ID: " + id));
     }
 
     @Transactional
-    public Cita create(CitaRequestDTO request) {
+    public CitaDTO create(CitaRequestDTO request) {
         log.info("Creando nueva cita para paciente: {}, médico: {}", request.getIdPaciente(), request.getIdMedico());
 
         Paciente paciente = pacienteRepository.findById(request.getIdPaciente())
@@ -76,14 +89,14 @@ public class CitaService {
 
         Cita saved = citaRepository.save(cita);
         log.info("Cita creada exitosamente con ID: {}", saved.getIdCita());
-        return saved;
+        return convertToDTO(saved);
     }
 
     @Transactional
-    public Cita update(Long id, CitaRequestDTO request) {
+    public CitaDTO update(Long id, CitaRequestDTO request) {
         log.info("Actualizando cita con ID: {}", id);
 
-        Cita cita = findById(id);
+        Cita cita = findCitaEntityById(id);
 
         if (request.getFechaHora().isBefore(LocalDateTime.now())) {
             throw new BusinessException("No se puede reprogramar una cita a una fecha pasada");
@@ -111,13 +124,13 @@ public class CitaService {
 
         Cita updated = citaRepository.save(cita);
         log.info("Cita actualizada exitosamente: {}", id);
-        return updated;
+        return convertToDTO(updated);
     }
 
     @Transactional
     public void cancel(Long id) {
         log.info("Cancelando cita con ID: {}", id);
-        Cita cita = findById(id);
+        Cita cita = findCitaEntityById(id);
 
         if (cita.getFechaHora().isBefore(LocalDateTime.now())) {
             throw new BusinessException("No se puede cancelar una cita pasada");
@@ -131,28 +144,55 @@ public class CitaService {
     @Transactional
     public void delete(Long id) {
         log.info("Eliminando cita con ID: {}", id);
-        Cita cita = findById(id);
+        Cita cita = findCitaEntityById(id);
         citaRepository.delete(cita);
         log.info("Cita eliminada exitosamente: {}", id);
     }
 
-    public List<Cita> findByPaciente(Long idPaciente) {
+    public List<CitaDTO> findByPaciente(Long idPaciente) {
         log.info("Buscando citas del paciente: {}", idPaciente);
-        return citaRepository.findByPaciente_IdPaciente(idPaciente);
+        List<Cita> citas = citaRepository.findByPaciente_IdPaciente(idPaciente);
+        return citas.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<Cita> findByMedico(Long idMedico) {
+    public List<CitaDTO> findByMedico(Long idMedico) {
         log.info("Buscando citas del médico: {}", idMedico);
-        return citaRepository.findByMedico_IdMedico(idMedico);
+        List<Cita> citas = citaRepository.findByMedico_IdMedico(idMedico);
+        return citas.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<Cita> findCitasFuturasByPaciente(Long idPaciente) {
+    public List<CitaDTO> findCitasFuturasByPaciente(Long idPaciente) {
         log.info("Buscando citas futuras del paciente: {}", idPaciente);
-        return citaRepository.findCitasFuturasByPaciente(idPaciente, LocalDateTime.now());
+        List<Cita> citas = citaRepository.findCitasFuturasByPaciente(idPaciente, LocalDateTime.now());
+        return citas.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<Cita> findByEstado(String estado) {
+    public List<CitaDTO> findByEstado(String estado) {
         log.info("Buscando citas por estado: {}", estado);
-        return citaRepository.findByEstado(estado);
+        List<Cita> citas = citaRepository.findByEstado(estado);
+        return citas.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    private CitaDTO convertToDTO(Cita cita) {
+        return CitaDTO.builder()
+                .idCita(cita.getIdCita())
+                .fechaHora(cita.getFechaHora())
+                .estado(cita.getEstado())
+                .idPaciente(cita.getPaciente().getIdPaciente())
+                .pacienteNombre(cita.getPaciente().getNombre())
+                .pacienteApellido(cita.getPaciente().getApellido())
+                .idMedico(cita.getMedico().getIdMedico())
+                .medicoNombre(cita.getMedico().getNombre())
+                .medicoApellido(cita.getMedico().getApellido())
+                .medicoEspecialidad(cita.getMedico().getEspecialidad())
+                .build();
     }
 }

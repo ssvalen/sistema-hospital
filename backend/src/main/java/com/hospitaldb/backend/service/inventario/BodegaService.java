@@ -1,18 +1,21 @@
 package com.hospitaldb.backend.service.inventario;
 
 import com.hospitaldb.backend.dto.request.BodegaRequestDTO;
+import com.hospitaldb.backend.dto.response.inventario.BodegaDTO;
 import com.hospitaldb.backend.entity.inventario.Bodega;
 import com.hospitaldb.backend.exception.BusinessException;
 import com.hospitaldb.backend.exception.ResourceNotFoundException;
 import com.hospitaldb.backend.repository.inventario.IBodegaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,24 +24,31 @@ import java.util.List;
 public class BodegaService {
     private final IBodegaRepository bodegaRepository;
 
-    public List<Bodega> findAll() {
+    private final ModelMapper modelMapper;
+
+    public List<BodegaDTO> findAll() {
         log.info("Obteniendo todas las bodegas");
-        return bodegaRepository.findAll();
+        List<Bodega> bodegas = bodegaRepository.findAll();
+        return bodegas.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    public Page<Bodega> findAll(Pageable pageable) {
+    public Page<BodegaDTO> findAll(Pageable pageable) {
         log.info("Obteniendo bodegas paginadas");
-        return bodegaRepository.findAll(pageable);
+        Page<Bodega> pageResult = bodegaRepository.findAll(pageable);
+        return pageResult.map(this::convertToDTO);
     }
 
-    public Bodega findById(Long id) {
+    public BodegaDTO findById(Long id) {
         log.info("Buscando bodega con ID: {}", id);
-        return bodegaRepository.findById(id)
+        Bodega bodega = bodegaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Bodega no encontrada con ID: " + id));
+        return convertToDTO(bodega);
     }
 
     @Transactional
-    public Bodega create(BodegaRequestDTO request) {
+    public BodegaDTO create(BodegaRequestDTO request) {
         log.info("Creando nueva bodega: {}", request.getNombreBodega());
 
         if (bodegaRepository.existsByNombreBodega(request.getNombreBodega())) {
@@ -51,14 +61,15 @@ public class BodegaService {
 
         Bodega saved = bodegaRepository.save(bodega);
         log.info("Bodega creada exitosamente con ID: {}", saved.getIdBodega());
-        return saved;
+        return convertToDTO(saved);
     }
 
     @Transactional
-    public Bodega update(Long id, BodegaRequestDTO request) {
+    public BodegaDTO update(Long id, BodegaRequestDTO request) {
         log.info("Actualizando bodega con ID: {}", id);
 
-        Bodega bodega = findById(id);
+        Bodega bodega = bodegaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Bodega no encontrada con ID: " + id));
 
         if (!bodega.getNombreBodega().equals(request.getNombreBodega()) &&
                 bodegaRepository.existsByNombreBodega(request.getNombreBodega())) {
@@ -70,13 +81,14 @@ public class BodegaService {
 
         Bodega updated = bodegaRepository.save(bodega);
         log.info("Bodega actualizada exitosamente: {}", id);
-        return updated;
+        return convertToDTO(updated);
     }
 
     @Transactional
     public void delete(Long id) {
         log.info("Eliminando bodega con ID: {}", id);
-        Bodega bodega = findById(id);
+        Bodega bodega = bodegaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Bodega no encontrada con ID: " + id));
 
         if (!bodega.getInventarios().isEmpty()) {
             throw new BusinessException("No se puede eliminar una bodega que tiene inventario asociado");
@@ -86,13 +98,28 @@ public class BodegaService {
         log.info("Bodega eliminada exitosamente: {}", id);
     }
 
-    public List<Bodega> findBodegasConInventario() {
+    public List<BodegaDTO> findBodegasConInventario() {
         log.info("Obteniendo bodegas con inventario");
-        return bodegaRepository.findBodegasConInventario();
+        List<Bodega> bodegas = bodegaRepository.findBodegasConInventario();
+        return bodegas.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<Bodega> findBodegasSinInventario() {
+    public List<BodegaDTO> findBodegasSinInventario() {
         log.info("Obteniendo bodegas sin inventario");
-        return bodegaRepository.findBodegasSinInventario();
+        List<Bodega> bodegas = bodegaRepository.findBodegasSinInventario();
+        return bodegas.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    private BodegaDTO convertToDTO(Bodega bodega) {
+        return BodegaDTO.builder()
+                .idBodega(bodega.getIdBodega())
+                .nombreBodega(bodega.getNombreBodega())
+                .ubicacion(bodega.getUbicacion())
+                .cantidadProductos(bodega.getInventarios() != null ? bodega.getInventarios().size() : 0)
+                .build();
     }
 }
