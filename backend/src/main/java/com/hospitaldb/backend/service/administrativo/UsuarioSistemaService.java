@@ -227,19 +227,33 @@ public class UsuarioSistemaService {
         log.info("Rol removido exitosamente");
     }
 
-    public List<Rol> findRolesByUsuario(Long idUsuario) {
+    public List<RolDTO> findRolesByUsuario(Long idUsuario) {
         log.info("Buscando roles del usuario: {}", idUsuario);
-        return rolRepository.findRolesByUsuarioId(idUsuario);
+
+        usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + idUsuario));
+
+        List<Rol> roles = rolRepository.findRolesByUsuarioId(idUsuario);
+
+        return roles.stream()
+                .map(rol -> modelMapper.map(rol, RolDTO.class))
+                .collect(Collectors.toList());
     }
 
-    public List<UsuarioSistema> findUsuariosActivos() {
+    public List<UsuarioSistemaListDTO> findUsuariosActivos() {
         log.info("Buscando usuarios activos");
-        return usuarioRepository.findByActivoTrue();
+        List<UsuarioSistema> usuarios = usuarioRepository.findByActivoTrue();
+        return usuarios.stream()
+                .map(usuario -> modelMapper.map(usuario, UsuarioSistemaListDTO.class))
+                .collect(Collectors.toList());
     }
 
-    public List<UsuarioSistema> findUsuariosByRol(String nombreRol) {
+    public List<UsuarioSistemaListDTO> findUsuariosByRol(String nombreRol) {
         log.info("Buscando usuarios con rol: {}", nombreRol);
-        return usuarioRepository.findUsuariosByRolNombre(nombreRol);
+        List<UsuarioSistema> usuarios = usuarioRepository.findUsuariosByRolNombre(nombreRol);
+        return usuarios.stream()
+                .map(usuario -> modelMapper.map(usuario, UsuarioSistemaListDTO.class))
+                .collect(Collectors.toList());
     }
 
     private UsuarioSistemaDetailDTO buildUsuarioDetailDTO(UsuarioSistema usuario) {

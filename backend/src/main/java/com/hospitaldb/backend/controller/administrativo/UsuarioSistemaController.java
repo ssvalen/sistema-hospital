@@ -4,6 +4,9 @@ import com.hospitaldb.backend.dto.request.AsignacionRolRequestDTO;
 import com.hospitaldb.backend.dto.request.UsuarioSistemaRequestDTO;
 import com.hospitaldb.backend.dto.response.EntityResponse;
 import com.hospitaldb.backend.dto.response.PaginatedResponse;
+import com.hospitaldb.backend.dto.response.administrativo.RolDTO;
+import com.hospitaldb.backend.dto.response.administrativo.UsuarioSistemaDetailDTO;
+import com.hospitaldb.backend.dto.response.administrativo.UsuarioSistemaListDTO;
 import com.hospitaldb.backend.entity.administrativo.Rol;
 import com.hospitaldb.backend.entity.administrativo.UsuarioRol;
 import com.hospitaldb.backend.entity.administrativo.UsuarioSistema;
@@ -33,9 +36,9 @@ public class UsuarioSistemaController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<EntityResponse<List<UsuarioSistema>>> getAll(HttpServletRequest request) {
+    public ResponseEntity<EntityResponse<List<UsuarioSistemaListDTO>>> getAll(HttpServletRequest request) {
         log.info("GET /api/usuarios - Listando todos los usuarios");
-        List<UsuarioSistema> usuarios = usuarioService.findAll();
+        List<UsuarioSistemaListDTO> usuarios = usuarioService.findAll();
         return ResponseEntity.ok(
                 EntityResponse.success(usuarios, "Usuarios obtenidos exitosamente", request.getRequestURI())
         );
@@ -43,16 +46,16 @@ public class UsuarioSistemaController {
 
     @GetMapping("/paginado")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<EntityResponse<PaginatedResponse<UsuarioSistema>>> getAllPaginated(
+    public ResponseEntity<EntityResponse<PaginatedResponse<UsuarioSistemaListDTO>>> getAllPaginated(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
 
         log.info("GET /api/usuarios/paginado - page={}, size={}", page, size);
         Pageable pageable = PageRequest.of(page, size, Sort.by("idUsuario").descending());
-        Page<UsuarioSistema> pageResult = usuarioService.findAll(pageable);
+        Page<UsuarioSistemaListDTO> pageResult = usuarioService.findAll(pageable);
 
-        PaginatedResponse<UsuarioSistema> response = PaginatedResponse.<UsuarioSistema>builder()
+        PaginatedResponse<UsuarioSistemaListDTO> response = PaginatedResponse.<UsuarioSistemaListDTO>builder()
                 .content(pageResult.getContent())
                 .pageNumber(pageResult.getNumber())
                 .pageSize(pageResult.getSize())
@@ -69,33 +72,33 @@ public class UsuarioSistemaController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<EntityResponse<UsuarioSistema>> getById(@PathVariable Long id, HttpServletRequest request) {
+    public ResponseEntity<EntityResponse<UsuarioSistemaDetailDTO>> getById(@PathVariable Long id, HttpServletRequest request) {
         log.info("GET /api/usuarios/{} - Buscando usuario", id);
-        UsuarioSistema usuario = usuarioService.findById(id);
+        UsuarioSistemaDetailDTO usuario = usuarioService.findById(id);
         return ResponseEntity.ok(
                 EntityResponse.success(usuario, "Usuario encontrado", request.getRequestURI())
         );
     }
 
     @GetMapping("/username/{username}")
-    public ResponseEntity<EntityResponse<UsuarioSistema>> getByUsername(
+    public ResponseEntity<EntityResponse<UsuarioSistemaDetailDTO>> getByUsername(
             @PathVariable String username,
             HttpServletRequest request) {
 
         log.info("GET /api/usuarios/username/{} - Buscando por username", username);
-        UsuarioSistema usuario = usuarioService.findByUsername(username);
+        UsuarioSistemaDetailDTO usuario = usuarioService.findByUsername(username);
         return ResponseEntity.ok(
                 EntityResponse.success(usuario, "Usuario encontrado", request.getRequestURI())
         );
     }
 
     @GetMapping("/email/{email}")
-    public ResponseEntity<EntityResponse<UsuarioSistema>> getByEmail(
+    public ResponseEntity<EntityResponse<UsuarioSistemaDetailDTO>> getByEmail(
             @PathVariable String email,
             HttpServletRequest request) {
 
         log.info("GET /api/usuarios/email/{} - Buscando por email", email);
-        UsuarioSistema usuario = usuarioService.findByEmail(email);
+        UsuarioSistemaDetailDTO usuario = usuarioService.findByEmail(email);
         return ResponseEntity.ok(
                 EntityResponse.success(usuario, "Usuario encontrado", request.getRequestURI())
         );
@@ -103,12 +106,12 @@ public class UsuarioSistemaController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<EntityResponse<UsuarioSistema>> create(
+    public ResponseEntity<EntityResponse<UsuarioSistemaDetailDTO>> create(
             @Valid @RequestBody UsuarioSistemaRequestDTO requestDTO,
             HttpServletRequest request) {
 
         log.info("POST /api/usuarios - Creando nuevo usuario: {}", requestDTO.getUsername());
-        UsuarioSistema created = usuarioService.create(requestDTO);
+        UsuarioSistemaDetailDTO created = usuarioService.create(requestDTO);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 EntityResponse.success(created, "Usuario creado exitosamente", request.getRequestURI())
@@ -116,13 +119,13 @@ public class UsuarioSistemaController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<EntityResponse<UsuarioSistema>> update(
+    public ResponseEntity<EntityResponse<UsuarioSistemaDetailDTO>> update(
             @PathVariable Long id,
             @Valid @RequestBody UsuarioSistemaRequestDTO requestDTO,
             HttpServletRequest request) {
 
         log.info("PUT /api/usuarios/{} - Actualizando usuario", id);
-        UsuarioSistema updated = usuarioService.update(id, requestDTO);
+        UsuarioSistemaDetailDTO updated = usuarioService.update(id, requestDTO);
 
         return ResponseEntity.ok(
                 EntityResponse.success(updated, "Usuario actualizado exitosamente", request.getRequestURI())
@@ -167,12 +170,12 @@ public class UsuarioSistemaController {
     }
 
     @GetMapping("/{idUsuario}/roles")
-    public ResponseEntity<EntityResponse<List<Rol>>> getRolesByUsuario(
+    public ResponseEntity<EntityResponse<List<RolDTO>>> getRolesByUsuario(
             @PathVariable Long idUsuario,
             HttpServletRequest request) {
 
         log.info("GET /api/usuarios/{}/roles - Roles del usuario", idUsuario);
-        List<Rol> roles = usuarioService.findRolesByUsuario(idUsuario);
+        List<RolDTO> roles = usuarioService.findRolesByUsuario(idUsuario);
 
         return ResponseEntity.ok(
                 EntityResponse.success(roles, "Roles del usuario obtenidos", request.getRequestURI())
@@ -180,9 +183,9 @@ public class UsuarioSistemaController {
     }
 
     @GetMapping("/activos")
-    public ResponseEntity<EntityResponse<List<UsuarioSistema>>> getUsuariosActivos(HttpServletRequest request) {
+    public ResponseEntity<EntityResponse<List<UsuarioSistemaListDTO>>> getUsuariosActivos(HttpServletRequest request) {
         log.info("GET /api/usuarios/activos - Usuarios activos");
-        List<UsuarioSistema> usuarios = usuarioService.findUsuariosActivos();
+        List<UsuarioSistemaListDTO> usuarios = usuarioService.findUsuariosActivos();
 
         return ResponseEntity.ok(
                 EntityResponse.success(usuarios, "Usuarios activos obtenidos", request.getRequestURI())
@@ -190,12 +193,12 @@ public class UsuarioSistemaController {
     }
 
     @GetMapping("/rol/{nombreRol}")
-    public ResponseEntity<EntityResponse<List<UsuarioSistema>>> getUsuariosByRol(
+    public ResponseEntity<EntityResponse<List<UsuarioSistemaListDTO>>> getUsuariosByRol(
             @PathVariable String nombreRol,
             HttpServletRequest request) {
 
         log.info("GET /api/usuarios/rol/{} - Usuarios por rol", nombreRol);
-        List<UsuarioSistema> usuarios = usuarioService.findUsuariosByRol(nombreRol);
+        List<UsuarioSistemaListDTO> usuarios = usuarioService.findUsuariosByRol(nombreRol);
 
         return ResponseEntity.ok(
                 EntityResponse.success(usuarios, "Usuarios por rol obtenidos", request.getRequestURI())
