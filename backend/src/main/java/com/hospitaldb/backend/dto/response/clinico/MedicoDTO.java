@@ -16,4 +16,5 @@ public class MedicoDTO {
     private String especialidad;
     private String telefono;
     private String email;
+    private Integer cantidadCitas;
 }

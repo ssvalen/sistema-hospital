@@ -1,8 +1,11 @@
 package com.hospitaldb.backend.service.clinico;
 
 import com.hospitaldb.backend.dto.request.TratamientoRequestDTO;
+import com.hospitaldb.backend.dto.response.clinico.MedicamentoAsignadoDTO;
+import com.hospitaldb.backend.dto.response.clinico.TratamientoDTO;
 import com.hospitaldb.backend.entity.clinico.Cita;
 import com.hospitaldb.backend.entity.clinico.Tratamiento;
+import com.hospitaldb.backend.entity.medicamentos.TratamientoMedicamento;
 import com.hospitaldb.backend.exception.BusinessException;
 import com.hospitaldb.backend.exception.ResourceNotFoundException;
 import com.hospitaldb.backend.repository.clinico.ICitaRepository;
@@ -16,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,24 +29,33 @@ public class TratamientoService {
     private final ITratamientoRepository tratamientoRepository;
     private final ICitaRepository citaRepository;
 
-    public List<Tratamiento> findAll() {
+    public List<TratamientoDTO> findAll() {
         log.info("Obteniendo todos los tratamientos");
-        return tratamientoRepository.findAll();
+        List<Tratamiento> tratamientos = tratamientoRepository.findAll();
+        return tratamientos.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    public Page<Tratamiento> findAll(Pageable pageable) {
+    public Page<TratamientoDTO> findAll(Pageable pageable) {
         log.info("Obteniendo tratamientos paginados");
-        return tratamientoRepository.findAll(pageable);
+        Page<Tratamiento> pageResult = tratamientoRepository.findAll(pageable);
+        return pageResult.map(this::convertToDTO);
     }
 
-    public Tratamiento findById(Long id) {
+    public TratamientoDTO findById(Long id) {
         log.info("Buscando tratamiento con ID: {}", id);
+        Tratamiento tratamiento = findTratamientoEntityById(id);
+        return convertToDTO(tratamiento);
+    }
+
+    private Tratamiento findTratamientoEntityById(Long id){
         return tratamientoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tratamiento no encontrado con ID: " + id));
     }
 
     @Transactional
-    public Tratamiento create(TratamientoRequestDTO request) {
+    public TratamientoDTO create(TratamientoRequestDTO request) {
         log.info("Creando nuevo tratamiento");
 
         Cita cita = citaRepository.findById(request.getIdCita())
@@ -61,14 +74,14 @@ public class TratamientoService {
 
         Tratamiento saved = tratamientoRepository.save(tratamiento);
         log.info("Tratamiento creado exitosamente con ID: {}", saved.getIdTratamiento());
-        return saved;
+        return convertToDTO(saved);
     }
 
     @Transactional
-    public Tratamiento update(Long id, TratamientoRequestDTO request) {
+    public TratamientoDTO update(Long id, TratamientoRequestDTO request) {
         log.info("Actualizando tratamiento con ID: {}", id);
 
-        Tratamiento tratamiento = findById(id);
+        Tratamiento tratamiento = findTratamientoEntityById(id);
 
         if (request.getIdCita() != null && !tratamiento.getCita().getIdCita().equals(request.getIdCita())) {
             Cita cita = citaRepository.findById(request.getIdCita())
@@ -88,13 +101,13 @@ public class TratamientoService {
 
         Tratamiento updated = tratamientoRepository.save(tratamiento);
         log.info("Tratamiento actualizado exitosamente: {}", id);
-        return updated;
+        return convertToDTO(updated);
     }
 
     @Transactional
     public void delete(Long id) {
         log.info("Eliminando tratamiento con ID: {}", id);
-        Tratamiento tratamiento = findById(id);
+        Tratamiento tratamiento = findTratamientoEntityById(id);
 
         if (!tratamiento.getTratamientoMedicamentos().isEmpty()) {
             throw new BusinessException("No se puede eliminar un tratamiento que tiene medicamentos asociados");
@@ -104,28 +117,87 @@ public class TratamientoService {
         log.info("Tratamiento eliminado exitosamente: {}", id);
     }
 
-    public List<Tratamiento> findByCita(Long idCita) {
+    public List<TratamientoDTO> findByCita(Long idCita) {
         log.info("Buscando tratamientos de la cita: {}", idCita);
-        return tratamientoRepository.findByCita_IdCita(idCita);
+        citaRepository.findById(idCita)
+                .orElseThrow(() -> new ResourceNotFoundException("Cita no encontrada con ID: " + idCita));
+
+        List<Tratamiento> tratamientos = tratamientoRepository.findByCita_IdCita(idCita);
+        return tratamientos.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<Tratamiento> findTratamientosActivos() {
+    public List<TratamientoDTO> findTratamientosActivos() {
         log.info("Buscando tratamientos activos");
-        return tratamientoRepository.findTratamientosActivos(LocalDate.now());
+        List<Tratamiento> tratamientos = tratamientoRepository.findTratamientosActivos(LocalDate.now());
+        return tratamientos.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<Tratamiento> findTratamientosByPaciente(Long idPaciente) {
+    public List<TratamientoDTO> findTratamientosByPaciente(Long idPaciente) {
         log.info("Buscando tratamientos del paciente: {}", idPaciente);
-        return tratamientoRepository.findTratamientosByPaciente(idPaciente);
+        List<Tratamiento> tratamientos = tratamientoRepository.findTratamientosByPaciente(idPaciente);
+        return tratamientos.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<Tratamiento> findTratamientosByMedico(Long idMedico) {
+    public List<TratamientoDTO> findTratamientosByMedico(Long idMedico) {
         log.info("Buscando tratamientos del médico: {}", idMedico);
-        return tratamientoRepository.findTratamientosByMedico(idMedico);
+        List<Tratamiento> tratamientos = tratamientoRepository.findTratamientosByMedico(idMedico);
+        return tratamientos.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<Tratamiento> findTratamientosConMedicamentos() {
+    public List<TratamientoDTO> findTratamientosConMedicamentos() {
         log.info("Buscando tratamientos con medicamentos");
-        return tratamientoRepository.findTratamientosConMedicamentos();
+        List<Tratamiento> tratamientos = tratamientoRepository.findTratamientosConMedicamentos();
+        return tratamientos.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    private TratamientoDTO convertToDTO(Tratamiento tratamiento) {
+        Cita cita = tratamiento.getCita();
+
+        return TratamientoDTO.builder()
+                .idTratamiento(tratamiento.getIdTratamiento())
+                .descripcion(tratamiento.getDescripcion())
+                .fechaInicio(tratamiento.getFechaInicio())
+                .fechaFin(tratamiento.getFechaFin())
+                .idCita(cita.getIdCita())
+                .citaFechaHora(cita.getFechaHora() != null ? cita.getFechaHora().toString() : null)
+                .citaEstado(cita.getEstado())
+                .idPaciente(cita.getPaciente().getIdPaciente())
+                .pacienteNombre(cita.getPaciente().getNombre())
+                .pacienteApellido(cita.getPaciente().getApellido())
+                .pacienteTelefono(cita.getPaciente().getTelefono())
+                .idMedico(cita.getMedico().getIdMedico())
+                .medicoNombre(cita.getMedico().getNombre())
+                .medicoApellido(cita.getMedico().getApellido())
+                .medicoEspecialidad(cita.getMedico().getEspecialidad())
+                .medicamentos(convertMedicamentosToDTO(tratamiento.getTratamientoMedicamentos()))
+                .build();
+    }
+
+    private List<MedicamentoAsignadoDTO> convertMedicamentosToDTO(List<TratamientoMedicamento> tratamientoMedicamentos) {
+        if (tratamientoMedicamentos == null || tratamientoMedicamentos.isEmpty()) {
+            return List.of();
+        }
+
+        return tratamientoMedicamentos.stream()
+                .map(tm -> MedicamentoAsignadoDTO.builder()
+                        .id(tm.getId())
+                        .idMedicamento(tm.getMedicamento().getIdMedicamento())
+                        .nombreComercial(tm.getMedicamento().getNombreComercial())
+                        .principioActivo(tm.getMedicamento().getPrincipioActivo())
+                        .dosis(tm.getDosis())
+                        .cantidad(tm.getCantidad())
+                        .unidadMedida(tm.getMedicamento().getUnidadMedida())
+                        .build())
+                .collect(Collectors.toList());
     }
 }

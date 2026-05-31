@@ -39,8 +39,4 @@ public class Cita {
     @OneToMany(mappedBy = "cita", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Tratamiento> tratamientos = new ArrayList<>();
 
-    public void addTratamiento(Tratamiento tratamiento) {
-        tratamientos.add(tratamiento);
-        tratamiento.setCita(this);
-    }
 }
