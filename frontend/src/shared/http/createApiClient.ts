@@ -58,10 +58,21 @@ export function createApiClient(baseUrl = ""): HttpClient {
           signal: finalSignal,
           credentials: withCredentials ? "include" : "same-origin",
           headers: {
-            ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+            ...(body !== undefined &&
+              !(body instanceof URLSearchParams)
+              ? {
+                "Content-Type":
+                  "application/json",
+              }
+              : {}),
             ...(headers ?? {}),
           },
-          body: body !== undefined ? JSON.stringify(body) : undefined,
+          body:
+            body instanceof URLSearchParams
+              ? body
+              : body !== undefined
+                ? JSON.stringify(body)
+                : undefined,
         });
 
         if (res.status === 401) throw new UnauthorizedError();

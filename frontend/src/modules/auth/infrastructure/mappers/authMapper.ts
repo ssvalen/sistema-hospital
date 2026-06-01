@@ -1,17 +1,53 @@
 import type { User } from "../../domain/entities/User";
+import type { KeycloakToken } from "../../domain/entities/KeycloakToken";
+
 import type { LoginResponseDto } from "../../domain/dto/authLogin.dto";
 import type { RefreshResponseDto } from "../../domain/dto/authRefresh.dto";
 
-export function loginDtoToUser(dto: LoginResponseDto): User {
+import { parseJwtPayload } from "@/shared/utils/jwt";
+import { PERMISSIONS } from "@/shared/utils/permissions";
+export function loginDtoToUser(
+  dto: LoginResponseDto
+): User {
+
+  const payload =
+    parseJwtPayload(dto.access_token);
+
   return {
-    id: dto.id,
-    username: dto.username,
-    roles: dto.roles,
-    permissions: dto.permissions,
-    token: dto.token,
+    id: 0,
+    username: payload?.preferred_username ?? "",
+    // roles: payload?.realm_access?.roles ?? [],
+    roles: ["admin"],
+    // permissions: [],
+    //permisos temporales
+    permissions: Object.values(PERMISSIONS).flatMap(modulePermissions =>
+      Object.values(modulePermissions)
+    ),
+    tokenMetadata: {
+      accessToken: dto.access_token,
+      accessTokenExpiresIn: dto.expires_in,
+      refreshToken: dto.refresh_token,
+      refreshExpiresIn: dto.refresh_expires_in,
+      tokenType: dto.token_type,
+      idToken: dto.id_token,
+      sessionState: dto.session_state,
+      scope: dto.scope,
+    }
   };
 }
 
-export function refreshDtoToAccessToken(dto: RefreshResponseDto): string {
-  return dto.accessToken;
+export function refreshDtoToTokenMetadata(
+  dto: RefreshResponseDto
+): KeycloakToken {
+
+  return {
+    accessToken: dto.access_token,
+    accessTokenExpiresIn: dto.expires_in,
+    refreshToken: dto.refresh_token,
+    refreshExpiresIn: dto.refresh_expires_in,
+    tokenType: dto.token_type,
+    idToken: dto.id_token ?? "",
+    sessionState: dto.session_state ?? "",
+    scope: dto.scope ?? "",
+  }
 }
