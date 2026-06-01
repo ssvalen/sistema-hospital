@@ -1,0 +1,23 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Instalar dependencias
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copiar código
+COPY config.py .
+COPY etl_service.py .
+
+# Crear directorios
+RUN mkdir -p /app/uploads/pacientes /app/uploads/inventario /app/logs/procesados /app/logs/error
+
+# Variables de entorno
+ENV DB_HOST=mysql
+ENV DB_USER=root
+ENV DB_PASSWORD=Upana1234
+ENV DB_NAME=clinico_db
+ENV POLLING_INTERVAL=5
+
+CMD ["python", "-u", "etl_service.py"]
