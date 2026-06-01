@@ -1,17 +1,22 @@
 package com.hospitaldb.backend.entity.medicamentos;
 
 import com.hospitaldb.backend.entity.clinico.Tratamiento;
+import com.hospitaldb.backend.entity.common.BaseAuditableEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "tratamiento_medico", catalog ="medicamentos_db")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TratamientoMedicamento {
+@SuperBuilder
+@EqualsAndHashCode(callSuper = true)
+public class TratamientoMedicamento extends BaseAuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

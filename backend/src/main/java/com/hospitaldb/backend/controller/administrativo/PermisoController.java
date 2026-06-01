@@ -6,6 +6,8 @@ import com.hospitaldb.backend.dto.response.PaginatedResponse;
 import com.hospitaldb.backend.dto.response.administrativo.PermisoDTO;
 import com.hospitaldb.backend.entity.administrativo.Permiso;
 import com.hospitaldb.backend.service.administrativo.PermisoService;
+import com.hospitaldb.backend.service.auth.AccesoService;
+import com.hospitaldb.backend.utils.RolesPadre;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class PermisoController {
     private final PermisoService permisoService;
+    private final AccesoService accesoService;
 
     @GetMapping
     public ResponseEntity<EntityResponse<List<PermisoDTO>>> getAll(HttpServletRequest request) {

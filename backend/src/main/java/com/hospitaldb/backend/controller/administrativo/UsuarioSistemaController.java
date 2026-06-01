@@ -35,7 +35,6 @@ public class UsuarioSistemaController {
     private final UsuarioSistemaService usuarioService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EntityResponse<List<UsuarioSistemaListDTO>>> getAll(HttpServletRequest request) {
         log.info("GET /api/usuarios - Listando todos los usuarios");
         List<UsuarioSistemaListDTO> usuarios = usuarioService.findAll();
@@ -45,7 +44,6 @@ public class UsuarioSistemaController {
     }
 
     @GetMapping("/paginado")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EntityResponse<PaginatedResponse<UsuarioSistemaListDTO>>> getAllPaginated(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -71,7 +69,6 @@ public class UsuarioSistemaController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EntityResponse<UsuarioSistemaDetailDTO>> getById(@PathVariable Long id, HttpServletRequest request) {
         log.info("GET /api/usuarios/{} - Buscando usuario", id);
         UsuarioSistemaDetailDTO usuario = usuarioService.findById(id);
@@ -105,7 +102,6 @@ public class UsuarioSistemaController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EntityResponse<UsuarioSistemaDetailDTO>> create(
             @Valid @RequestBody UsuarioSistemaRequestDTO requestDTO,
             HttpServletRequest request) {

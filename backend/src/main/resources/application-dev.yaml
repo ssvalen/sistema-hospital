@@ -20,9 +20,7 @@ spring:
     serialization:
       FAIL_ON_EMPTY_BEANS: false
     default-property-inclusion: non_null
-    # Limitar profundidad de serialización
-    deserialization:
-      FAIL_ON_UNKNOWN_PROPERTIES: false
+    time-zone: America/Guatemala
   jpa:
     show-sql: true
     properties:

@@ -1,5 +1,7 @@
 package com.hospitaldb.backend.repository.administrativo;
 
+import com.hospitaldb.backend.entity.administrativo.Permiso;
+import com.hospitaldb.backend.entity.administrativo.Rol;
 import com.hospitaldb.backend.entity.administrativo.RolPermiso;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -39,4 +41,7 @@ public interface IRolPermisoRepository extends JpaRepository<RolPermiso, Long> {
     // Obtener los IDs de permisos que ya están asignados al rol
     @Query("SELECT rp.permiso.idPermiso FROM RolPermiso rp WHERE rp.rol.idRol = :idRol AND rp.permiso.idPermiso IN :idPermisos")
     List<Long> findExistingPermisoIds(@Param("idRol") Long idRol, @Param("idPermisos") List<Long> idPermisos);
+
+
+    boolean existsByRolAndPermiso(Rol rol, Permiso permiso);
 }
