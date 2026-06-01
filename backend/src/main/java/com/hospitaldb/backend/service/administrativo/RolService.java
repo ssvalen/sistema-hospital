@@ -4,6 +4,7 @@ import com.hospitaldb.backend.dto.request.AsignacionPermisoRequestDTO;
 import com.hospitaldb.backend.dto.request.RolRequestDTO;
 import com.hospitaldb.backend.dto.response.administrativo.PermisoDTO;
 import com.hospitaldb.backend.dto.response.administrativo.RolDTO;
+import com.hospitaldb.backend.dto.response.administrativo.RolPadreDTO;
 import com.hospitaldb.backend.dto.response.administrativo.RolPermisoDTO;
 import com.hospitaldb.backend.entity.administrativo.Permiso;
 import com.hospitaldb.backend.entity.administrativo.Rol;
@@ -51,6 +52,13 @@ public class RolService {
                 .collect(Collectors.toList());
     }
 
+    public List<RolPadreDTO> findAllRolPadre(){
+        List<RolPadre> roles = rolPadreRepository.findAll();
+        return roles.stream()
+                .map(rol -> modelMapper.map(rol, RolPadreDTO.class))
+                .collect(Collectors.toList());
+    }
+
     public Page<RolDTO> findAll(Pageable pageable) {
         log.info("Obteniendo roles paginados");
         Page<Rol> pageResult = rolRepository.findAll(pageable);
@@ -77,7 +85,7 @@ public class RolService {
                 request.getModelRoleId());
 
         RolPadre rolPadre = rolPadreRepository.findById(request.getModelRoleId())
-                .orElseThrow(() -> new BusinessException("No existe el rol padre con id: " + request.getModelRoleId())).getRolPadre();
+                .orElseThrow(() -> new BusinessException("No existe el rol padre con id: " + request.getModelRoleId()));
 
         if (rolRepository.existsByNombreRol(request.getNombreRol())) {
             throw new BusinessException("Ya existe un rol con el nombre: " + request.getNombreRol());
