@@ -25,6 +25,21 @@ services:
     networks:
       - hospital-network
 
+  mongodb:
+    image: mongo:7.0
+    container_name: mongodb-hospital
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+      - MONGO_INITDB_DATABASE=hospital_audit
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - hospital-network
+
   keycloak:
     image: quay.io/keycloak/keycloak:26.0.2
     container_name: keycloak
@@ -132,6 +147,7 @@ services:
 volumes:
   mysql_data:
   keycloak_data:
+  mongodb_data:
 
 networks:
   hospital-network:
