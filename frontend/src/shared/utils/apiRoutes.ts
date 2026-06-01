@@ -1,3 +1,5 @@
+import { APPOINTMENT_PERMISSIONS } from "@/modules/appointments/ui/utils/appointmentsPermissions";
+
 export const API_ROUTES = {
   // AUTH
   KEYCLOAK_LOGIN: '/realms/hotel-db/protocol/openid-connect/token',
@@ -18,5 +20,12 @@ export const API_ROUTES = {
   PATIENT_GET_PAGINATED: '/api/hospitaldb/clinico/pacientes/paginado',
   PATIENT_CREATE: '/api/hospitaldb/clinico/pacientes',
   PATIENT_PUT: '/api/hospitaldb/clinico/pacientes',
-  PATIENT_GET_BY_ID: '/api/hospitaldb/clinico/pacientes'
+  PATIENT_GET_BY_ID: '/api/hospitaldb/clinico/pacientes',
+  // APPOINTMENTS
+  APPOINTMENT_GET_ALL: '/api/citas',
+  APPOINTMENT_GET_PAGINATED: '/api/citas/paginado',
+  APPOINTMENT_GET_BY_PATIENT: (id: number) => `/${id}/`,
+  APPOINTMENT_GET_BY_MEDIC: (id: number) => `/${id}/`,
+  APPOINTMENT_CREATE: '/api/citas',
+  APPOINTMENT_UPDATE: (id: number) => `/api/citas/${id}`
 } as const;

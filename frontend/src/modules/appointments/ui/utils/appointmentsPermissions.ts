@@ -1,5 +1,6 @@
 export const APPOINTMENT_PERMISSIONS = {
     MODULE_ACCESS: 'appointment.module',
+    VIEW_ALL_APPOINTMENTS: 'appointment.view.all',
     CREATE: 'appointment.create',
     EDIT: 'appointment.edit',
     FILTER: 'appointment.filter',

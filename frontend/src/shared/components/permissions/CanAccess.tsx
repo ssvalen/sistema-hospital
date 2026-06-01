@@ -1,4 +1,5 @@
-import { useAuthStore } from "@/modules/auth/store/authStore";
+import React from "react";
+import { useAccess } from "@/shared/hooks/useAccess";
 
 type CanProps = {
   permission?: string;
@@ -13,12 +14,10 @@ export default function CanAccess({
   fallback = null,
   children,
 }: CanProps) {
-  const hasRole = useAuthStore((s) => s.hasRole);
-  const hasPermission = useAuthStore((s) => s.hasPermission);
-
-  const allowed =
-    (permission ? hasPermission(permission) : true) &&
-    (role ? hasRole(role) : true);
+  const allowed = useAccess({
+    permissions: permission ? [permission] : [],
+    roles: role ? [role] : [],
+  });
 
   return allowed ? <>{children}</> : <>{fallback}</>;
 }
