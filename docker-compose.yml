@@ -10,6 +10,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
+      #- ./init.sql:/docker-entrypoint-initdb.d/init.sql solo se usa en local con init.sql
     ports:
       - "3307:3306"
     command: 
@@ -107,6 +108,25 @@ services:
       - /app/node_modules
     depends_on:
       - hospital-service
+  etl_service:
+    build: ./etl                  
+    container_name: app_etl
+    volumes:
+      - ./uploads:/app/uploads      # Misma carpeta compartida
+      - ./etl/logs:/app/logs        # Logs del ETL
+    environment:
+      DB_HOST: mysql-hospital
+      DB_USER: root                  
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      DB_NAME: clinico_db
+      POLLING_INTERVAL: 5
+    depends_on:
+      mysql-hospital:
+        condition: service_healthy
+    networks:
+      - hospital-network
+    restart: unless-stopped
+
 volumes:
   mysql_data:
   keycloak_data:
