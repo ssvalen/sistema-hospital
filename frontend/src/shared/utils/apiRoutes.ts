@@ -1,4 +1,8 @@
 export const API_ROUTES = {
+  // AUTH
+  KEYCLOAK_LOGIN: '/realms/hotel-db/protocol/openid-connect/token',
+  KEYCLOAK_LOGOUT: '/realms/hotel-db/protocol/openid-connect/logout',
+  KEYCLOAK_REFRESH: '/realms/hotel-db/protocol/openid-connect/token',
   // ROLES
   ROLE_GET_ALL: '/api/hospitaldb/administrativo/roles',
   ROLE_CREATE: '/api/hospitaldb/administrativo/roles',

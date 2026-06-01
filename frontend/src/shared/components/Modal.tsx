@@ -6,6 +6,7 @@ interface ModalProps {
   titulo?: string;
   children: React.ReactNode;
   size?: "sm" | "md" | "lg" | "xl";
+  gradient?: boolean;
 }
 
 const sizes: Record<NonNullable<ModalProps["size"]>, string> = {
@@ -21,6 +22,7 @@ const Modal: React.FC<ModalProps> = ({
   titulo = "",
   children,
   size = "md",
+  gradient = false,
 }) => {
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -36,14 +38,11 @@ const Modal: React.FC<ModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center px-4">
-
-      {/* BACKDROP */}
       <div
         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
 
-      {/* MODAL */}
       <div
         className={`
           relative w-full ${sizes[size]}
@@ -53,33 +52,26 @@ const Modal: React.FC<ModalProps> = ({
           animate-in fade-in zoom-in-95 duration-150
         `}
       >
+        {gradient && (
+          <div className="h-1 w-full bg-gradient-to-r from-amber-400 via-orange-500 to-red-500" />
+        )}
 
-        {/* HEADER */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
-
+        <div className="flex items-center justify-between px-6 py-3 border-b border-slate-100 bg-slate-50">
           <h2 className="text-lg font-semibold text-slate-800 tracking-tight">
             {titulo}
           </h2>
-          
+
           <button
             onClick={onClose}
-            className="
-              w-9 h-9 flex items-center justify-center
-              rounded-full text-slate-500
-              hover:bg-slate-200 hover:text-slate-800
-              transition
-            "
+            className="w-9 h-9 flex items-center justify-center rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition"
           >
             ✕
           </button>
-
         </div>
 
-        {/* BODY */}
         <div className="p-6 bg-white max-h-[75vh] overflow-auto">
           {children}
         </div>
-
       </div>
     </div>
   );
