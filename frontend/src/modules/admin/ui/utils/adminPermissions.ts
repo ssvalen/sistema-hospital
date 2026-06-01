@@ -1,5 +1,3 @@
-import { PERMISSIONS } from "@/shared/utils/permissions"
-
 export const ADMIN_PERMISSIONS = {
     MODULE_ACCESS: 'admin.module',
     ROLES: 'admin.manager.roles',
