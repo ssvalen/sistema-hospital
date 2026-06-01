@@ -1,0 +1,106 @@
+spring:
+  application:
+    name: api-hospital-db
+  
+  datasource:
+    url: jdbc:mysql://mysql-hospital:3306/?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Guatemala&characterEncoding=UTF-8
+    username: ENC(497DC1820899566609DCAE9D1AC2E85E6D009282002287B260F80D228CBC3EDF680BCEE3DA0B1C471DBC6CA00939DFBC975FE551696981D2FE301DA085DCED55)
+    password: ENC(8B52C114DE434F67B1083A7BF58AE07B2197940A7D2053D938F087B8FCEAA72E078574FF40CB5EFEF1A77D5DA93C65D8C6913AD5380C19FB9C506014DAAE13F0)
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
+      connection-timeout: 30000
+      max-lifetime: 600000
+      idle-timeout: 300000
+      connection-test-query: SELECT 1
+      pool-name: HikariPool-MyApp
+  jackson:
+    serialization:
+      FAIL_ON_EMPTY_BEANS: false
+    default-property-inclusion: non_null
+    # Limitar profundidad de serialización
+    deserialization:
+      FAIL_ON_UNKNOWN_PROPERTIES: false
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        physical_naming_strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+        generate_statistics: false
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+        hbm2ddl.auto: none
+    hibernate:
+      ddl-auto: none
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8080/realms/hotel-db
+          jwk-set-uri: http://keycloak:8080/realms/hotel-db/protocol/openid-connect/certs
+    client:
+      registration:
+        keycloak:
+          client-id: api-hospital-db
+          client-secret: ${KEYCLOAK_CLIENT_SECRET}
+          authorization-grant-type: authorization_code
+          scope: openid, profile, email
+      provider:
+        keycloak:
+          issuer-uri: http://keycloak:8080/realms/hotel-db
+  keycloak:
+    admin:
+      realm: master
+      server-url: http://keycloak:8080
+      resource: api-hospital-db
+      client-id: admin-cli
+      password: admin123
+      user: superadmin
+      target-realm: hotel-db
+    hospital-api:
+      realm: hotel-db
+      client-id: api-hospital-db
+      client-secret: Aigf7bNFYoF6GkLkWtXaHp7mfV4k7KIi
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api/hospitaldb/v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /api/hospitaldb/swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+    display-request-duration: true
+    filter: true
+    show-actuator: false
+    writer-with-default-pretty-printer: true
+
+jasypt:
+  encryptor:
+    password: ${JASYPT_ENCRYPTOR_PASSWORD:}
+    algorithm: PBEWithHMACSHA512ANDAES_256
+    iv-generator-classname: org.jasypt.iv.RandomIvGenerator
+    key-obtention-iterations: 1000
+    pool-size: 1
+    provider-name: SunJCE
+    salt-generator-classname: org.jasypt.salt.RandomSaltGenerator
+    string-output-type: base64
+
+logging:
+  level:
+    com.zaxxer.hikari: DEBUG  
+    org.hibernate.SQL: DEBUG  
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE 
+    org.springframework.jdbc: DEBUG
+
+server:
+  port: 8081
+  error:
+    include-message: always
+    include-binding-errors: always

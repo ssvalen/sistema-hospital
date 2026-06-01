@@ -1,0 +1,116 @@
+services:
+  mysql-hospital:
+    image: mysql:8.0
+    container_name: mysql-hospital
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-keycloak_db}
+      MYSQL_USER: ${MYSQL_USER:-keycloak_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    command: 
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hospital-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.2
+    container_name: keycloak
+    restart: unless-stopped
+    environment:
+      KC_DB: mysql
+      KC_DB_URL_HOST: mysql-hospital
+      KC_DB_URL_DATABASE: ${MYSQL_DATABASE}
+      KC_DB_USERNAME: ${MYSQL_USER}
+      KC_DB_PASSWORD: ${MYSQL_PASSWORD}
+      KC_DB_PORT: 3306
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_HOSTNAME: keycloak
+      KC_HOSTNAME_STRICT: false
+      KC_HTTP_ENABLED: true
+      KC_PROXY_HEADERS: forwarded
+      KC_CACHE: local      
+      KC_LOG_LEVEL: INFO
+      KC_HEALTH_ENABLED: true
+    command: 
+      - "start-dev"  
+      - --import-realm
+    ports:
+      - "8080:8080"   
+    depends_on:
+      mysql-hospital:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 && echo -e 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | grep -q '200 OK'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    networks:
+      - hospital-network
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+      - ./realms/hotel-db-realm.json:/opt/keycloak/data/import/hotel-db-realm.json
+
+  hospital-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: spring-hospital-app
+    #restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - JAVA_OPTS=-Xmx512m -Xms256m -XX:+UseG1GC -XX:+UseStringDeduplication
+      - JASYPT_ENCRYPTOR_PASSWORD=${JASYPT_ENCRYPTOR_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=dev
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK=INFO
+      - LOGGING_LEVEL_COM_ZAXKER_HIKARI=DEBUG
+    depends_on:
+      mysql-hospital:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    networks:
+      - hospital-network
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+  hospital-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: hospital-frontend
+    ports:
+      - "5173:5173"
+    networks:
+      - hospital-network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - hospital-service
+volumes:
+  mysql_data:
+  keycloak_data:
+
+networks:
+  hospital-network:
+    driver: bridge
