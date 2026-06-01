@@ -37,7 +37,7 @@ export function createApiClient(baseUrl = ""): HttpClient {
         method = "GET",
         body,
         headers,
-        withCredentials = true,
+        withCredentials = false,
         signal,
         timeoutMs,
       } = req;

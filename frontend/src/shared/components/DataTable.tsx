@@ -58,6 +58,26 @@ const DataTable = <T extends Record<string, any>>({
     const { toast, showToast, hideToast } = useToast();
     const [filters, setFilters] = useState<Record<string, string>>({});
 
+    const renderCellValue = (value: unknown): string => {
+        if (value == null) return "N/A";
+
+        if (Array.isArray(value)) {
+            return value
+                .map(item => {
+                    if (item == null) return "";
+
+                    if (typeof item === "object") {
+                        return JSON.stringify(item);
+                    }
+
+                    return String(item);
+                })
+                .join(", ");
+        }
+
+        return String(value);
+    };
+
     const copyToClipboard = async (text: unknown) => {
         try {
             await navigator.clipboard.writeText(String(text ?? ""));
@@ -250,7 +270,7 @@ const DataTable = <T extends Record<string, any>>({
                                                     }
                                                     className="block cursor-pointer truncate"
                                                 >
-                                                    {row[col.key] ?? "N/A"}
+                                                    {renderCellValue(row[col.key])}
                                                 </span>
                                             )}
                                         </td>

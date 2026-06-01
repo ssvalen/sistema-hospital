@@ -8,39 +8,53 @@ import Toast from "@/shared/components/Toast";
 import { useToast } from "@/shared/hooks/useToast";
 import { TOAST_TYPES } from "@/shared/types/ToastType";
 
-import type { Permission } from "../../types/AuthTypes";
+import type { Permission } from "@/modules/admin/domain/entities/Permission";
 import type { TableAction } from "@/shared/types/table/TableTypes";
-import { faKey } from "@fortawesome/free-solid-svg-icons";
 
+import { faKey } from "@fortawesome/free-solid-svg-icons";
 import { PERMISSIONS } from "@/shared/utils/permissions";
 import CanAccess from "@/shared/components/permissions/CanAccess";
 
+import { useGetPermissionsPaginated } from "../../hooks/permissions/useGetPermissionsPaginated";
+import { useCreatePermission } from "../../hooks/permissions/useCreatePermission";
+import { useUpdatePermission } from "../../hooks/permissions/useUpdatePermission";
+// import { useInactivatePermission } from "../../hooks/useInactivatePermission";
 
 type PermissionForm = {
-  id?: string;
+  id?: number;
   name: string;
-  code: string;
 };
 
 const PermissionsPage = () => {
   const { toast, showToast, hideToast } = useToast();
 
-  const [permissions, setPermissions] = useState<Permission[]>([
-    { id: "p1", name: "Ver pacientes", code: "patients.view" },
-    { id: "p2", name: "Crear pacientes", code: "patients.create" },
-    { id: "p3", name: "Editar pacientes", code: "patients.edit" },
-  ]);
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+
+  const {
+    items: permissions,
+    totalElements,
+    isLoading,
+    isFetching,
+  } = useGetPermissionsPaginated(page - 1, pageSize);
+
+  const createPermission = useCreatePermission();
+  const updatePermission = useUpdatePermission();
+  // const inactivatePermission = useInactivatePermission();
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<PermissionForm | null>(null);
 
   const openCreate = () => {
-    setEditing({ name: "", code: "" });
+    setEditing({ name: "" });
     setOpen(true);
   };
 
   const openEdit = (p: Permission) => {
-    setEditing({ id: p.id, name: p.name, code: p.code });
+    setEditing({
+      id: p.id,
+      name: p.permissionName,
+    });
     setOpen(true);
   };
 
@@ -50,69 +64,52 @@ const PermissionsPage = () => {
   };
 
   const validate = () => {
-    if (!editing) return false;
-
-    if (!editing.name.trim()) {
+    if (!editing?.name.trim()) {
       showToast("El nombre es obligatorio", TOAST_TYPES.ERROR);
       return false;
     }
-
-    if (!editing.code.trim()) {
-      showToast("El código es obligatorio", TOAST_TYPES.ERROR);
-      return false;
-    }
-
     return true;
   };
 
-  const save = () => {
-    if (!editing) return;
-    if (!validate()) return;
-
-    const isSame =
-      editing.id &&
-      permissions.find(
-        (p) =>
-          p.id === editing.id &&
-          p.name === editing.name &&
-          p.code === editing.code
-      );
-
-    if (isSame) {
-      showToast("Sin cambios", TOAST_TYPES.ERROR);
-      return;
-    }
+  const save = async () => {
+    if (!editing || !validate()) return;
 
     if (!editing.id) {
-      setPermissions((prev) => [
-        {
-          id: crypto.randomUUID(),
-          name: editing.name,
-          code: editing.code,
+      createPermission.mutate(editing.name, {
+        onSuccess: () => {
+          showToast("Permiso creado", TOAST_TYPES.SUCCESS);
+          close();
         },
-        ...prev,
-      ]);
-
-      showToast("Permiso creado", TOAST_TYPES.SUCCESS);
+        onError: () => {
+          showToast("Error al crear permiso", TOAST_TYPES.ERROR);
+        },
+      });
     } else {
-      setPermissions((prev) =>
-        prev.map((p) =>
-          p.id === editing.id
-            ? { ...p, name: editing.name, code: editing.code }
-            : p
-        )
+      updatePermission.mutate(
+        { id: editing.id, name: editing.name },
+        {
+          onSuccess: () => {
+            showToast("Permiso actualizado", TOAST_TYPES.SUCCESS);
+            close();
+          },
+          onError: () => {
+            showToast("Error al actualizar permiso", TOAST_TYPES.ERROR);
+          },
+        }
       );
-
-      showToast("Permiso actualizado", TOAST_TYPES.SUCCESS);
     }
-
-    close();
   };
 
-  const toggleInactive = (id: string) => {
-    setPermissions((prev) => prev.filter((p) => p.id !== id));
-    showToast("Permiso eliminado", TOAST_TYPES.SUCCESS);
-  };
+  // const toggleInactive = (id: number) => {
+  //   inactivatePermission.mutate(id, {
+  //     onSuccess: () => {
+  //       showToast("Permiso inactivado", TOAST_TYPES.SUCCESS);
+  //     },
+  //     onError: () => {
+  //       showToast("Error al inactivar permiso", TOAST_TYPES.ERROR);
+  //     },
+  //   });
+  // };
 
   const actions: TableAction<Permission>[] = [
     {
@@ -127,7 +124,8 @@ const PermissionsPage = () => {
       label: "Inactivar",
       color: BUTTON_COLORS.RED,
       permission: PERMISSIONS.ADMIN.PERMISSIONS_INACTIVATE,
-      onClick: (p) => toggleInactive(p.id),
+      onClick: (p) => { },
+      // onClick: (p) => toggleInactive(p.id),
     },
   ];
 
@@ -150,18 +148,18 @@ const PermissionsPage = () => {
         </CanAccess>
       </div>
 
-      <DataTable
+      <DataTable<Permission>
         columns={[
-          { key: "name", label: "Permiso" },
-          { key: "code", label: "Código" },
+          { key: "permissionName", label: "Permiso" },
           { key: "actions", label: "Acciones", hasActions: true },
         ]}
+        loading={isLoading || isFetching}
         data={permissions}
+        page={page}
+        pageSize={pageSize}
+        total={totalElements}
+        onPageChange={setPage}
         actions={actions}
-        page={1}
-        pageSize={10}
-        total={permissions.length}
-        onPageChange={() => {}}
       />
 
       <Modal
@@ -183,17 +181,6 @@ const PermissionsPage = () => {
             />
           </FormField>
 
-          <FormField label="Código">
-            <Input
-              value={editing?.code || ""}
-              onChange={(e) =>
-                setEditing((prev) =>
-                  prev ? { ...prev, code: e.target.value } : prev
-                )
-              }
-            />
-          </FormField>
-
           <div className="flex justify-end gap-2 pt-2">
             <Button
               label="Cancelar"
@@ -202,7 +189,15 @@ const PermissionsPage = () => {
               onClick={close}
             />
 
-            <Button label="Guardar" color="blue" onClick={save} />
+            <Button
+              label="Guardar"
+              color="blue"
+              onClick={save}
+              disabled={
+                createPermission.isPending ||
+                updatePermission.isPending
+              }
+            />
           </div>
 
         </div>
