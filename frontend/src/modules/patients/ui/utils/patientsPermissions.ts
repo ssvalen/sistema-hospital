@@ -4,7 +4,7 @@ export const PATIENT_PERMISSIONS = {
     EDIT: 'patient.edit',
     FILTER: 'patient.filter',
     VIEW_DETAIL: 'patient.view.detail',
-    INACTIVATE: 'patient.inactivate'
+    INACTIVATE_PATIENTS: 'patient.inactivate'
 } as const
 
 export type PatientPermission =

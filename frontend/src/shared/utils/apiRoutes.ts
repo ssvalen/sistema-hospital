@@ -13,4 +13,10 @@ export const API_ROUTES = {
   PERMISSION_GET_PAGINATED: '/api/hospitaldb/administrativo/permisos/paginado',
   PERMISSION_CREATE: '/api/hospitaldb/administrativo/permisos',
   PERMISSION_UPDATE: '/api/hospitaldb/administrativo/permisos',
-};
+  //  PATIENTS
+  PATIENT_GET_ALL: '/api/hospitaldb/clinico/pacientes',
+  PATIENT_GET_PAGINATED: '/api/hospitaldb/clinico/pacientes/paginado',
+  PATIENT_CREATE: '/api/hospitaldb/clinico/pacientes',
+  PATIENT_PUT: '/api/hospitaldb/clinico/pacientes',
+  PATIENT_GET_BY_ID: '/api/hospitaldb/clinico/pacientes'
+} as const;

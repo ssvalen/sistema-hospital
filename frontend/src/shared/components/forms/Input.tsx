@@ -20,15 +20,22 @@ const invalidStyles =
 const Input: React.FC<InputProps> = ({
   invalid,
   disabled,
+  type,
   className = "",
   ...props
 }) => {
+
+  const isDate = type === "date";
+
   return (
     <input
       {...props}
+      type={type}
       disabled={disabled}
       className={[
         base,
+        isDate ? "h-12 pr-2" : "",
+
         disabled ? disabledStyles : normalStyles,
         invalid ? invalidStyles : "",
         className
