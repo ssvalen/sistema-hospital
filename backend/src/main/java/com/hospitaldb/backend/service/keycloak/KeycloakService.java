@@ -1,25 +1,20 @@
 package com.hospitaldb.backend.service.keycloak;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.hospitaldb.backend.dto.request.KeycloakUserRequestDTO;
 import com.hospitaldb.backend.dto.response.keycloak.KeycloakRoleResponseDTO;
 import com.hospitaldb.backend.dto.response.keycloak.KeycloakTokenResponse;
-import com.hospitaldb.backend.dto.response.keycloak.KeycloakUserListResponseDTO;
 import com.hospitaldb.backend.dto.response.keycloak.KeycloakUserResponseDTO;
 import com.hospitaldb.backend.properties.KeycloakAdminProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -126,6 +121,24 @@ public class KeycloakService {
                         "id", role.getId(),
                         "name", role.getName()
                 ));
+    }
+
+    public Mono<Void> createRealmRole(String roleName) {
+        return getAdminToken()
+                .flatMap(token -> keycloakWebClient.post()
+                        .uri("/admin/realms/" + keycloakAdminProperties.getTargetRealm() + "/roles")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(Map.of("name", roleName))
+                        .retrieve()
+                        .onStatus(HttpStatusCode::isError, response ->
+                                response.bodyToMono(String.class)
+                                        .flatMap(error -> Mono.error(
+                                                new RuntimeException("Error creando rol en Keycloak: " + error))))
+                        .toBodilessEntity()
+                        .then())
+                .doOnSuccess(v -> log.info("Rol {} creado en Keycloak", roleName))
+                .doOnError(e -> log.error("Error creando rol {}: {}", roleName, e.getMessage()));
     }
 
 }

@@ -37,7 +37,7 @@ services:
       KC_DB_PORT: 3306
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
-      KC_HOSTNAME: keycloak
+      #KC_HOSTNAME: keycloak
       KC_HOSTNAME_STRICT: false
       KC_HTTP_ENABLED: true
       KC_PROXY_HEADERS: forwarded
@@ -93,6 +93,8 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
+    extra_hosts:
+    - "host.docker.internal:host-gateway"
   hospital-frontend:
     build:
       context: ./frontend

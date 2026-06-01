@@ -9,23 +9,19 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "usuario_rol", catalog ="administrativo_db")
+@Table(name = "rol_padre", catalog = "administrativo_db")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
-public class UsuarioRol extends BaseAuditableEntity {
+public class RolPadre extends BaseAuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "id_rol_padre")
+    private Long idRolPadre;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_usuario", nullable = false)
-    private UsuarioSistema usuario;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_rol", nullable = false)
-    private Rol rol;
+    @Column(name = "nombre_rol_padre", nullable = false, unique = true, length = 50)
+    private String nombreRolPadre;
 }
