@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
-@Profile("dev")
+@Profile("dev-personal")
 @RestController
 @RequestMapping("/api/hospitaldb/administrativo/crypto")
 @RequiredArgsConstructor
