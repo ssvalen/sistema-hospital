@@ -2,6 +2,8 @@ package com.hospitaldb.backend.repository.clinico;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hospitaldb.backend.entity.clinico.Cita;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -44,4 +46,8 @@ public interface ICitaRepository extends JpaRepository<Cita, Long> {
     @Transactional
     @Query("UPDATE Cita c SET c.estado = 'CANCELADA' WHERE c.estado = 'PENDIENTE' AND c.fechaHora < :ahora")
     int cancelarCitasExpiradas(@Param("ahora") LocalDateTime ahora);
+
+    List<Cita> findAllByActivo(boolean activo);
+
+    Page<Cita> findAllByActivo(boolean activo, Pageable pageable);
 }

@@ -18,6 +18,8 @@ public interface IUsuarioRolRepository extends JpaRepository<UsuarioRol, Long> {
 
     List<UsuarioRol> findByRol_IdRol(Long idRol);
 
+    List<UsuarioRol> findAllByActivo(boolean activo);
+
     Optional<UsuarioRol> findByUsuario_IdUsuarioAndRol_IdRol(Long idUsuario, Long idRol);
 
     @Modifying

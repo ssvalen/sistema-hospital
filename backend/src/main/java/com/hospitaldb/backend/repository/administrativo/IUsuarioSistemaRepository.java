@@ -1,6 +1,8 @@
 package com.hospitaldb.backend.repository.administrativo;
 
 import com.hospitaldb.backend.entity.administrativo.UsuarioSistema;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,6 +27,10 @@ public interface IUsuarioSistemaRepository extends JpaRepository<UsuarioSistema,
     boolean existsByUsername(String username);
 
     boolean existsByEmail(String email);
+
+    List<UsuarioSistema> findAllByActivo(boolean activo);
+
+    Page<UsuarioSistema> findAllByActivo(boolean activo, Pageable pageable);
 
     @Query("SELECT u FROM UsuarioSistema u JOIN u.usuarioRoles ur WHERE ur.rol.nombreRol = :nombreRol")
     List<UsuarioSistema> findUsuariosByRolNombre(@Param("nombreRol") String nombreRol);

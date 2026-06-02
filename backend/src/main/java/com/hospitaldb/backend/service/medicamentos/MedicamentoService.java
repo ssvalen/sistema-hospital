@@ -38,12 +38,12 @@ public class MedicamentoService {
     }
 
     private List<Medicamento> findMedicamentoEntityAll(){
-        return medicamentoRepository.findAll();
+        return medicamentoRepository.findAllByActivo(true);
     }
 
     public Page<MedicamentoDTO> findAll(Pageable pageable) {
         log.info("Obteniendo medicamentos paginados");
-        Page<Medicamento> pageResult = medicamentoRepository.findAll(pageable);
+        Page<Medicamento> pageResult = medicamentoRepository.findAllByActivo(true,pageable);
         return pageResult.map(this::convertToDTO);
     }
 

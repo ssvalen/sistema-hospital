@@ -1,6 +1,8 @@
 package com.hospitaldb.backend.repository.administrativo;
 
 import com.hospitaldb.backend.entity.administrativo.Rol;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,6 +17,10 @@ public interface IRolRepository extends JpaRepository<Rol, Long> {
     Optional<Rol> findByNombreRol(String nombreRol);
 
     boolean existsByNombreRol(String nombreRol);
+
+    List<Rol> findAllByActivo(boolean activo);
+
+    Page<Rol> findAllByActivo(boolean activo, Pageable pageable);
 
     @Query("SELECT r FROM Rol r JOIN r.usuarioRoles ur WHERE ur.usuario.idUsuario = :idUsuario")
     List<Rol> findRolesByUsuarioId(@Param("idUsuario") Long idUsuario);

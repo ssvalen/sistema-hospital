@@ -46,7 +46,7 @@ public class RolService {
 
     public List<RolDTO> findAll() {
         log.info("Obteniendo todos los roles");
-        List<Rol> roles = rolRepository.findAll();
+        List<Rol> roles = rolRepository.findAllByActivo(true);
         return roles.stream()
                 .map(rol -> modelMapper.map(rol, RolDTO.class))
                 .collect(Collectors.toList());
@@ -61,7 +61,7 @@ public class RolService {
 
     public Page<RolDTO> findAll(Pageable pageable) {
         log.info("Obteniendo roles paginados");
-        Page<Rol> pageResult = rolRepository.findAll(pageable);
+        Page<Rol> pageResult = rolRepository.findAllByActivo(true, pageable);
         return pageResult.map(rol -> modelMapper.map(rol, RolDTO.class));
     }
 
