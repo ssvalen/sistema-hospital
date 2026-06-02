@@ -100,10 +100,9 @@ export const adminRoutes: SidebarRoute[] = [
         permissions: [PERMISSIONS.APPOINTMENT.EDIT],
       },
       {
-        path: "appointments/attend",
+        path: "appointments/:id/attend",
         element: AttendAppointmentPage,
-        showInSidebar: true,
-        label: "Atender cita",
+        showInSidebar: false,
         permissions: [PERMISSIONS.APPOINTMENT.EDIT],
       },
     ],

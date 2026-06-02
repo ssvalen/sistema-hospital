@@ -8,9 +8,13 @@ import type {
 import { paginatedMapper } from "@/shared/infrastructure/mappers/paginatedMapper";
 
 export function appointmentToDomain(dto: AppointmentResponseDTO): Appointment {
+
+    const [date, time = ""] = dto.fechaHora.split(" ");
+
     return {
         id: dto.idCita,
-        startDate: dto.fechaHora,
+        startDate: date,
+        startTime: time,
         status: dto.estado,
 
         patient: {

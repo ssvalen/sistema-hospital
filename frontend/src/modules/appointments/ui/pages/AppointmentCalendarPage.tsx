@@ -63,19 +63,27 @@ export default function AppointmentCalendarPage() {
   const [page] = useState(1);
   const pageSize = 10;
 
+  const selectedMedicId =
+    doctorId !== "all" ? Number(doctorId) : undefined;
+
   const canViewAllAppointments = useAccess({
     permissions: [PERMISSIONS.APPOINTMENT.VIEW_ALL_APPOINTMENTS]
   });
 
   const calendarQuery = useAppointmentsCalendar({
-    canViewAll: canViewAllAppointments
+    canViewAll: canViewAllAppointments,
+    medicId: selectedMedicId
   });
 
   const tableQuery = useAppointmentsTable({
-    page,
+    page: page - 1,
     size: pageSize,
-    canViewAll: canViewAllAppointments
+    canViewAll: canViewAllAppointments,
+    medicId: selectedMedicId
   });
+
+  console.log("table data", tableQuery.data);
+  console.log("table error", tableQuery.error);
 
   const appointments: AppointmentUI[] = useMemo(() => {
     if (view === "calendar") {
@@ -86,9 +94,11 @@ export default function AppointmentCalendarPage() {
 
     if (!data) return [];
 
-    return "content" in data
-      ? data.content.map(normalizeAppointment)
-      : [];
+    if (Array.isArray(data)) {
+      return data.map(normalizeAppointment);
+    }
+
+    return data.content.map(normalizeAppointment);
   }, [view, calendarQuery.data, tableQuery.data]);
 
   const filteredAppointments: AppointmentUI[] = useMemo(() => {
@@ -172,8 +182,8 @@ export default function AppointmentCalendarPage() {
                 onChange={(e) => setDoctorId(e.target.value)}
               >
                 <option value="all">Todos</option>
-                <option value="d1">Dr. López</option>
-                <option value="d2">Dra. Méndez</option>
+                <option value="1">Dr. López</option>
+                <option value="2">Dra. Méndez</option>
               </Select>
             </FormField>
           </div>
@@ -217,9 +227,15 @@ export default function AppointmentCalendarPage() {
             ]}
             data={filteredAppointments}
             actions={actions}
-            page={1}
-            pageSize={10}
-            total={filteredAppointments.length}
+            page={page}
+            pageSize={pageSize}
+            total={
+              tableQuery.data &&
+                !Array.isArray(tableQuery.data) &&
+                "totalElements" in tableQuery.data
+                ? tableQuery.data.totalElements
+                : filteredAppointments.length
+            }
             onPageChange={() => { }}
           />
         </div>

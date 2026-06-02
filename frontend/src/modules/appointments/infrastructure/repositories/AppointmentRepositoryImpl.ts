@@ -44,7 +44,7 @@ export function createAppointmentRepository(http: HttpClient): AppointmentReposi
 
         async getAppointmentsByMedic(medicId: number, signal?: AbortSignal) {
             const dto = await http.request<ApiResponse<AppointmentResponseDTO[]>>({
-                url: API_ROUTES.APPOINTMENT_GET_BY_MEDIC(medicId),
+                url: `${API_ROUTES.APPOINTMENT_GET_BY_MEDIC}/${medicId}`,
                 method: "GET",
                 withCredentials: false,
                 timeoutMs: 15_000,
@@ -54,9 +54,21 @@ export function createAppointmentRepository(http: HttpClient): AppointmentReposi
             return appointmentsToDomain(dto.data);
         },
 
+        async getAppointmentByPatient(patientId: number, signal?: AbortSignal) {
+            const dto = await http.request<ApiResponse<AppointmentResponseDTO>>({
+                url: `${API_ROUTES.APPOINTMENT_GET_BY_ID}/${patientId}`,
+                method: "GET",
+                withCredentials: false,
+                timeoutMs: 15_000,
+                signal,
+            });
+
+            return appointmentToDomain(dto.data);
+        },
+
         async getAppointmentsByPatient(patientId: number, signal?: AbortSignal) {
             const dto = await http.request<ApiResponse<AppointmentResponseDTO[]>>({
-                url: API_ROUTES.APPOINTMENT_GET_BY_MEDIC(patientId),
+                url: `${API_ROUTES.APPOINTMENT_GET_BY_PATIENT}/${patientId}`,
                 method: "GET",
                 withCredentials: false,
                 timeoutMs: 15_000,
@@ -106,8 +118,8 @@ export function createAppointmentRepository(http: HttpClient): AppointmentReposi
             };
 
             const dto = await http.request<ApiResponse<AppointmentResponseDTO>>({
-                url: API_ROUTES.APPOINTMENT_UPDATE(appointmentId),
-                method: "POST",
+                url: `${API_ROUTES.APPOINTMENT_UPDATE}/${appointmentId}`,
+                method: "PUT",
                 body,
                 withCredentials: false,
                 timeoutMs: 15_000,
