@@ -212,8 +212,8 @@ public class UsuarioSistemaService {
         if (!usuario.getUsuarioRoles().isEmpty()) {
             usuarioRolRepository.deleteByUsuario_IdUsuarioAndRol_IdRol(id, null);
         }
-
-        usuarioRepository.delete(usuario);
+        usuario.setActivo(false);
+        usuarioRepository.save(usuario);
         auditService.log(
                 AuditAction.CREATE,
                 "Usuario",

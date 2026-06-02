@@ -97,7 +97,8 @@ public class TratamientoMedicamentoService {
         log.info("Eliminando relación con ID: {}", id);
         TratamientoMedicamento tm = tmRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Relación no encontrada con ID: " + id));
-        tmRepository.delete(tm);
+        tm.setActivo(false);
+        tmRepository.save(tm);
         log.info("Relación eliminada exitosamente");
     }
 

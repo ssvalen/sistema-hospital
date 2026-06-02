@@ -99,7 +99,9 @@ public class PacienteService {
         log.info("Eliminando paciente con ID: {}", id);
         Paciente paciente = pacienteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado con ID: " + id));
-        pacienteRepository.delete(paciente);
+
+        paciente.setActivo(false);
+        pacienteRepository.save(paciente);
         log.info("Paciente eliminado exitosamente: {}", id);
     }
 

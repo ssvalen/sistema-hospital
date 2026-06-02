@@ -159,7 +159,8 @@ public class RolService {
             throw new BusinessException("No se puede eliminar un rol que tiene permisos asignados");
         }
 
-        rolRepository.delete(rol);
+        rol.setActivo(false);
+        rolRepository.save(rol);
         log.info("Rol eliminado exitosamente: {}", id);
     }
 
