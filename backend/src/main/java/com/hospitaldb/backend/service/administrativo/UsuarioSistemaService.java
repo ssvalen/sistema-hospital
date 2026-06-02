@@ -59,7 +59,7 @@ public class UsuarioSistemaService {
 
     public List<UsuarioSistemaListDTO> findAll() {
         log.info("Obteniendo todos los usuarios del sistema");
-        List<UsuarioSistema> usuarios = usuarioRepository.findAll();
+        List<UsuarioSistema> usuarios = usuarioRepository.findAllByActivo(true);
         return usuarios.stream()
                 .map(usuario -> modelMapper.map(usuario, UsuarioSistemaListDTO.class))
                 .collect(Collectors.toList());
@@ -67,7 +67,7 @@ public class UsuarioSistemaService {
 
     public Page<UsuarioSistemaListDTO> findAll(Pageable pageable) {
         log.info("Obteniendo usuarios paginados");
-        Page<UsuarioSistema> pageResult = usuarioRepository.findAll(pageable);
+        Page<UsuarioSistema> pageResult = usuarioRepository.findAllByActivo(true,pageable);
         return pageResult.map(usuario -> modelMapper.map(usuario, UsuarioSistemaListDTO.class));
     }
 

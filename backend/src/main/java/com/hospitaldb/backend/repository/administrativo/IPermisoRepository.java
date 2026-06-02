@@ -2,6 +2,8 @@ package com.hospitaldb.backend.repository.administrativo;
 
 import com.hospitaldb.backend.entity.administrativo.Permiso;
 import com.hospitaldb.backend.entity.administrativo.Rol;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -31,5 +33,9 @@ public interface IPermisoRepository extends JpaRepository<Permiso, Long> {
     List<Permiso> findPermisosByUsuarioId(@Param("idUsuario") Long idUsuario);
 
     List<Permiso> findByNombrePermisoContainingIgnoreCase(String nombrePermiso);
+
+    List<Permiso> findAllByActivo(boolean activo);
+
+    Page<Permiso> findAllByActivo(boolean activo, Pageable pageable);
 
 }

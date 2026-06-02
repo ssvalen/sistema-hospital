@@ -1,6 +1,8 @@
 package com.hospitaldb.backend.repository.medicamentos;
 
 import com.hospitaldb.backend.entity.medicamentos.Medicamento;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -33,4 +35,8 @@ public interface IMedicamentoRepository extends JpaRepository<Medicamento, Long>
             "LOWER(m.nombreComercial) LIKE LOWER(CONCAT('%', :busqueda, '%')) OR " +
             "LOWER(m.principioActivo) LIKE LOWER(CONCAT('%', :busqueda, '%'))")
     List<Medicamento> searchMedicamentos(@Param("busqueda") String busqueda);
+
+    List<Medicamento> findAllByActivo(boolean activo);
+
+    Page<Medicamento> findAllByActivo(boolean activo, Pageable pageable);
 }

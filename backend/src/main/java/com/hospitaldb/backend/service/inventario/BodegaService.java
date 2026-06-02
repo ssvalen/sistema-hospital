@@ -28,7 +28,7 @@ public class BodegaService {
 
     public List<BodegaDTO> findAll() {
         log.info("Obteniendo todas las bodegas");
-        List<Bodega> bodegas = bodegaRepository.findAll();
+        List<Bodega> bodegas = bodegaRepository.findAllByActivo(true);
         return bodegas.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -36,7 +36,7 @@ public class BodegaService {
 
     public Page<BodegaDTO> findAll(Pageable pageable) {
         log.info("Obteniendo bodegas paginadas");
-        Page<Bodega> pageResult = bodegaRepository.findAll(pageable);
+        Page<Bodega> pageResult = bodegaRepository.findAllByActivo(true,pageable);
         return pageResult.map(this::convertToDTO);
     }
 

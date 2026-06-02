@@ -35,7 +35,7 @@ public class CitaService {
 
     public List<CitaDTO> findAll() {
         log.info("Obteniendo todas las citas");
-        List<Cita> citas = citaRepository.findAll();
+        List<Cita> citas = citaRepository.findAllByActivo(true);
         return citas.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -43,7 +43,7 @@ public class CitaService {
 
     public Page<CitaDTO> findAll(Pageable pageable) {
         log.info("Obteniendo citas paginadas");
-        Page<Cita> pageResult = citaRepository.findAll(pageable);
+        Page<Cita> pageResult = citaRepository.findAllByActivo(true,pageable);
         return pageResult.map(this::convertToDTO);
     }
 
