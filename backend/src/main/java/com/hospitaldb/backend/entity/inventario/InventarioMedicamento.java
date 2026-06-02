@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "inventario_medico", catalog ="inventario_db")
+@Table(name = "inventario_medicamento", catalog ="inventario_db")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

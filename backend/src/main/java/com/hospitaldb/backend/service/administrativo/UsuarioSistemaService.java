@@ -14,11 +14,15 @@ import com.hospitaldb.backend.exception.ResourceNotFoundException;
 import com.hospitaldb.backend.repository.administrativo.IRolRepository;
 import com.hospitaldb.backend.repository.administrativo.IUsuarioRolRepository;
 import com.hospitaldb.backend.repository.administrativo.IUsuarioSistemaRepository;
+import com.hospitaldb.backend.service.auditoria.AuditService;
 import com.hospitaldb.backend.service.keycloak.KeycloakService;
+import com.hospitaldb.backend.utils.AuditAction;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jasypt.encryption.StringEncryptor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -43,6 +47,15 @@ public class UsuarioSistemaService {
     private final KeycloakService keycloakAdminService;
 
     private final ModelMapper modelMapper;
+
+    private final AuditService auditService;
+
+//    @Value("${spring.data.mongodb.username}")
+//    private String user;
+//
+//    @Value("${spring.data.mongodb.password}")
+//    private String pass;
+
 
     public List<UsuarioSistemaListDTO> findAll() {
         log.info("Obteniendo todos los usuarios del sistema");
@@ -83,7 +96,7 @@ public class UsuarioSistemaService {
     }
 
     @Transactional
-    public UsuarioSistemaDetailDTO create(UsuarioSistemaRequestDTO request) {
+    public UsuarioSistemaDetailDTO create(UsuarioSistemaRequestDTO request, HttpServletRequest httpRequest) {
         log.info("Creando nuevo usuario: {}", request.getUsername());
 
         if (usuarioRepository.existsByUsername(request.getUsername())) 
@@ -98,7 +111,7 @@ public class UsuarioSistemaService {
 
         if(keycloakId.isBlank())
             throw new ResourceNotFoundException("Usuario no encontrado en Keycloak, verifique los logs");
-
+        //log.info("Contraseña: {}, usuario: {}",pass,user);
         UsuarioSistema usuario = new UsuarioSistema();
         usuario.setUsername(request.getUsername());
         usuario.setEmail(request.getEmail());
@@ -119,7 +132,15 @@ public class UsuarioSistemaService {
             }
         }
         log.info("Usuario creado exitosamente con ID: {}", saved.getIdUsuario());
-
+        auditService.log(
+                AuditAction.CREATE,
+                "Usuario",
+                String.valueOf(saved.getIdUsuario()),
+                null,        // before → null porque es creación
+                saved.toString(),       // after
+                null,        // reason
+                httpRequest
+        );
         return buildUsuarioDetailDTO(saved);
     }
 
@@ -133,7 +154,7 @@ public class UsuarioSistemaService {
     }
 
     @Transactional
-    public UsuarioSistemaDetailDTO update(Long id, UsuarioSistemaRequestDTO request) {
+    public UsuarioSistemaDetailDTO update(Long id, UsuarioSistemaRequestDTO request, HttpServletRequest httpRequest) {
         log.info("Actualizando usuario con ID: {}", id);
 
         UsuarioSistema usuario = usuarioRepository.findById(id)
@@ -162,12 +183,22 @@ public class UsuarioSistemaService {
 
         UsuarioSistema updated = usuarioRepository.save(usuario);
         log.info("Usuario actualizado exitosamente: {}", id);
+
+        auditService.log(
+                AuditAction.CREATE,
+                "Usuario",
+                String.valueOf(usuario.getIdUsuario()),
+                usuario.toString(),        // before
+                updated.toString(),       // after
+                null,        // reason
+                httpRequest
+        );
         return buildUsuarioDetailDTO(updated);
     }
 
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(Long id, HttpServletRequest request) {
         log.info("Eliminando usuario con ID: {}", id);
         UsuarioSistema usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + id));
@@ -183,6 +214,15 @@ public class UsuarioSistemaService {
         }
 
         usuarioRepository.delete(usuario);
+        auditService.log(
+                AuditAction.CREATE,
+                "Usuario",
+                String.valueOf(usuario.getIdUsuario()),
+                usuario.toString(),        // before
+                null,       // after
+                null,        // reason
+                request
+        );
         log.info("Usuario eliminado exitosamente: {}", id);
     }
 

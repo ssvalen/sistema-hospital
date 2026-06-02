@@ -32,7 +32,7 @@ public interface ICitaRepository extends JpaRepository<Cita, Long> {
 
     long countByEstado(String estado);
 
-    @Query("SELECT COUNT(c) FROM Cita c WHERE c.medico.idMedico = :idMedico AND DATE(c.fechaHora) = DATE(:fechaHora) GROUP BY DATE(c.fechaHora)")
+    @Query("SELECT COUNT(c) FROM Cita c WHERE c.medico.idMedico = :idMedico AND DATE(c.fechaHora) = DATE(:fechaHora)")
     int countCitasByDay(@Param("idMedico") Long idMedico, @Param("fechaHora")LocalDateTime fechaHora);
 
     @Modifying

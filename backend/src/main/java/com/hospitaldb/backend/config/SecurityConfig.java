@@ -38,16 +38,12 @@ public class SecurityConfig {
 
     private final ObjectMapper objectMapper;
 
-    public SecurityConfig(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     @Bean
     public JwtDecoder jwtDecoder() {
         return JwtDecoders.fromIssuerLocation(issuerUri);
     }
 
-    private final ObjectMapper objectMapper;
 
     public SecurityConfig(
             @Qualifier("customObjectMapper") ObjectMapper objectMapper) {
