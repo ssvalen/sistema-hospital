@@ -1,0 +1,54 @@
+2026-06-01 02:35:31,827 - INFO - ==================================================
+2026-06-01 02:35:31,830 - INFO - Iniciando ETL Service - Standalone (Polling Mode)
+2026-06-01 02:35:31,830 - INFO - ==================================================
+2026-06-01 02:35:31,839 - INFO - ETL Service Iniciado (modo polling)
+2026-06-01 02:35:31,840 - INFO - Monitoreando:
+2026-06-01 02:35:31,840 - INFO -    - Pacientes: /app/uploads/pacientes
+2026-06-01 02:35:31,841 - INFO -    - Inventario: /app/uploads/inventario
+2026-06-01 02:35:31,841 - INFO -  Intervalo de escaneo: 5 segundos
+2026-06-01 02:35:31,842 - INFO - 🔍 Escaneando carpetas en busca de archivos CSV...
+2026-06-01 04:07:50,828 - INFO - ==================================================
+2026-06-01 04:07:50,828 - INFO - Iniciando ETL Service - Standalone (Polling Mode)
+2026-06-01 04:07:50,829 - INFO - ==================================================
+2026-06-01 04:07:50,836 - INFO - ETL Service Iniciado (modo polling)
+2026-06-01 04:07:50,837 - INFO - Monitoreando:
+2026-06-01 04:07:50,837 - INFO -    - Pacientes: /app/uploads/pacientes
+2026-06-01 04:07:50,837 - INFO -    - Inventario: /app/uploads/inventario
+2026-06-01 04:07:50,838 - INFO -  Intervalo de escaneo: 5 segundos
+2026-06-01 04:07:50,838 - INFO - 🔍 Escaneando carpetas en busca de archivos CSV...
+2026-06-01 04:40:21,022 - INFO - ==================================================
+2026-06-01 04:40:21,024 - INFO - Iniciando ETL Service - Standalone (Polling Mode)
+2026-06-01 04:40:21,025 - INFO - ==================================================
+2026-06-01 04:40:21,045 - INFO - ETL Service Iniciado (modo polling)
+2026-06-01 04:40:21,046 - INFO - Monitoreando:
+2026-06-01 04:40:21,046 - INFO -    - Pacientes: /app/uploads/pacientes
+2026-06-01 04:40:21,047 - INFO -    - Inventario: /app/uploads/inventario
+2026-06-01 04:40:21,047 - INFO -  Intervalo de escaneo: 5 segundos
+2026-06-01 04:40:21,048 - INFO - 🔍 Escaneando carpetas en busca de archivos CSV...
+2026-06-01 04:50:43,660 - INFO - ==================================================
+2026-06-01 04:50:43,661 - INFO - Iniciando ETL Service - Standalone (Polling Mode)
+2026-06-01 04:50:43,662 - INFO - ==================================================
+2026-06-01 04:50:43,676 - INFO - ETL Service Iniciado (modo polling)
+2026-06-01 04:50:43,676 - INFO - Monitoreando:
+2026-06-01 04:50:43,677 - INFO -    - Pacientes: /app/uploads/pacientes
+2026-06-01 04:50:43,677 - INFO -    - Inventario: /app/uploads/inventario
+2026-06-01 04:50:43,677 - INFO -  Intervalo de escaneo: 5 segundos
+2026-06-01 04:50:43,678 - INFO - 🔍 Escaneando carpetas en busca de archivos CSV...
+2026-06-01 05:50:44,440 - INFO - ==================================================
+2026-06-01 05:50:44,441 - INFO - Iniciando ETL Service - Standalone (Polling Mode)
+2026-06-01 05:50:44,442 - INFO - ==================================================
+2026-06-01 05:50:44,455 - INFO - ETL Service Iniciado (modo polling)
+2026-06-01 05:50:44,456 - INFO - Monitoreando:
+2026-06-01 05:50:44,456 - INFO -    - Pacientes: /app/uploads/pacientes
+2026-06-01 05:50:44,457 - INFO -    - Inventario: /app/uploads/inventario
+2026-06-01 05:50:44,458 - INFO -  Intervalo de escaneo: 5 segundos
+2026-06-01 05:50:44,459 - INFO - 🔍 Escaneando carpetas en busca de archivos CSV...
+2026-06-02 01:06:35,091 - INFO - ==================================================
+2026-06-02 01:06:35,094 - INFO - Iniciando ETL Service - Standalone (Polling Mode)
+2026-06-02 01:06:35,095 - INFO - ==================================================
+2026-06-02 01:06:35,106 - INFO - ETL Service Iniciado (modo polling)
+2026-06-02 01:06:35,107 - INFO - Monitoreando:
+2026-06-02 01:06:35,107 - INFO -    - Pacientes: /app/uploads/pacientes
+2026-06-02 01:06:35,107 - INFO -    - Inventario: /app/uploads/inventario
+2026-06-02 01:06:35,108 - INFO -  Intervalo de escaneo: 5 segundos
+2026-06-02 01:06:35,108 - INFO - 🔍 Escaneando carpetas en busca de archivos CSV...

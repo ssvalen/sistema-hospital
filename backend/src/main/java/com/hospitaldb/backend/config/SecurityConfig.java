@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -36,14 +37,12 @@ public class SecurityConfig {
     @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
     private String issuerUri;
 
-    private final ObjectMapper objectMapper;
-
-
     @Bean
     public JwtDecoder jwtDecoder() {
         return JwtDecoders.fromIssuerLocation(issuerUri);
     }
 
+    private final ObjectMapper objectMapper;
 
     public SecurityConfig(
             @Qualifier("customObjectMapper") ObjectMapper objectMapper) {
@@ -89,7 +88,6 @@ public class SecurityConfig {
                             ));
                         })
                 );
-
         return http.build();
     }
 
@@ -97,7 +95,9 @@ public class SecurityConfig {
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
 
+        // Configurar el converter de autoridades manualmente
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            // Extraer realm_access como mapa
             Map<String, Object> realmAccess = jwt.getClaim("realm_access");
 
             if (realmAccess == null || !realmAccess.containsKey("roles")) {
@@ -107,8 +107,10 @@ public class SecurityConfig {
             @SuppressWarnings("unchecked")
             List<String> roles = (List<String>) realmAccess.get("roles");
 
+            // Convertir roles a GrantedAuthority
+            // NOTA: Como ya tienen el prefijo "ROLE_", no lo agregamos de nuevo
             return roles.stream()
-                    .map(SimpleGrantedAuthority::new)
+                    .map(role -> new SimpleGrantedAuthority(role))
                     .collect(Collectors.toList());
         });
 
@@ -118,7 +120,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedOrigins(List.of("http://localhost:5173")); // tu frontend
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
