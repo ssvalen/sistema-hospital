@@ -112,8 +112,8 @@ public class TratamientoService {
         if (!tratamiento.getTratamientoMedicamentos().isEmpty()) {
             throw new BusinessException("No se puede eliminar un tratamiento que tiene medicamentos asociados");
         }
-
-        tratamientoRepository.delete(tratamiento);
+        tratamiento.setActivo(false);
+        tratamientoRepository.save(tratamiento);
         log.info("Tratamiento eliminado exitosamente: {}", id);
     }
 

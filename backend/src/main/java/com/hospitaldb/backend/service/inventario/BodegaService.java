@@ -93,8 +93,8 @@ public class BodegaService {
         if (!bodega.getInventarios().isEmpty()) {
             throw new BusinessException("No se puede eliminar una bodega que tiene inventario asociado");
         }
-
-        bodegaRepository.delete(bodega);
+        bodega.setActivo(false);
+        bodegaRepository.save(bodega);
         log.info("Bodega eliminada exitosamente: {}", id);
     }
 

@@ -98,8 +98,8 @@ public class PermisoService {
         if (!permiso.getRolPermisos().isEmpty()) {
             throw new BusinessException("No se puede eliminar un permiso que está asignado a roles");
         }
-
-        permisoRepository.delete(permiso);
+        permiso.setActivo(false);
+        permisoRepository.save(permiso);
         log.info("Permiso eliminado exitosamente: {}", id);
     }
 

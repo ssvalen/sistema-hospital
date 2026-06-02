@@ -106,8 +106,8 @@ public class MedicamentoService {
         if (!medicamento.getInventarios().isEmpty()) {
             throw new BusinessException("No se puede eliminar un medicamento que tiene inventario");
         }
-
-        medicamentoRepository.delete(medicamento);
+        medicamento.setActivo(false);
+        medicamentoRepository.save(medicamento);
         log.info("Medicamento eliminado exitosamente: {}", id);
     }
 

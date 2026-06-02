@@ -111,8 +111,8 @@ public class MedicoService {
         if (!medico.getCitas().isEmpty()) {
             throw new BusinessException("No se puede eliminar un médico que tiene citas asociadas");
         }
-
-        medicoRepository.delete(medico);
+        medico.setActivo(false);
+        medicoRepository.save(medico);
         log.info("Médico eliminado exitosamente: {}", id);
     }
 

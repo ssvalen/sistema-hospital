@@ -145,7 +145,9 @@ public class CitaService {
     public void delete(Long id) {
         log.info("Eliminando cita con ID: {}", id);
         Cita cita = findCitaEntityById(id);
-        citaRepository.delete(cita);
+
+        cita.setActivo(false);
+        citaRepository.save(cita);
         log.info("Cita eliminada exitosamente: {}", id);
     }
 

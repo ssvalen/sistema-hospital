@@ -110,7 +110,9 @@ public class InventarioMedicamentoService {
         log.info("Eliminando inventario con ID: {}", id);
         InventarioMedicamento inventario = inventarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Inventario no encontrado con ID: " + id));
-        inventarioRepository.delete(inventario);
+
+        inventario.setActivo(false);
+        inventarioRepository.save(inventario);
         log.info("Inventario eliminado exitosamente: {}", id);
     }
 
