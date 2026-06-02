@@ -1,20 +1,6 @@
-import type { AppointmentRepository } from "../interfaces/AppointmentRepository";
 import type { TreatmentRepository } from "../interfaces/TreatmentRepository";
 import type { MedicationRepository } from "../interfaces/MedicationRepository";
-import type { Treatment } from "../../domain/entities/Treatment";
-
-type CreateTreatmentParams = {
-    appointmentId: number;
-    description: string;
-    from: string;
-    to: string;
-
-    medications: {
-        medicationId: number;
-        dosage: string;
-        quantity: number;
-    }[];
-};
+import type { CreateTreatmentParams } from "@/modules/appointments/types/AppointmentTypes";
 
 export const createTreatment = async (
     params: CreateTreatmentParams,

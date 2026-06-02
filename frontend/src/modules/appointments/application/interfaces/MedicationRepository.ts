@@ -2,7 +2,7 @@ import type { Medication } from "../../domain/entities/Medication";
 
 
 export interface MedicationRepository {
-    // getAllMedications(signal?: AbortSignal): Promise<Medication[]>;
+    getAllMedications(signal?: AbortSignal): Promise<Medication[]>;
     // trae los medicamentos de un tratamiento
     getMedicationsByTreatment(treatmentId: number, signal?: AbortSignal): Promise<Medication[]>;
 

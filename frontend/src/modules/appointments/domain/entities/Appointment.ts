@@ -1,3 +1,5 @@
+import type { Medication } from "./Medication";
+
 export type Appointment = {
   id: number;
   startDate: string;
@@ -18,4 +20,6 @@ export type Appointment = {
     specialty: string;
     fullName: string;
   };
+
+  
 };

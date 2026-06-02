@@ -37,7 +37,7 @@ export const API_ROUTES = {
   TREATMENT_CREATE: '/api/hospitaldb/clinico/tratamientos',
   TREATMENT_UPDATE: '/api/hospitaldb/clinico/tratamientos',
   // MEDICATIONS
-  // MEDICATION_GET_ALL: '/api/hospitaldb/clinico/medicamentos',
+  MEDICATION_GET_ALL: '/api/hospitaldb/medicamentos',
   MEDICATION_GET_BY_TREATMENT: '/api/hospitaldb/medicamentos/tratamiento-medicamentos/tratamiento',
   MEDICATION_CREATE: '/api/hospitaldb/medicamentos/tratamiento-medicamentos',
   MEDICATION_UPDATE: '/api/hospitaldb/medicamentos/tratamiento-medicamentos',

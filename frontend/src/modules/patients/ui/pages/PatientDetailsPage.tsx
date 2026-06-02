@@ -22,6 +22,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PERMISSIONS } from "@/shared/utils/permissions";
 
 import { usePatientById } from "@/modules/patients/hooks/usePatientById";
+import { useGetAppointmentsByPatient } from "@/modules/appointments/hooks/appointments/useGetAppointmentsByPatient";
 
 type Consultation = {
     id: string;
@@ -52,6 +53,9 @@ const PatientDetailsPage = () => {
         useState("desc");
 
     const { data: patientData } = usePatientById(Number(id));
+    const { data: appointmentsData } = useGetAppointmentsByPatient(Number(id));
+
+    console.log("Appointments data:", appointmentsData);
 
     const patient = {
         id: patientData?.id ?? id,
@@ -69,39 +73,65 @@ const PatientDetailsPage = () => {
         active: (patientData as any)?.activo ?? true
     };
 
-    const consultations: Consultation[] = [
-        {
-            id: "1",
-            date: "2026-05-01",
-            doctor: "Dr. López",
-            reason: "Dolor de cabeza intenso",
-            diagnosis: "Migraña",
-            treatment: ["Reposo", "Hidratación", "Evitar pantallas"],
-            medications: ["Ibuprofeno 400mg cada 8h por 5 días"],
-            notes: "Paciente estable, sin signos neurológicos."
-        },
-        {
-            id: "2",
-            date: "2026-04-20",
-            doctor: "Dra. Méndez",
-            reason: "Control diabetes",
-            diagnosis: "Diabetes tipo 2",
-            treatment: ["Dieta baja en azúcar", "Ejercicio diario"],
-            medications: ["Metformina 850mg diaria"],
-            notes: "Paciente estable, glucosa controlada."
-        },
-        {
-            id: "3",
-            date: "2026-03-10",
-            doctor: "Dr. López",
-            reason: "Fiebre y tos",
-            diagnosis: "Infección respiratoria",
-            treatment: ["Reposo", "Hidratación", "Control temperatura"],
-            medications: ["Acetaminofén 500mg", "Jarabe para tos"],
-            notes: "Paciente responde bien al tratamiento."
-        }
-    ];
 
+    const parseDescription = (description: string) => {
+        const diagnosisMatch = description.match(
+            /Diagnóstico:\s*([\s\S]*?)\s*Tratamiento:/i
+        );
+
+        const treatmentMatch = description.match(
+            /Tratamiento:\s*([\s\S]*?)\s*Observaciones:/i
+        );
+
+        const notesMatch = description.match(
+            /Observaciones:\s*([\s\S]*)/i
+        );
+
+        return {
+            diagnosis: diagnosisMatch?.[1]?.trim() ?? "",
+            treatment: treatmentMatch?.[1]?.trim() ?? "",
+            notes: notesMatch?.[1]?.trim() ?? ""
+        };
+    };
+
+    const consultations: Consultation[] =
+        appointmentsData?.map((appointment) => {
+            const parsed = parseDescription(
+                appointment.description
+            );
+
+            return {
+                id: appointment.id.toString(),
+
+                date: appointment.appointment.date,
+
+                doctor: `${appointment.doctor.fullName} - ${appointment.doctor.specialty}`,
+
+                reason: "Consulta médica",
+
+                diagnosis: parsed.diagnosis,
+
+                treatment: parsed.treatment
+                    ? [parsed.treatment]
+                    : [],
+
+                medications: appointment.medications.map(
+                    (medication) =>
+                        `${medication.commercialName} - ${medication.dosage} (${medication.quantity} ${medication.medicalUnit})`
+                ),
+
+                notes: parsed.notes
+            };
+        }) ?? [];
+
+
+    const doctors = [
+        ...new Set(
+            consultations.map(
+                (consultation) => consultation.doctor
+            )
+        )
+    ];
     const filteredConsultations = useMemo(() => {
         return consultations
             .filter((consultation) => {
@@ -137,6 +167,8 @@ const PatientDetailsPage = () => {
         );
     };
 
+
+
     return (
         <>
             <div className="p-6 lg:p-8 bg-slate-50 min-h-screen space-y-6">
@@ -152,11 +184,10 @@ const PatientDetailsPage = () => {
                             </h1>
 
                             <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                    patient.active
-                                        ? "bg-emerald-100 text-emerald-700"
-                                        : "bg-red-100 text-red-700"
-                                }`}
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${patient.active
+                                    ? "bg-emerald-100 text-emerald-700"
+                                    : "bg-red-100 text-red-700"
+                                    }`}
                             >
                                 {patient.active ? "Activo" : "Inactivo"}
                             </span>
@@ -303,8 +334,9 @@ const PatientDetailsPage = () => {
                                 onClick={() =>
                                     navigate("/admin/appointments/new", {
                                         state: {
-                                            patientId: patient.id,
-                                            patientName: `${patient.firstName} ${patient.lastName}`
+                                            patientId: String(patient.id),
+                                            patientName: `${patient.firstName} ${patient.lastName}`,
+                                            patientCode: patient.code
                                         }
                                     })
                                 }
@@ -329,8 +361,15 @@ const PatientDetailsPage = () => {
                                 onChange={(e) => setDoctorFilter(e.target.value)}
                             >
                                 <option value="all">Todos</option>
-                                <option value="Dr. López">Dr. López</option>
-                                <option value="Dra. Méndez">Dra. Méndez</option>
+
+                                {doctors.map((doctor) => (
+                                    <option
+                                        key={doctor}
+                                        value={doctor}
+                                    >
+                                        {doctor}
+                                    </option>
+                                ))}
                             </Select>
                         </FormField>
 
@@ -380,7 +419,7 @@ const PatientDetailsPage = () => {
                                             </div>
 
                                             <p className="text-sm text-slate-500">
-                                                {consultation.doctor}
+                                                Dr. {consultation.doctor}
                                             </p>
 
                                         </div>

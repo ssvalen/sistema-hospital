@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import Button from "@/shared/components/forms/Button";
 import Input from "@/shared/components/forms/Input";
@@ -10,6 +10,9 @@ import Toast from "@/shared/components/Toast";
 import { useToast } from "@/shared/hooks/useToast";
 import { TOAST_TYPES } from "@/shared/types/ToastType";
 
+import { useGetAllMedications } from "@/modules/appointments/hooks/medication/useGetAllMedications";
+
+
 import {
     faArrowLeft,
     faFloppyDisk,
@@ -17,13 +20,13 @@ import {
     faPlus,
     faTrash
 } from "@fortawesome/free-solid-svg-icons";
+import { useCreateTreatment } from "../../hooks/treatment/useCreateTreatment";
 
 type MedicationCatalog = {
     idMedicamento: number;
     nombreComercial: string;
     principioActivo: string;
     unidadMedida: string;
-    cantidadTratamientos: number;
     stockTotal: number;
 };
 
@@ -38,36 +41,33 @@ type Medication = {
 };
 
 const AttendAppointmentPage = () => {
+
     const navigate = useNavigate();
+    
+
+    const { id } = useParams();
+    const appointmentId = Number(id);
 
     const { toast, showToast, hideToast } = useToast();
 
-    const medicamentosDisponibles: MedicationCatalog[] = [
-        {
-            idMedicamento: 1,
-            nombreComercial: "Paracetamol",
-            principioActivo: "Acetaminofén",
-            unidadMedida: "Tabletas",
-            cantidadTratamientos: 150,
-            stockTotal: 500
-        },
-        {
-            idMedicamento: 2,
-            nombreComercial: "Ibuprofeno",
-            principioActivo: "Ibuprofeno",
-            unidadMedida: "Tabletas",
-            cantidadTratamientos: 90,
-            stockTotal: 250
-        },
-        {
-            idMedicamento: 3,
-            nombreComercial: "Amoxicilina",
-            principioActivo: "Amoxicilina",
-            unidadMedida: "Cápsulas",
-            cantidadTratamientos: 40,
-            stockTotal: 120
-        }
-    ];
+
+
+    const { data: medicamentosData = [], isLoading } = useGetAllMedications();
+
+
+    const medicamentosDisponibles: MedicationCatalog[] =
+        medicamentosData.map((med) => ({
+            idMedicamento: med.id,
+            nombreComercial: med.commercialName,
+            principioActivo: med.activeIngredient,
+            unidadMedida: med.medicalUnit,
+            stockTotal: med.stock
+        }));
+
+    const {
+        mutateAsync: createTreatmentMutation,
+        isPending
+    } = useCreateTreatment();
 
     const [diagnostico, setDiagnostico] = useState("");
     const [fechaInicio, setFechaInicio] = useState("2026-06-02");
@@ -204,10 +204,62 @@ const AttendAppointmentPage = () => {
             return;
         }
 
-        showToast(
-            "Consulta finalizada correctamente",
-            TOAST_TYPES.SUCCESS
-        );
+        if (!tratamiento.trim()) {
+            showToast(
+                "Ingrese un tratamiento",
+                TOAST_TYPES.ERROR
+            );
+            return;
+        }
+
+        const payload = {
+            appointmentId: appointmentId,
+
+            description: `
+                Diagnóstico:
+                ${diagnostico}
+
+                Tratamiento:
+                ${tratamiento}
+
+                Observaciones:
+                ${observaciones}
+             `.trim(),
+
+            from: fechaInicio,
+            to: fechaFin,
+
+            medications: medicamentos.map((m) => ({
+                medicationId: m.idMedicamento,
+                dosage: m.dosis,
+                quantity: m.cantidad
+            }))
+        };
+
+        createTreatmentMutation(payload, {
+            onSuccess: () => {
+                showToast(
+                    "Consulta finalizada correctamente",
+                    TOAST_TYPES.SUCCESS
+                );
+
+                setDiagnostico("");
+                setTratamiento("");
+                setObservaciones("");
+                setMedicamentos([]);
+
+                navigate(-1);
+            },
+
+            onError: (error) => {
+                console.error(error);
+
+                showToast(
+                    "Error al registrar el tratamiento",
+                    TOAST_TYPES.ERROR
+                );
+            }
+        });
     };
 
     return (
@@ -415,12 +467,15 @@ const AttendAppointmentPage = () => {
                                 <FormField label="Medicamento">
                                     <Select
                                         value={medicamentoId}
+                                        disabled={isLoading}
                                         onChange={(e) =>
                                             setMedicamentoId(e.target.value)
                                         }
                                     >
-                                        <option value="">
-                                            Seleccione medicamento
+                                        <option value="" disabled>
+                                            {isLoading
+                                                ? "Cargando medicamentos..."
+                                                : "Seleccione medicamento"}
                                         </option>
 
                                         {medicamentosDisponibles.map((m) => (
@@ -481,16 +536,6 @@ const AttendAppointmentPage = () => {
 
                                         <p className="font-medium text-slate-700">
                                             {medicamentoSeleccionado.unidadMedida}
-                                        </p>
-                                    </div>
-
-                                    <div className="bg-slate-50 rounded-xl p-4">
-                                        <p className="text-xs text-slate-400">
-                                            Tratamientos
-                                        </p>
-
-                                        <p className="font-medium text-slate-700">
-                                            {medicamentoSeleccionado.cantidadTratamientos}
                                         </p>
                                     </div>
 
@@ -619,8 +664,13 @@ const AttendAppointmentPage = () => {
 
                     <Button
                         icon={faCheck}
-                        label="Finalizar consulta"
+                        label={
+                            isPending
+                                ? "Registrando..."
+                                : "Finalizar consulta"
+                        }
                         color="green"
+                        disabled={isPending}
                         onClick={finalizarConsulta}
                     />
 

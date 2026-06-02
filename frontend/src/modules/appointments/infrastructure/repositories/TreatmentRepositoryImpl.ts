@@ -80,7 +80,7 @@ export function createTreatmentRepository(http: HttpClient): TreatmentRepository
             };
 
             const dto = await http.request<ApiResponse<TreatmentResponseDTO>>({
-                url: API_ROUTES.TREATMENT_CREATE,
+                url: `${API_ROUTES.TREATMENT_CREATE}`,
                 method: "POST",
                 body,
                 withCredentials: false,

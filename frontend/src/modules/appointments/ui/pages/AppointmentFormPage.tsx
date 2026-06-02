@@ -13,11 +13,11 @@ type Patient = {
   code: string;
 };
 
-const mockPatients: Patient[] = [
-  { id: "p1", name: "Juan Pérez", code: "EXP-0001" },
-  { id: "p2", name: "María López", code: "EXP-0002" },
-  { id: "p3", name: "Carlos Ruiz", code: "EXP-0003" }
-];
+// const mockPatients: Patient[] = [
+//   { id: "p1", name: "Juan Pérez", code: "EXP-0001" },
+//   { id: "p2", name: "María López", code: "EXP-0002" },
+//   { id: "p3", name: "Carlos Ruiz", code: "EXP-0003" }
+// ];
 
 type Appointment = {
   id: string;
@@ -29,17 +29,6 @@ type Appointment = {
   status: string;
 };
 
-const mockAppointments: Record<string, Appointment> = {
-  "1": {
-    id: "1",
-    patientId: "p1",
-    doctorId: "d1",
-    start: "2026-05-10T09:00",
-    end: "2026-05-10T09:30",
-    reason: "Control general",
-    status: "scheduled"
-  }
-};
 
 type FormState = {
   patientId: string;
@@ -60,68 +49,40 @@ export default function AppointmentFormPage() {
   const context = (location.state || {}) as {
     patientId?: string;
     patientName?: string;
+    patientCode?: string;
     start?: string;
     end?: string;
   };
 
   const [form, setForm] = useState<FormState>({
-    patientId: "",
+    patientId: context.patientId ?? "",
     doctorId: "",
     start: "",
     end: "",
     reason: "",
     status: "scheduled"
-  });
+});
 
-  useEffect(() => {
-    if (edit && id) {
-      const appointment = mockAppointments[id];
+  // useEffect(() => {
+  //   if (edit) {
+  //     return;
+  //   }
 
-      if (!appointment) return;
+  //   setForm((prev) => ({
+  //     ...prev,
+  //     patientId: context.patientId ?? ""
+  //   }));
+  // }, [edit, context.patientId]);
 
-      setForm({
-        patientId: appointment.patientId,
-        doctorId: appointment.doctorId,
-        start: appointment.start,
-        end: appointment.end,
-        reason: appointment.reason,
-        status: appointment.status
-      });
-
-      return;
-    }
-
-    setForm((prev) => ({
-      ...prev,
-      patientId: context.patientId ?? "",
-      start: context.start ?? "",
-      end: context.end ?? ""
-    }));
-  }, [
-    edit,
-    id,
-    context.patientId,
-    context.start,
-    context.end
-  ]);
-
-  const selectedPatient = useMemo(() => {
-    if (!form.patientId && !context.patientName) {
-      return null;
-    }
-
-    const byId = mockPatients.find(
-      (p) => p.id === form.patientId
-    );
-
-    if (byId) return byId;
-
-    const byName = mockPatients.find(
-      (p) => p.name === context.patientName
-    );
-
-    return byName ?? null;
-  }, [form.patientId, context.patientName]);
+  const selectedPatient =
+    context.patientId &&
+      context.patientName
+      ? {
+        id: context.patientId,
+        label: context.patientName,
+        subtitle: context.patientCode ?? ""
+      }
+      : null;
 
   return (
     <div className="p-6 lg:p-8 bg-slate-50 min-h-screen space-y-6">
@@ -134,27 +95,19 @@ export default function AppointmentFormPage() {
 
         <FormField label="Paciente">
           <DataList
-            options={mockPatients.map((p) => ({
-              id: p.id,
-              label: p.name,
-              subtitle: p.code
-            }))}
-            value={
+            options={
               selectedPatient
-                ? {
-                    id: selectedPatient.id,
-                    label: selectedPatient.name,
-                    subtitle: selectedPatient.code
-                  }
-                : null
+                ? [selectedPatient]
+                : []
             }
+            value={selectedPatient}
+            disabled={!!selectedPatient}
             onChange={(option) =>
               setForm((f) => ({
                 ...f,
-                patientId: option?.id || ""
+                patientId: option?.id ?? ""
               }))
             }
-            placeholder="Buscar paciente..."
           />
         </FormField>
 

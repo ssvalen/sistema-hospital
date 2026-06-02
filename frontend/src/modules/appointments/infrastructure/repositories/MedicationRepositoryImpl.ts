@@ -17,17 +17,17 @@ import { API_ROUTES } from "@/shared/utils/apiRoutes";
 
 export function createMedicationRepository(http: HttpClient): MedicationRepository {
     return {
-        // async getAllMedications(signal?: AbortSignal) {
-        //     const dto = await http.request<ApiResponse<TreatmentMedicationResponseDTO[]>>({
-        //         url: API_ROUTES.MEDICATION_GET_ALL,
-        //         method: "GET",
-        //         withCredentials: false,
-        //         timeoutMs: 15_000,
-        //         signal,
-        //     });
+        async getAllMedications(signal?: AbortSignal) {
+            const dto = await http.request<ApiResponse<TreatmentMedicationResponseDTO[]>>({
+                url: API_ROUTES.MEDICATION_GET_ALL,
+                method: "GET",
+                withCredentials: false,
+                timeoutMs: 15_000,
+                signal,
+            });
 
-        //     return medicationsToDomain(dto.data);
-        // },
+            return medicationsToDomain(dto.data);
+        },
 
         async getMedicationsByTreatment(treatmentId: number, signal?: AbortSignal) {
             const dto = await http.request<ApiResponse<TreatmentMedicationResponseDTO[]>>({

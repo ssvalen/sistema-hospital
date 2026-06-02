@@ -5,7 +5,7 @@ import type {
 } from "../../domain/dto/TreatmentDTO";
 
 import { paginatedMapper } from "@/shared/infrastructure/mappers/paginatedMapper";
-import { medicationToDomain, medicationsToDomain } from "./medicationsMapper";
+import { medicationToDomain, medicationsToDomain, treatmentsMedicationToDomain } from "./medicationsMapper";
 
 export function treatmentToDomain(
     dto: TreatmentResponseDTO
@@ -37,7 +37,7 @@ export function treatmentToDomain(
             fullName: `${dto.medicoNombre} ${dto.medicoApellido}`,
         },
 
-        medications: medicationsToDomain(dto.medicamentos),
+        medications: treatmentsMedicationToDomain(dto.medicamentos),
     };
 }
 

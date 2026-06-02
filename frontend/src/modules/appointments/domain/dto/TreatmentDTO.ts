@@ -1,5 +1,5 @@
 import type { PaginatedResponse } from "@/shared/types/pagination/PaginatedResponse";
-import type { TreatmentMedicationResponseDTO } from "./MedicationDTO";
+import type { TreatmentMedicationsResponseDTO } from "./MedicationDTO";
 
 
 export type TreatmentRequestDTO = {
@@ -29,7 +29,7 @@ export type TreatmentResponseDTO = {
     medicoApellido: string;
     medicoEspecialidad: string;
 
-    medicamentos: TreatmentMedicationResponseDTO[];
+    medicamentos: TreatmentMedicationsResponseDTO[];
 };
 
 export type PaginatedTreatmentsDTO =  PaginatedResponse<TreatmentResponseDTO>;

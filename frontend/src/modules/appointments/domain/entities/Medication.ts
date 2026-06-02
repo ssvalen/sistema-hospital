@@ -2,7 +2,8 @@ export type Medication = {
     id: number;
     commercialName: string;
     activeIngredient: string;
-    dosage: string;
-    stock: number;
+    stock?: number;
     medicalUnit: string;
+    dosage?: string;
+    quantity?: number;
 }
