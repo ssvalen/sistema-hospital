@@ -281,9 +281,9 @@ const DataTable = <T extends Record<string, any>>({
                           onClick={() =>
                             copyToClipboard(row[col.key])
                           }
-                          className="block cursor-pointer truncate"
+                          className="block cursor-pointer truncate "
                         >
-                          {String(row[col.key] ?? "N/A")}
+                          {String(row[col.key] ?? "-")}
                         </span>
                       )}
                     </td>

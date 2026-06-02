@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import Button from "@/shared/components/forms/Button";
@@ -6,29 +6,6 @@ import Input from "@/shared/components/forms/Input";
 import Select from "@/shared/components/forms/Select";
 import FormField from "@/shared/components/forms/FormField";
 import DataList from "@/shared/components/forms/DataList";
-
-type Patient = {
-  id: string;
-  name: string;
-  code: string;
-};
-
-// const mockPatients: Patient[] = [
-//   { id: "p1", name: "Juan Pérez", code: "EXP-0001" },
-//   { id: "p2", name: "María López", code: "EXP-0002" },
-//   { id: "p3", name: "Carlos Ruiz", code: "EXP-0003" }
-// ];
-
-type Appointment = {
-  id: string;
-  patientId: string;
-  doctorId: string;
-  start: string;
-  end: string;
-  reason: string;
-  status: string;
-};
-
 
 type FormState = {
   patientId: string;
@@ -38,6 +15,21 @@ type FormState = {
   reason: string;
   status: string;
 };
+
+type Option = {
+  id: string;
+  label: string;
+  subtitle: string;
+};
+
+function toDateTimeLocal(iso?: string) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const offset = d.getTimezoneOffset();
+  const local = new Date(d.getTime() - offset * 60000);
+  return local.toISOString().slice(0, 16);
+}
 
 export default function AppointmentFormPage() {
   const navigate = useNavigate();
@@ -61,27 +53,32 @@ export default function AppointmentFormPage() {
     end: "",
     reason: "",
     status: "scheduled"
-});
+  });
 
-  // useEffect(() => {
-  //   if (edit) {
-  //     return;
-  //   }
+  useEffect(() => {
+    if (context.start || context.end) {
+      setForm((f) => ({
+        ...f,
+        start: toDateTimeLocal(context.start),
+        end: toDateTimeLocal(context.end)
+      }));
+    }
 
-  //   setForm((prev) => ({
-  //     ...prev,
-  //     patientId: context.patientId ?? ""
-  //   }));
-  // }, [edit, context.patientId]);
+    if (context.patientId) {
+      setForm((f) => ({
+        ...f,
+        patientId: context.patientId ?? ""
+      }));
+    }
+  }, [context.start, context.end, context.patientId]);
 
-  const selectedPatient =
-    context.patientId &&
-      context.patientName
+  const selectedPatient: Option | null =
+    context.patientId && context.patientName
       ? {
-        id: context.patientId,
-        label: context.patientName,
-        subtitle: context.patientCode ?? ""
-      }
+          id: context.patientId,
+          label: context.patientName,
+          subtitle: context.patientCode ?? ""
+        }
       : null;
 
   return (
@@ -95,11 +92,7 @@ export default function AppointmentFormPage() {
 
         <FormField label="Paciente">
           <DataList
-            options={
-              selectedPatient
-                ? [selectedPatient]
-                : []
-            }
+            options={selectedPatient ? [selectedPatient] : []}
             value={selectedPatient}
             disabled={!!selectedPatient}
             onChange={(option) =>

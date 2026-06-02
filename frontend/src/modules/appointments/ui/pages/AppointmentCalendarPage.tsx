@@ -6,6 +6,10 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 
+import Toast from "@/shared/components/Toast";
+import { useToast } from "@/shared/hooks/useToast";
+import { TOAST_TYPES } from "@/shared/types/ToastType";
+
 import Button from "@/shared/components/forms/Button";
 import Select from "@/shared/components/forms/Select";
 import FormField from "@/shared/components/forms/FormField";
@@ -14,11 +18,14 @@ import CanAccess from "@/shared/components/permissions/CanAccess";
 
 import { APPOINTMENT_PERMISSIONS } from "../utils/appointmentsPermissions";
 
+
 import {
   faCalendarDays,
   faTable,
   faEye,
-  faStethoscope
+  faStethoscope,
+  faPlus,
+  faCalendarPlus
 } from "@fortawesome/free-solid-svg-icons";
 
 import type { TableAction } from "@/shared/types/table/TableTypes";
@@ -56,6 +63,8 @@ const normalizeAppointment = (a: DomainAppointment): AppointmentUI => ({
 
 export default function AppointmentCalendarPage() {
   const navigate = useNavigate();
+
+  const { toast, showToast, hideToast } = useToast();
 
   const [doctorId, setDoctorId] = useState("all");
   const [view, setView] = useState<"calendar" | "table">("calendar");
@@ -173,74 +182,113 @@ export default function AppointmentCalendarPage() {
         </div>
       </div>
 
-      <CanAccess permission={APPOINTMENT_PERMISSIONS.FILTER}>
-        <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
-          <div className="max-w-xs">
-            <FormField label="Médico">
-              <Select
-                value={doctorId}
-                onChange={(e) => setDoctorId(e.target.value)}
-              >
-                <option value="all">Todos</option>
-                <option value="1">Dr. López</option>
-                <option value="2">Dra. Méndez</option>
-              </Select>
-            </FormField>
-          </div>
-        </div>
-      </CanAccess>
 
-      {view === "calendar" && (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-3">
-          <FullCalendar
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            initialView="timeGridWeek"
-            height="72vh"
-            events={events}
-            headerToolbar={{
-              left: "prev,next today",
-              center: "title",
-              right: "dayGridMonth,timeGridWeek,timeGridDay"
-            }}
-            eventClick={(info) =>
-              navigate(`/admin/appointments/${info.event.id}`)
-            }
-            select={(info) =>
-              navigate(
-                `/admin/appointments/new?start=${info.start.toISOString()}&end=${info.end?.toISOString()}`
-              )
-            }
+      <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+        <div className="flex items-end justify-between gap-4">
+
+          <div className="max-w-xs w-full">
+            <CanAccess permission={APPOINTMENT_PERMISSIONS.FILTER}>
+              <FormField label="Médico">
+                <Select
+                  value={doctorId}
+                  onChange={(e) => setDoctorId(e.target.value)}
+                >
+                  <option value="all">Todos</option>
+                  <option value="1">Dr. López</option>
+                  <option value="2">Dra. Méndez</option>
+                </Select>
+              </FormField>
+           </CanAccess>
+        </div>
+
+        <CanAccess permission={APPOINTMENT_PERMISSIONS.CREATE}>
+          <Button
+            icon={faCalendarPlus}
+            label="Crear cita"
+            color="green"
+            onClick={() => navigate("new")}
           />
-        </div>
-      )}
+        </CanAccess>
 
-      {view === "table" && (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-          <DataTable
-            columns={[
-              { key: "patientName", label: "Paciente" },
-              { key: "doctorName", label: "Médico" },
-              { key: "start", label: "Fecha" },
-              { key: "reason", label: "Motivo" },
-              { key: "status", label: "Estado" },
-              { key: "actions", label: "Acciones", hasActions: true }
-            ]}
-            data={filteredAppointments}
-            actions={actions}
-            page={page}
-            pageSize={pageSize}
-            total={
-              tableQuery.data &&
-                !Array.isArray(tableQuery.data) &&
-                "totalElements" in tableQuery.data
-                ? tableQuery.data.totalElements
-                : filteredAppointments.length
-            }
-            onPageChange={() => { }}
-          />
-        </div>
-      )}
-
+      </div>
     </div>
+      
+
+      {
+    view === "calendar" && (
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-3">
+        <FullCalendar
+          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+          initialView="timeGridWeek"
+          selectable
+          height="72vh"
+          events={events}
+          headerToolbar={{
+            left: "prev,next today",
+            center: "title",
+            right: "dayGridMonth,timeGridWeek,timeGridDay"
+          }}
+          eventClick={(info) =>
+            navigate(`/admin/appointments/${info.event.id}`)
+          }
+          select={(info) => {
+            const now = new Date();
+            const start = new Date(info.start);
+
+
+            if (start.getTime() < now.setSeconds(0, 0)) {
+              console.log("aq")
+              showToast("No puedes crear citas en el pasado", TOAST_TYPES.ERROR);
+              return;
+            }
+
+            navigate("/admin/appointments/new", {
+              state: {
+                start: info.start.toISOString(),
+                end: info.end?.toISOString() ?? null
+              }
+            })
+          }
+          }
+        />
+      </div>
+    )
+  }
+
+  {
+    view === "table" && (
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <DataTable
+          columns={[
+            { key: "patientName", label: "Paciente" },
+            { key: "doctorName", label: "Médico" },
+            { key: "start", label: "Fecha" },
+            { key: "reason", label: "Motivo" },
+            { key: "status", label: "Estado" },
+            { key: "actions", label: "Acciones", hasActions: true }
+          ]}
+          data={filteredAppointments}
+          actions={actions}
+          page={page}
+          pageSize={pageSize}
+          total={
+            tableQuery.data &&
+              !Array.isArray(tableQuery.data) &&
+              "totalElements" in tableQuery.data
+              ? tableQuery.data.totalElements
+              : filteredAppointments.length
+          }
+          onPageChange={() => { }}
+        />
+      </div>
+    )
+  }
+  <Toast
+    show={toast.show}
+    type={toast.type}
+    message={toast.message}
+    onClose={hideToast}
+  />
+    </div >
   );
 }
