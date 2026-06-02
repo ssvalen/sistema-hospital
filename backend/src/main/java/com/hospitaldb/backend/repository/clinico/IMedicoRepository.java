@@ -1,6 +1,8 @@
 package com.hospitaldb.backend.repository.clinico;
 
 import com.hospitaldb.backend.entity.clinico.Medico;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -39,4 +41,8 @@ public interface IMedicoRepository extends JpaRepository<Medico, Long> {
 
     @Query("SELECT DISTINCT m.especialidad FROM Medico m ORDER BY m.especialidad")
     List<String> findAllEspecialidades();
+
+    List<Medico> findAllByActivo(boolean activo);
+
+    Page<Medico> findAllByActivo(boolean activo, Pageable pageable);
 }

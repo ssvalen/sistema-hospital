@@ -1,6 +1,8 @@
 package com.hospitaldb.backend.repository.inventario;
 
 import com.hospitaldb.backend.entity.inventario.InventarioMedicamento;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -42,4 +44,8 @@ public interface IInventarioMedicamentoRepository extends JpaRepository<Inventar
 
     @Query("SELECT SUM(i.stockActual) FROM InventarioMedicamento i WHERE i.medicamento.idMedicamento = :idMedicamento")
     Integer getStockTotalByMedicamento(@Param("idMedicamento") Long idMedicamento);
+
+    List<InventarioMedicamento> findAllByActivo(boolean activo);
+
+    Page<InventarioMedicamento> findAllByActivo(boolean activo, Pageable pageable);
 }

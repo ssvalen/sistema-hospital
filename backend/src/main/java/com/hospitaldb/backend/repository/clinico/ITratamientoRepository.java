@@ -1,6 +1,8 @@
 package com.hospitaldb.backend.repository.clinico;
 
 import com.hospitaldb.backend.entity.clinico.Tratamiento;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,6 +17,10 @@ public interface ITratamientoRepository extends JpaRepository<Tratamiento, Long>
     List<Tratamiento> findByCita_IdCita(Long idCita);
 
     List<Tratamiento> findByFechaInicioBetween(LocalDate inicio, LocalDate fin);
+
+    List<Tratamiento> findAllByActivo(boolean activo);
+
+    Page<Tratamiento> findAllByActivo(boolean activo, Pageable pageable);
 
     @Query("SELECT t FROM Tratamiento t WHERE t.fechaInicio <= :hoy AND (t.fechaFin IS NULL OR t.fechaFin >= :hoy)")
     List<Tratamiento> findTratamientosActivos(@Param("hoy") LocalDate hoy);

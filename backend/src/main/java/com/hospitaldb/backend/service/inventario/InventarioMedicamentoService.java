@@ -32,7 +32,7 @@ public class InventarioMedicamentoService {
 
     public List<InventarioMedicamentoDTO> findAll() {
         log.info("Obteniendo todo el inventario");
-        List<InventarioMedicamento> inventarios = inventarioRepository.findAll();
+        List<InventarioMedicamento> inventarios = inventarioRepository.findAllByActivo(true);
         return inventarios.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -40,7 +40,7 @@ public class InventarioMedicamentoService {
 
     public Page<InventarioMedicamentoDTO> findAll(Pageable pageable) {
         log.info("Obteniendo inventario paginado");
-        Page<InventarioMedicamento> pageResult = inventarioRepository.findAll(pageable);
+        Page<InventarioMedicamento> pageResult = inventarioRepository.findAllByActivo(true,pageable);
         return pageResult.map(this::convertToDTO);
     }
 
@@ -110,7 +110,9 @@ public class InventarioMedicamentoService {
         log.info("Eliminando inventario con ID: {}", id);
         InventarioMedicamento inventario = inventarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Inventario no encontrado con ID: " + id));
-        inventarioRepository.delete(inventario);
+
+        inventario.setActivo(false);
+        inventarioRepository.save(inventario);
         log.info("Inventario eliminado exitosamente: {}", id);
     }
 

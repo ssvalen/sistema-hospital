@@ -38,12 +38,12 @@ public class MedicamentoService {
     }
 
     private List<Medicamento> findMedicamentoEntityAll(){
-        return medicamentoRepository.findAll();
+        return medicamentoRepository.findAllByActivo(true);
     }
 
     public Page<MedicamentoDTO> findAll(Pageable pageable) {
         log.info("Obteniendo medicamentos paginados");
-        Page<Medicamento> pageResult = medicamentoRepository.findAll(pageable);
+        Page<Medicamento> pageResult = medicamentoRepository.findAllByActivo(true,pageable);
         return pageResult.map(this::convertToDTO);
     }
 
@@ -106,8 +106,8 @@ public class MedicamentoService {
         if (!medicamento.getInventarios().isEmpty()) {
             throw new BusinessException("No se puede eliminar un medicamento que tiene inventario");
         }
-
-        medicamentoRepository.delete(medicamento);
+        medicamento.setActivo(false);
+        medicamentoRepository.save(medicamento);
         log.info("Medicamento eliminado exitosamente: {}", id);
     }
 
