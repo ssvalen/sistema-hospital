@@ -3,10 +3,7 @@ package com.hospitaldb.backend.entity.inventario;
 import com.hospitaldb.backend.entity.common.BaseAuditableEntity;
 import com.hospitaldb.backend.entity.medicamentos.Medicamento;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Entity
@@ -25,10 +22,12 @@ public class InventarioMedicamento extends BaseAuditableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_medicamento", nullable = false)
+    @ToString.Exclude
     private Medicamento medicamento;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_bodega", nullable = false)
+    @ToString.Exclude
     private Bodega bodega;
 
     @Column(name = "stock_actual")
