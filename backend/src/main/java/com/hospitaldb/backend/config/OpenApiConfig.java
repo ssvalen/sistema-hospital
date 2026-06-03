@@ -162,13 +162,13 @@ public class OpenApiConfig {
     }
 
     /**
-     * Grupo: APIs de Inventario
-     * Incluye: bodegas, inventario de medicamentos
+     * Grupo: APIs Hospitalario
+     * Incluye: Ingresos, egresos y areas
      */
     @Bean
     public GroupedOpenApi hospitalarioApi() {
         return GroupedOpenApi.builder()
-                .group("04 - Hospitalario")
+                .group("05 - Hospitalario")
                 .displayName("Gestión de Ingresos, egresos y areas")
                 .pathsToMatch("/api/hospitaldb/hospitalario/ingresos-egresos-areas/**")
                 .addOpenApiCustomizer(openApi -> {
@@ -178,6 +178,27 @@ public class OpenApiConfig {
                             ### Módulos incluidos:
                             - **Ingresos y egresos**: mantenimiento para ingresos y egresos hospitalarios
                             - **Areas**: mantenimiento para areas hospitalarios
+                            """);
+                })
+                .build();
+    }
+
+    /**
+     * Grupo: APIs Auditoria
+     * Incluye: Logs de acciones realizadas en el sistema
+     */
+    @Bean
+    public GroupedOpenApi auditoriaApi() {
+        return GroupedOpenApi.builder()
+                .group("06 - Auditoria")
+                .displayName("Visualización de logs")
+                .pathsToMatch("/api/hospitaldb/auditoria/logs/**")
+                .addOpenApiCustomizer(openApi -> {
+                    openApi.getInfo().setDescription("""
+                            Endpoints para la visualización de logs.
+                            
+                            ### Módulos incluidos:
+                            - **Logs**: Visualización de logs
                             """);
                 })
                 .build();
