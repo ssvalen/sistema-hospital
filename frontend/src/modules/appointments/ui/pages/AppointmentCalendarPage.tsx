@@ -91,8 +91,6 @@ export default function AppointmentCalendarPage() {
     medicId: selectedMedicId
   });
 
-  console.log("table data", tableQuery.data);
-  console.log("table error", tableQuery.error);
 
   const appointments: AppointmentUI[] = useMemo(() => {
     if (view === "calendar") {
@@ -198,97 +196,97 @@ export default function AppointmentCalendarPage() {
                   <option value="2">Dra. Méndez</option>
                 </Select>
               </FormField>
-           </CanAccess>
+            </CanAccess>
+          </div>
+
+          <CanAccess permission={APPOINTMENT_PERMISSIONS.CREATE}>
+            <Button
+              icon={faCalendarPlus}
+              label="Crear cita"
+              color="green"
+              onClick={() => navigate("new")}
+            />
+          </CanAccess>
+
         </div>
-
-        <CanAccess permission={APPOINTMENT_PERMISSIONS.CREATE}>
-          <Button
-            icon={faCalendarPlus}
-            label="Crear cita"
-            color="green"
-            onClick={() => navigate("new")}
-          />
-        </CanAccess>
-
       </div>
-    </div>
-      
+
 
       {
-    view === "calendar" && (
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-3">
-        <FullCalendar
-          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-          initialView="timeGridWeek"
-          selectable
-          height="72vh"
-          events={events}
-          headerToolbar={{
-            left: "prev,next today",
-            center: "title",
-            right: "dayGridMonth,timeGridWeek,timeGridDay"
-          }}
-          eventClick={(info) =>
-            navigate(`/admin/appointments/${info.event.id}`)
-          }
-          select={(info) => {
-            const now = new Date();
-            const start = new Date(info.start);
-
-
-            if (start.getTime() < now.setSeconds(0, 0)) {
-              console.log("aq")
-              showToast("No puedes crear citas en el pasado", TOAST_TYPES.ERROR);
-              return;
-            }
-
-            navigate("/admin/appointments/new", {
-              state: {
-                start: info.start.toISOString(),
-                end: info.end?.toISOString() ?? null
+        view === "calendar" && (
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-3">
+            <FullCalendar
+              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+              initialView="timeGridWeek"
+              selectable
+              height="72vh"
+              events={events}
+              headerToolbar={{
+                left: "prev,next today",
+                center: "title",
+                right: "dayGridMonth,timeGridWeek,timeGridDay"
+              }}
+              eventClick={(info) =>
+                navigate(`/admin/appointments/${info.event.id}`)
               }
-            })
-          }
-          }
-        />
-      </div>
-    )
-  }
+              select={(info) => {
+                const now = new Date();
+                const start = new Date(info.start);
 
-  {
-    view === "table" && (
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-        <DataTable
-          columns={[
-            { key: "patientName", label: "Paciente" },
-            { key: "doctorName", label: "Médico" },
-            { key: "start", label: "Fecha" },
-            { key: "reason", label: "Motivo" },
-            { key: "status", label: "Estado" },
-            { key: "actions", label: "Acciones", hasActions: true }
-          ]}
-          data={filteredAppointments}
-          actions={actions}
-          page={page}
-          pageSize={pageSize}
-          total={
-            tableQuery.data &&
-              !Array.isArray(tableQuery.data) &&
-              "totalElements" in tableQuery.data
-              ? tableQuery.data.totalElements
-              : filteredAppointments.length
-          }
-          onPageChange={() => { }}
-        />
-      </div>
-    )
-  }
-  <Toast
-    show={toast.show}
-    type={toast.type}
-    message={toast.message}
-    onClose={hideToast}
-  />
+
+                if (start.getTime() < now.setSeconds(0, 0)) {
+                  console.log("aq")
+                  showToast("No puedes crear citas en el pasado", TOAST_TYPES.ERROR);
+                  return;
+                }
+
+                navigate("/admin/appointments/new", {
+                  state: {
+                    start: info.start.toISOString(),
+                    end: info.end?.toISOString() ?? null
+                  }
+                })
+              }
+              }
+            />
+          </div>
+        )
+      }
+
+      {
+        view === "table" && (
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <DataTable
+              columns={[
+                { key: "patientName", label: "Paciente" },
+                { key: "doctorName", label: "Médico" },
+                { key: "start", label: "Fecha" },
+                { key: "reason", label: "Motivo" },
+                { key: "status", label: "Estado" },
+                { key: "actions", label: "Acciones", hasActions: true }
+              ]}
+              data={filteredAppointments}
+              actions={actions}
+              page={page}
+              pageSize={pageSize}
+              total={
+                tableQuery.data &&
+                  !Array.isArray(tableQuery.data) &&
+                  "totalElements" in tableQuery.data
+                  ? tableQuery.data.totalElements
+                  : filteredAppointments.length
+              }
+              onPageChange={() => { }}
+            />
+          </div>
+        )
+      }
+      <Toast
+        show={toast.show}
+        type={toast.type}
+        message={toast.message}
+        onClose={hideToast}
+      />
     </div >
   );
 }

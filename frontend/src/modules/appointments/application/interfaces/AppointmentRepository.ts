@@ -9,7 +9,7 @@ export interface AppointmentRepository {
         signal?: AbortSignal
     ): Promise<PaginatedResponse<Appointment>>;
 
-
+    getAppointmentById(appointmentId: number, signal?: AbortSignal): Promise<Appointment>;
     getAppointmentByPatient(patientId: number, signal?: AbortSignal): Promise<Appointment>;
     getAppointmentsByPatient(patientId: number, signal?: AbortSignal): Promise<Appointment[]>;
     getAppointmentsByMedic(medicId: number, signal?: AbortSignal): Promise<Appointment[]>;

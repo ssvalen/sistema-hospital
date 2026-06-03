@@ -3,7 +3,7 @@ import type { Patient } from "../../domain/entities/Patient";
 import type { PaginatedResponse } from "@/shared/types/pagination/PaginatedResponse";
 
 export interface PatientRepository {
-    // getAllPatients(signal?: AbortSignal): Promise<Patient[]>;
+    getAllPatients(signal?: AbortSignal): Promise<Patient[]>;
     // getPatientsByRole(roleId: number, signal?: AbortSignal): Promise<Patient[]>;
     getPatientById(id: number, signal?: AbortSignal): Promise<Patient>;
     getPatientsPaginated(

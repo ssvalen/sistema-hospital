@@ -12,82 +12,51 @@ import {
     faStethoscope
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { APPOINTMENT_STATUS_CONFIG } from "../../types/AppointmentStatusConfig";
 
-import type { AppointmentDetails } from "../../types/AppointmentDetails";
+
+
 import { PERMISSIONS } from "@/shared/utils/permissions";
 import CanAccess from "@/shared/components/permissions/CanAccess";
 
-import { useAppointmentByPatient } from "../../hooks/useAppointmentByPatient";
+import { canExecuteAppointmentAction } from "../utils/canExecuteAppointmentAction";
+import { useAppointmentById } from "../../hooks/appointments/useAppointmentById";
 
 
-const mockAppointments: Record<
-    string,
-    AppointmentDetails
-> = {
-    "1": {
-        id: "1",
-        patientId: "p1",
-        patient: "Juan Pérez",
-        doctor: "Dr. López",
-        date: "2026-05-10",
-        startTime: "09:00",
-        endTime: "09:30",
-        reason: "Control general",
-        status: "Programada"
-    }
-};
 
-const statusStyles: Record<
-    string,
-    string
-> = {
-    Programada:
-        "bg-blue-100 text-blue-700",
 
-    Cancelada:
-        "bg-red-100 text-red-700",
 
-    Completada:
-        "bg-emerald-100 text-emerald-700"
-};
 
 const AppointmentDetailsPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const { data: appointmentData } = useAppointmentByPatient(
-        Number(id)
-    );
+    const { data: appointmentData } = useAppointmentById(Number(id));
 
-    console.log(appointmentData)
 
-    //Modal
+
+
     const [open, setOpen] = useState(false);
-    const openCancelConfirmation = () => setOpen(true)
-    const close = () => {
+
+    const openCancelConfirmation = () =>
+        setOpen(true);
+
+    const close = () =>
         setOpen(false);
-    };
-    //Data
 
-    const data = id
-        ? mockAppointments[id]
-        : undefined;
-
-    if (!data) {
+    if (!appointmentData) {
         return (
             <div className="p-6 lg:p-8 bg-slate-50 min-h-screen">
-
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center">
-
                     <p className="text-slate-500">
                         Cita no encontrada
                     </p>
-
                 </div>
-
             </div>
         );
     }
+
+    const statusStyles = APPOINTMENT_STATUS_CONFIG[appointmentData.status];
 
     return (
         <div className="p-6 lg:p-8 bg-slate-50 min-h-screen space-y-6">
@@ -120,19 +89,21 @@ const AppointmentDetailsPage = () => {
                             )
                         }
                     />
+                    {canExecuteAppointmentAction(appointmentData.status, "EDIT") && (
 
-                    <CanAccess permission={PERMISSIONS.APPOINTMENT.EDIT}>
-                        <Button
-                            icon={faPen}
-                            label="Editar"
-                            color="blue"
-                            onClick={() =>
-                                navigate(
-                                    `/admin/appointments/${id}/edit`
-                                )
-                            }
-                        />
-                    </CanAccess>
+                        <CanAccess permission={PERMISSIONS.APPOINTMENT.EDIT}>
+                            <Button
+                                icon={faPen}
+                                label="Editar"
+                                color="blue"
+                                onClick={() =>
+                                    navigate(
+                                        `/admin/appointments/${id}/edit`
+                                    )
+                                }
+                            />
+                        </CanAccess>
+                    )}
 
                 </div>
 
@@ -167,9 +138,11 @@ const AppointmentDetailsPage = () => {
                                 </p>
 
                                 <span
-                                    className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${statusStyles[data.status]}`}
+                                    className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${statusStyles.className ??
+                                        "bg-slate-100 text-slate-700"
+                                        }`}
                                 >
-                                    {appointmentData?.status.toLocaleUpperCase()}
+                                    {appointmentData.status}
                                 </span>
 
                             </div>
@@ -180,39 +153,42 @@ const AppointmentDetailsPage = () => {
 
 
                     <div className="flex flex-col sm:flex-row xl:flex-col gap-3 xl:min-w-[220px]">
-                        <CanAccess permission={PERMISSIONS.APPOINTMENT.ATTEND}>
-                            <Button
-                                icon={faStethoscope}
-                                label="Atender cita"
-                                color="green"
-                                onClick={() =>
-                                    navigate(
-                                        `/admin/appointments/${id}/attend`
-                                    )
-                                }
-                            />
-                        </CanAccess>
+                        {canExecuteAppointmentAction(appointmentData.status, "ATTEND") && (
+                            <CanAccess permission={PERMISSIONS.APPOINTMENT.ATTEND}>
+                                <Button
+                                    icon={faStethoscope}
+                                    label="Atender cita"
+                                    color="green"
+                                    onClick={() =>
+                                        navigate(
+                                            `/admin/appointments/${id}/attend`
+                                        )
+                                    }
+                                />
+                            </CanAccess>
+                        )}
                         <CanAccess permission={PERMISSIONS.APPOINTMENT.VIEW_PATIENT_RECORD}>
                             <Button
                                 icon={faUser}
                                 label="Ver expediente"
                                 color="gray"
                                 onClick={() =>
-                                    navigate(
-                                        `/admin/patients/${data.patientId}`
-                                    )
+                                    navigate(`/admin/patients/${appointmentData.patient.id}`)
                                 }
                             />
                         </CanAccess>
-                        <CanAccess permission={PERMISSIONS.APPOINTMENT.CANCEL}>
-                            <Button
-                                icon={faBan}
-                                label="Cancelar cita"
-                                color="gray"
-                                onClick={openCancelConfirmation}
-                                variant="outline"
-                            />
-                        </CanAccess>
+                        {canExecuteAppointmentAction(appointmentData.status, "CANCEL") && (
+                            <CanAccess permission={PERMISSIONS.APPOINTMENT.CANCEL}>
+                                <Button
+                                    icon={faBan}
+                                    label="Cancelar cita"
+                                    color="gray"
+                                    onClick={openCancelConfirmation}
+                                    variant="outline"
+                                />
+                            </CanAccess>
+                        )}
+
 
                     </div>
 
@@ -237,68 +213,43 @@ const AppointmentDetailsPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                     <div>
-
                         <p className="text-xs text-slate-400 mb-1">
                             Médico
                         </p>
 
                         <p className="font-medium text-slate-700">
-                            Dr. {appointmentData?.doctor.fullName}
+                            Dr. {appointmentData.doctor.fullName}
                         </p>
-
                     </div>
 
                     <div>
-
                         <p className="text-xs text-slate-400 mb-1">
                             Especialidad
                         </p>
 
                         <p className="font-medium text-slate-700">
-                            {appointmentData?.doctor.specialty}
+                            {appointmentData.doctor.specialty}
                         </p>
-
                     </div>
 
                     <div>
-
                         <p className="text-xs text-slate-400 mb-1">
                             Fecha de cita
                         </p>
 
                         <p className="font-medium text-slate-700">
-                            {appointmentData?.startDate}
+                            {appointmentData.startDate}
                         </p>
-
                     </div>
 
                     <div>
-
                         <p className="text-xs text-slate-400 mb-1">
                             Horario
                         </p>
 
                         <p className="font-medium text-slate-700">
-                            {appointmentData?.startTime} 
-                            {/* -{" "} {appointmentData?.endTime} */}
+                            {appointmentData.startTime}
                         </p>
-
-                    </div>
-
-                    <div className="md:col-span-2">
-
-                        <p className="text-xs text-slate-400 mb-2">
-                            Observaciones
-                        </p>
-
-                        <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
-
-                            <p className="text-sm text-slate-700 leading-relaxed">
-                                {data.reason}
-                            </p>
-
-                        </div>
-
                     </div>
 
                 </div>

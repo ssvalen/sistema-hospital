@@ -1,12 +1,13 @@
 import type { TreatmentRepository } from "../interfaces/TreatmentRepository";
 import type { MedicationRepository } from "../interfaces/MedicationRepository";
+import type { AppointmentRepository } from "../interfaces/AppointmentRepository";
 import type { CreateTreatmentParams } from "@/modules/appointments/types/AppointmentTypes";
 
 export const createTreatment = async (
     params: CreateTreatmentParams,
     treatmentRepo: TreatmentRepository,
     medicationRepo: MedicationRepository,
-
+    appointmentRepo: AppointmentRepository,
     signal?: AbortSignal
 ) => {
 
@@ -27,6 +28,15 @@ export const createTreatment = async (
             signal
         );
     }
+
+    const updateState = await appointmentRepo.updateAppointment(
+        params.appointmentId,
+        params.patientId,
+        params.medicId,
+        params.endDate,
+        params.appointmentStatus,
+        signal
+    )
 
     return treatment;
 };

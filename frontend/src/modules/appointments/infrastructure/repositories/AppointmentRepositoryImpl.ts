@@ -41,7 +41,17 @@ export function createAppointmentRepository(http: HttpClient): AppointmentReposi
 
             return paginatedAppointmentsToDomain(dto.data);
         },
+        async getAppointmentById(appointmentId: number, signal?: AbortSignal) {
+            const dto = await http.request<ApiResponse<AppointmentResponseDTO>>({
+                url: `${API_ROUTES.APPOINTMENT_GET_BY_ID}/${appointmentId}`,
+                method: "GET",
+                withCredentials: false,
+                timeoutMs: 15_000,
+                signal,
+            });
 
+            return appointmentToDomain(dto.data);
+        },
         async getAppointmentsByMedic(medicId: number, signal?: AbortSignal) {
             const dto = await http.request<ApiResponse<AppointmentResponseDTO[]>>({
                 url: `${API_ROUTES.APPOINTMENT_GET_BY_MEDIC}/${medicId}`,

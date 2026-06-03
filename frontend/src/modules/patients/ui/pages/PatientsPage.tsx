@@ -57,7 +57,6 @@ const PatientsPage = () => {
     });
   }, [patients, search, gender]);
 
-  // 🔥 SOLO FORMATEO DE GÉNERO (SIN render, SIN romper DataTable)
   const formattedPatients = useMemo(() => {
     return filteredPatients.map((p) => ({
       ...p,

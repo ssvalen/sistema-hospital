@@ -26,6 +26,7 @@ import HospitalizationFormPage from "@/modules/hospital/ui/pages/Hospitalization
 import TransferHospitalizationPage from "@/modules/hospital/ui/pages/TransferHospitalizationPage";
 import DischargeHospitalizationPage from "@/modules/hospital/ui/pages/DischargeHospitalizationPage";
 import HospitalizationDetailsPage from "@/modules/hospital/ui/pages/HospitalizationDetailsPage";
+import DoctorsPage from "@/modules/hospital/ui/pages/DoctorsPage";
 
 
 const DummyPage = ({ title }: { title: string }) => (
@@ -144,6 +145,13 @@ export const adminRoutes: SidebarRoute[] = [
         element: HospitalizationDetailsPage,
         showInSidebar: false,
         permissions: [PERMISSIONS.HOSPITAL.VIEW_ADMISSION_DETAIL],
+      },
+      {
+        path: "doctors",
+        element: DoctorsPage,
+        showInSidebar: true,
+        label: "Doctores"
+        // permissions: [PERMISSIONS.HOSPITAL.VIEW_ADMISSION_DETAIL],
       },
     ]
 

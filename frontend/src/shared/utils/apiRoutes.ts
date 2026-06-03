@@ -41,4 +41,9 @@ export const API_ROUTES = {
   MEDICATION_GET_BY_TREATMENT: '/api/hospitaldb/medicamentos/tratamiento-medicamentos/tratamiento',
   MEDICATION_CREATE: '/api/hospitaldb/medicamentos/tratamiento-medicamentos',
   MEDICATION_UPDATE: '/api/hospitaldb/medicamentos/tratamiento-medicamentos',
+  // DOCTORS
+  DOCTORS_GET_ALL: '/api/hospitaldb/clinico/medicos',
+  DOCTORS_GET_PAGINATED: '/api/hospitaldb/clinico/medicos/paginado',
+  DOCTORS_CREATE: '/api/hospitaldb/clinico/medicos',
+  DOCTORS_UPDATE: '/api/hospitaldb/clinico/medicos'
 } as const;
