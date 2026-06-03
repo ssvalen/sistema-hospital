@@ -2,6 +2,7 @@ export const BUTTON_COLORS = {
     GREEN: "green",
     BLUE: "blue",
     RED: "red",
+    GRAY: "gray",
 } as const;
 
 export type ButtonColor =

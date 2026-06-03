@@ -1,9 +1,10 @@
 package com.hospitaldb.backend.entity.administrativo;
 
+import com.hospitaldb.backend.entity.common.BaseAuditableEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +13,9 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Permiso {
+@SuperBuilder
+@EqualsAndHashCode(callSuper = true)
+public class Permiso extends BaseAuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,5 +27,6 @@ public class Permiso {
 
     // Relación con ROL_PERMISO
     @OneToMany(mappedBy = "permiso", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
     private List<RolPermiso> rolPermisos = new ArrayList<>();
 }

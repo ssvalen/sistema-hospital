@@ -20,9 +20,7 @@ spring:
     serialization:
       FAIL_ON_EMPTY_BEANS: false
     default-property-inclusion: non_null
-    # Limitar profundidad de serialización
-    deserialization:
-      FAIL_ON_UNKNOWN_PROPERTIES: false
+    time-zone: America/Guatemala
   jpa:
     show-sql: true
     properties:
@@ -66,6 +64,15 @@ spring:
       realm: hotel-db
       client-id: api-hospital-db
       client-secret: Aigf7bNFYoF6GkLkWtXaHp7mfV4k7KIi
+  data:
+    mongodb:
+      uri: mongodb://${spring.data.mongodb.username}:${spring.data.mongodb.password}@${spring.data.mongodb.host}:${spring.data.mongodb.port}/${spring.data.mongodb.database}?authSource=${spring.data.mongodb.authentication-database}
+      host: mongodb
+      port: 27017
+      database: hospital_audit
+      username: ENC(FF91318ADF34C6DBCDA49838CB7A1378F5D2D5E9228626A051D1F1494DDBA2412ECFCDD85E8D923E9140F0997CC0D629)
+      password: ENC(C497F1F493FAA4025E642C57016A48BDE6B321A5F6E6FE92630DF1116DC6274F3FF9D0773086F0D4868AFF3DE5C59686)
+      authentication-database: admin
 springdoc:
   api-docs:
     enabled: true

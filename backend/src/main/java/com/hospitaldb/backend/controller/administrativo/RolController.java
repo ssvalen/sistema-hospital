@@ -6,6 +6,7 @@ import com.hospitaldb.backend.dto.response.EntityResponse;
 import com.hospitaldb.backend.dto.response.PaginatedResponse;
 import com.hospitaldb.backend.dto.response.administrativo.PermisoDTO;
 import com.hospitaldb.backend.dto.response.administrativo.RolDTO;
+import com.hospitaldb.backend.dto.response.administrativo.RolPadreDTO;
 import com.hospitaldb.backend.dto.response.administrativo.RolPermisoDTO;
 import com.hospitaldb.backend.entity.administrativo.Permiso;
 import com.hospitaldb.backend.entity.administrativo.Rol;
@@ -39,6 +40,15 @@ public class RolController {
         List<RolDTO> roles = rolService.findAll();
         return ResponseEntity.ok(
                 EntityResponse.success(roles, "Roles obtenidos exitosamente", request.getRequestURI())
+        );
+    }
+
+    @GetMapping("/rol-padre")
+    public ResponseEntity<EntityResponse<List<RolPadreDTO>>> getAllRolePadre(HttpServletRequest request) {
+        log.info("GET /api/roles - Listando todos los roles");
+        List<RolPadreDTO> roles = rolService.findAllRolPadre();
+        return ResponseEntity.ok(
+                EntityResponse.success(roles, "Roles padre obtenidos exitosamente", request.getRequestURI())
         );
     }
 

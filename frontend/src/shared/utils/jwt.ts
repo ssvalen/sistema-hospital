@@ -1,9 +1,16 @@
-type JwtPayload = { exp?: number } & Record<string, unknown>;
+type JwtPayload = {
+  exp?: number;
+  preferred_username?: string;
+  realm_access?: {
+    roles?: string[];
+  };
+} & Record<string, unknown>;
 
 export function parseJwtPayload(token: string): JwtPayload | null {
   try {
     const part = token.split(".")[1];
     if (!part) return null;
+
     return JSON.parse(atob(part));
   } catch {
     return null;

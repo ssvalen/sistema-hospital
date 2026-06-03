@@ -1,0 +1,38 @@
+package com.hospitaldb.backend.config;
+
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.data.mongodb.MongoDatabaseFactory;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
+
+@Configuration
+@Slf4j
+public class MongoConfig {
+
+    @Value("${spring.data.mongodb.uri}")
+    private String mongoUri;
+
+    @Bean
+    @Primary
+    public MongoClient mongoClient() {
+        return MongoClients.create(mongoUri);
+    }
+
+    @Bean
+    @Primary
+    public MongoDatabaseFactory mongoDatabaseFactory(MongoClient mongoClient) {
+        return new SimpleMongoClientDatabaseFactory(mongoClient, "hospital_audit");
+    }
+
+    @Bean
+    @Primary
+    public MongoTemplate mongoTemplate(MongoDatabaseFactory mongoDatabaseFactory) {
+        return new MongoTemplate(mongoDatabaseFactory);
+    }
+}

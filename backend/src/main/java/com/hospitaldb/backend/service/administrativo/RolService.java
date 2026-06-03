@@ -4,15 +4,19 @@ import com.hospitaldb.backend.dto.request.AsignacionPermisoRequestDTO;
 import com.hospitaldb.backend.dto.request.RolRequestDTO;
 import com.hospitaldb.backend.dto.response.administrativo.PermisoDTO;
 import com.hospitaldb.backend.dto.response.administrativo.RolDTO;
+import com.hospitaldb.backend.dto.response.administrativo.RolPadreDTO;
 import com.hospitaldb.backend.dto.response.administrativo.RolPermisoDTO;
 import com.hospitaldb.backend.entity.administrativo.Permiso;
 import com.hospitaldb.backend.entity.administrativo.Rol;
+import com.hospitaldb.backend.entity.administrativo.RolPadre;
 import com.hospitaldb.backend.entity.administrativo.RolPermiso;
 import com.hospitaldb.backend.exception.BusinessException;
 import com.hospitaldb.backend.exception.ResourceNotFoundException;
 import com.hospitaldb.backend.repository.administrativo.IPermisoRepository;
+import com.hospitaldb.backend.repository.administrativo.IRolPadreRepository;
 import com.hospitaldb.backend.repository.administrativo.IRolPermisoRepository;
 import com.hospitaldb.backend.repository.administrativo.IRolRepository;
+import com.hospitaldb.backend.service.keycloak.KeycloakService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -21,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,20 +38,30 @@ public class RolService {
     private final IRolRepository rolRepository;
     private final IPermisoRepository permisoRepository;
     private final IRolPermisoRepository rolPermisoRepository;
+    private final IRolPadreRepository rolPadreRepository;
+
+    private final KeycloakService keycloakService;
 
     private final ModelMapper modelMapper;
 
     public List<RolDTO> findAll() {
         log.info("Obteniendo todos los roles");
-        List<Rol> roles = rolRepository.findAll();
+        List<Rol> roles = rolRepository.findAllByActivo(true);
         return roles.stream()
                 .map(rol -> modelMapper.map(rol, RolDTO.class))
                 .collect(Collectors.toList());
     }
 
+    public List<RolPadreDTO> findAllRolPadre(){
+        List<RolPadre> roles = rolPadreRepository.findAll();
+        return roles.stream()
+                .map(rol -> modelMapper.map(rol, RolPadreDTO.class))
+                .collect(Collectors.toList());
+    }
+
     public Page<RolDTO> findAll(Pageable pageable) {
         log.info("Obteniendo roles paginados");
-        Page<Rol> pageResult = rolRepository.findAll(pageable);
+        Page<Rol> pageResult = rolRepository.findAllByActivo(true, pageable);
         return pageResult.map(rol -> modelMapper.map(rol, RolDTO.class));
     }
 
@@ -66,7 +81,11 @@ public class RolService {
 
     @Transactional
     public RolDTO create(RolRequestDTO request) {
-        log.info("Creando nuevo rol: {}", request.getNombreRol());
+        log.info("Creando nuevo rol basado en rol padre id: {}",
+                request.getModelRoleId());
+
+        RolPadre rolPadre = rolPadreRepository.findById(request.getModelRoleId())
+                .orElseThrow(() -> new BusinessException("No existe el rol padre con id: " + request.getModelRoleId()));
 
         if (rolRepository.existsByNombreRol(request.getNombreRol())) {
             throw new BusinessException("Ya existe un rol con el nombre: " + request.getNombreRol());
@@ -74,10 +93,37 @@ public class RolService {
 
         Rol rol = new Rol();
         rol.setNombreRol(request.getNombreRol());
+        rol.setRolPadre(rolPadre);
 
         Rol saved = rolRepository.save(rol);
         log.info("Rol creado exitosamente con ID: {}", saved.getIdRol());
+
+        if (request.getPermissions() != null && !request.getPermissions().isEmpty()) {
+            guardarPermisosUI(saved, request.getPermissions());
+        }
+
         return modelMapper.map(saved, RolDTO.class);
+    }
+
+    private void guardarPermisosUI(Rol rol, List<BigInteger> permisos) {
+        permisos.forEach(nombrePermiso -> {
+            Permiso permiso = permisoRepository
+                    .findByIdPermiso(nombrePermiso)
+                    .orElseGet(() -> {
+                        Permiso nuevo = new Permiso();
+                        nuevo.setIdPermiso(nombrePermiso.longValue());
+                        return permisoRepository.save(nuevo);
+                    });
+
+            if (!rolPermisoRepository.existsByRolAndPermiso(rol, permiso)) {
+                RolPermiso rolPermiso = new RolPermiso();
+                rolPermiso.setRol(rol);
+                rolPermiso.setPermiso(permiso);
+                rolPermisoRepository.save(rolPermiso);
+            }
+        });
+        log.info("Guardados {} permisos UI para rol {}",
+                permisos.size(), rol.getNombreRol());
     }
 
     @Transactional
@@ -113,7 +159,8 @@ public class RolService {
             throw new BusinessException("No se puede eliminar un rol que tiene permisos asignados");
         }
 
-        rolRepository.delete(rol);
+        rol.setActivo(false);
+        rolRepository.save(rol);
         log.info("Rol eliminado exitosamente: {}", id);
     }
 

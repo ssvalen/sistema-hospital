@@ -18,6 +18,8 @@ public interface IUsuarioRolRepository extends JpaRepository<UsuarioRol, Long> {
 
     List<UsuarioRol> findByRol_IdRol(Long idRol);
 
+    List<UsuarioRol> findAllByActivo(boolean activo);
+
     Optional<UsuarioRol> findByUsuario_IdUsuarioAndRol_IdRol(Long idUsuario, Long idRol);
 
     @Modifying
@@ -27,4 +29,11 @@ public interface IUsuarioRolRepository extends JpaRepository<UsuarioRol, Long> {
     long countByRol_IdRol(Long idRol);
 
     boolean existsByUsuario_IdUsuarioAndRol_IdRol(Long idUsuario, Long idRol);
+
+    @Query(" SELECT r.rolPadre.idRolPadre FROM UsuarioRol ur " +
+        "JOIN ur.usuario u "+
+        "JOIN ur.rol r "+
+        "JOIN r.rolPadre rp "+
+        "WHERE u.idKeycloak = :keycloakId ")
+    List<Long> findIdRolesPadreByKeycloakId(String keycloakId);
 }

@@ -10,6 +10,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "3307:3306"
     command: 
@@ -21,6 +22,21 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - hospital-network
+
+  mongodb:
+    image: mongo:7.0
+    container_name: mongodb-hospital
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+      - MONGO_INITDB_DATABASE=hospital_audit
+    volumes:
+      - mongodb_data:/data/db
     networks:
       - hospital-network
 
@@ -37,7 +53,7 @@ services:
       KC_DB_PORT: 3306
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
-      KC_HOSTNAME: keycloak
+      #KC_HOSTNAME: keycloak
       KC_HOSTNAME_STRICT: false
       KC_HTTP_ENABLED: true
       KC_PROXY_HEADERS: forwarded
@@ -93,6 +109,8 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
+    extra_hosts:
+    - "host.docker.internal:host-gateway"
   hospital-frontend:
     build:
       context: ./frontend
@@ -107,9 +125,29 @@ services:
       - /app/node_modules
     depends_on:
       - hospital-service
+  etl_service:
+    build: ./etl                  
+    container_name: app_etl
+    volumes:
+      - ./uploads:/app/uploads      # Misma carpeta compartida
+      - ./etl/logs:/app/logs        # Logs del ETL
+    environment:
+      DB_HOST: mysql-hospital
+      DB_USER: root                  
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      DB_NAME: clinico_db
+      POLLING_INTERVAL: 5
+    depends_on:
+      mysql-hospital:
+        condition: service_healthy
+    networks:
+      - hospital-network
+    restart: unless-stopped
+
 volumes:
   mysql_data:
   keycloak_data:
+  mongodb_data:
 
 networks:
   hospital-network:

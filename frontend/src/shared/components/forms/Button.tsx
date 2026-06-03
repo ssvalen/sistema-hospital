@@ -6,183 +6,258 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { ButtonColor } from "@/shared/types/button/ButtonTypes";
 
 export const BUTTON_COLORS = {
-    GREEN: "green",
-    BLUE: "blue",
-    RED: "red",
-    GRAY: "gray",
-    WHITE: "white",
+  GREEN: "green",
+  BLUE: "blue",
+  RED: "red",
+  GRAY: "gray",
+  WHITE: "white",
 } as const;
 
 type ButtonVariant = "solid" | "soft" | "outline";
 
 interface ColorConfig {
-    solid: string;
-    soft: string;
-    outline: string;
+  solid: string;
+  soft: string;
+  outline: string;
 }
 
 interface ButtonProps {
-    icon?: IconDefinition;
-    label?: string;
-    title?: string;
+  icon?: IconDefinition;
+  label?: string;
+  title?: string;
 
-    color?: ButtonColor | "gray" | "white";
-    variant?: ButtonVariant;
+  color?: ButtonColor | "gray" | "white";
+  variant?: ButtonVariant;
 
-    onClick?: () => void;
+  onClick?: () => void;
 
-    type?: "button" | "submit" | "reset";
+  type?: "button" | "submit" | "reset";
 
-    disabled?: boolean;
-    loading?: boolean;
+  disabled?: boolean;
+  loading?: boolean;
 
-    fullWidth?: boolean;
+  fullWidth?: boolean;
 
-    className?: string;
+  className?: string;
 }
 
 const colorMap: Record<string, ColorConfig> = {
-    blue: {
-        solid:
-            "bg-blue-500 text-white hover:bg-blue-600 border border-blue-500",
+  blue: {
+    solid: `
+      text-white
+      bg-gradient-to-r
+      from-blue-600
+      to-indigo-600
+      hover:from-blue-700
+      hover:to-indigo-700
+      border border-transparent
+      shadow-md
+      hover:shadow-lg
+    `,
 
-        soft:
-            "bg-blue-50/80 text-blue-700 hover:bg-blue-100 border border-blue-100",
+    soft: `
+      bg-blue-50/80
+      text-blue-700
+      hover:bg-blue-100
+      border border-blue-100
+    `,
 
-        outline:
-            "bg-white text-blue-700 border border-blue-200 hover:bg-blue-50",
-    },
+    outline: `
+      bg-white
+      text-blue-700
+      border border-blue-200
+      hover:bg-blue-50
+    `,
+  },
 
-    green: {
-        solid:
-            "bg-emerald-500 text-white hover:bg-emerald-600 border border-emerald-500",
+  green: {
+    solid: `
+      bg-emerald-500
+      text-white
+      hover:bg-emerald-600
+      border border-emerald-500
+      shadow-md
+      hover:shadow-lg
+    `,
 
-        soft:
-            "bg-emerald-50/80 text-emerald-700 hover:bg-emerald-100 border border-emerald-100",
+    soft: `
+      bg-emerald-50/80
+      text-emerald-700
+      hover:bg-emerald-100
+      border border-emerald-100
+    `,
 
-        outline:
-            "bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50",
-    },
+    outline: `
+      bg-white
+      text-emerald-700
+      border border-emerald-200
+      hover:bg-emerald-50
+    `,
+  },
 
-    red: {
-        solid:
-            "bg-rose-500 text-white hover:bg-rose-600 border border-rose-500",
+  red: {
+    solid: `
+      bg-rose-500
+      text-white
+      hover:bg-rose-600
+      border border-rose-500
+      shadow-md
+      hover:shadow-lg
+    `,
 
-        soft:
-            "bg-rose-50/80 text-rose-700 hover:bg-rose-100 border border-rose-100",
+    soft: `
+      bg-rose-50/80
+      text-rose-700
+      hover:bg-rose-100
+      border border-rose-100
+    `,
 
-        outline:
-            "bg-white text-rose-700 border border-rose-200 hover:bg-rose-50",
-    },
+    outline: `
+      bg-white
+      text-rose-700
+      border border-rose-200
+      hover:bg-rose-50
+    `,
+  },
 
-    gray: {
-        solid:
-            "bg-slate-600 text-white hover:bg-slate-700 border border-slate-600",
+  gray: {
+    solid: `
+      bg-slate-600
+      text-white
+      hover:bg-slate-700
+      border border-slate-600
+      shadow-md
+      hover:shadow-lg
+    `,
 
-        soft:
-            "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200",
+    soft: `
+      bg-slate-100
+      text-slate-700
+      hover:bg-slate-200
+      border border-slate-200
+    `,
 
-        outline:
-            "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50",
-    },
+    outline: `
+      bg-white
+      text-slate-700
+      border border-slate-200
+      hover:bg-slate-50
+    `,
+  },
 
-    white: {
-        solid:
-            "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200",
+  white: {
+    solid: `
+      bg-white
+      text-gray-700
+      border border-gray-200
+      hover:bg-gray-50
+    `,
 
-        soft:
-            "bg-white text-slate-700 hover:bg-slate-50 border border-slate-100",
+    soft: `
+      bg-white
+      text-gray-700
+      border border-gray-100
+      hover:bg-gray-50
+    `,
 
-        outline:
-            "bg-transparent text-slate-700 border border-slate-200 hover:bg-slate-50",
-    },
+    outline: `
+      bg-white
+      text-gray-700
+      border border-gray-200
+      hover:bg-gray-50
+    `,
+  },
 };
 
 const Button: React.FC<ButtonProps> = ({
-    icon,
-    label,
-    title,
+  icon,
+  label,
+  title,
 
-    color = "blue",
-    variant = "solid",
+  color = "blue",
+  variant = "solid",
 
-    onClick,
+  onClick,
 
-    type = "button",
+  type = "button",
 
-    disabled = false,
-    loading = false,
+  disabled = false,
+  loading = false,
 
-    fullWidth = false,
+  fullWidth = false,
 
-    className = "",
+  className = "",
 }) => {
-    const styles = colorMap[color]?.[variant];
+  const styles = colorMap[color]?.[variant];
 
-    return (
-        <button
-            type={type}
-            title={title}
-            onClick={onClick}
-            disabled={disabled || loading}
-            className={`
-                inline-flex items-center justify-center gap-2
+  return (
+    <button
+      type={type}
+      title={title}
+      onClick={onClick}
+      disabled={disabled || loading}
+      className={`
+        inline-flex items-center justify-center gap-2
 
-                h-11 px-4
+        px-5 py-2.5
+        min-h-[44px]
 
-                rounded-xl
+        rounded-xl
 
-                text-sm font-medium
+        text-sm font-semibold
 
-                transition-all duration-200 ease-out
+        transition-all duration-200
 
-                active:scale-[0.985]
+        active:scale-[0.98]
 
-                shadow-sm hover:shadow-sm
+        focus:outline-none
+        focus:ring-4
+        focus:ring-slate-100
 
-                focus:outline-none
-                focus:ring-4
-                focus:ring-slate-100
+        disabled:opacity-50
+        disabled:cursor-not-allowed
+        disabled:hover:scale-100
 
-                disabled:opacity-50
-                disabled:cursor-not-allowed
-                disabled:hover:scale-100
-                disabled:hover:shadow-sm
+        ${fullWidth ? "w-full" : ""}
 
-                ${fullWidth ? "w-full" : ""}
+        ${styles}
 
-                ${styles}
+        ${className}
+      `}
+    >
+      {loading ? (
+        <span className="flex items-center gap-2">
+          <span
+            className="
+              h-4 w-4
+              animate-spin
+              rounded-full
+              border-2
+              border-current/30
+              border-t-current
+            "
+          />
 
-                ${className}
-            `}
-        >
-            {loading ? (
-                <div
-                    className="
-                        h-4 w-4 rounded-full
-                        border-2 border-current
-                        border-t-transparent
-                        animate-spin
-                    "
-                />
-            ) : (
-                <>
-                    {icon && (
-                        <FontAwesomeIcon
-                            icon={icon}
-                            className="text-sm"
-                        />
-                    )}
+          {label && <span>{label}</span>}
+        </span>
+      ) : (
+        <>
+          {icon && (
+            <FontAwesomeIcon
+              icon={icon}
+              className="text-sm"
+            />
+          )}
 
-                    {label && (
-                        <span className="whitespace-nowrap">
-                            {label}
-                        </span>
-                    )}
-                </>
-            )}
-        </button>
-    );
+          {label && (
+            <span className="whitespace-nowrap">
+              {label}
+            </span>
+          )}
+        </>
+      )}
+    </button>
+  );
 };
 
 export default Button;

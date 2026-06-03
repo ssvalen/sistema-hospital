@@ -31,7 +31,7 @@ public class TratamientoService {
 
     public List<TratamientoDTO> findAll() {
         log.info("Obteniendo todos los tratamientos");
-        List<Tratamiento> tratamientos = tratamientoRepository.findAll();
+        List<Tratamiento> tratamientos = tratamientoRepository.findAllByActivo(true);
         return tratamientos.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -39,7 +39,7 @@ public class TratamientoService {
 
     public Page<TratamientoDTO> findAll(Pageable pageable) {
         log.info("Obteniendo tratamientos paginados");
-        Page<Tratamiento> pageResult = tratamientoRepository.findAll(pageable);
+        Page<Tratamiento> pageResult = tratamientoRepository.findAllByActivo(true,pageable);
         return pageResult.map(this::convertToDTO);
     }
 
@@ -112,8 +112,8 @@ public class TratamientoService {
         if (!tratamiento.getTratamientoMedicamentos().isEmpty()) {
             throw new BusinessException("No se puede eliminar un tratamiento que tiene medicamentos asociados");
         }
-
-        tratamientoRepository.delete(tratamiento);
+        tratamiento.setActivo(false);
+        tratamientoRepository.save(tratamiento);
         log.info("Tratamiento eliminado exitosamente: {}", id);
     }
 

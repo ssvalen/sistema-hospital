@@ -1,54 +1,37 @@
 import DataTable from "@/shared/components/DataTable";
-import type { Role, Permission } from "../../types/AuthTypes";
+import type { Role } from "@/modules/admin/domain/entities/Role";
 import type { TableAction } from "@/shared/types/table/TableTypes";
 import { BUTTON_COLORS } from "@/shared/types/button/ButtonTypes";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 import Button from "@/shared/components/forms/Button";
 import { faUserLock } from "@fortawesome/free-solid-svg-icons";
 import CanAccess from "@/shared/components/permissions/CanAccess";
 import { PERMISSIONS } from "@/shared/utils/permissions";
 
+import { useRolesPaginated } from "../../hooks/roles/useRolesPaginated";
+import { useState } from "react";
+
 const RolesPages = () => {
   const navigate = useNavigate();
 
-  const permissions: Permission[] = [
-    { id: "p1", name: "Ver pacientes", code: "patients.view" },
-    { id: "p2", name: "Crear pacientes", code: "patients.create" },
-    { id: "p3", name: "Editar pacientes", code: "patients.edit" },
-    { id: "p4", name: "Eliminar pacientes", code: "patients.delete" },
-    { id: "p5", name: "Ver roles", code: "roles.view" },
-    { id: "p6", name: "Gestionar roles", code: "roles.manage" },
-  ];
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
 
-  const [roles, setRoles] = useState<Role[]>([
-    {
-      id: "1",
-      name: "Administrador",
-      description: "Acceso total al sistema",
-      permissions: [permissions[0], permissions[1], permissions[4], permissions[5]],
-    },
-    {
-      id: "2",
-      name: "Doctor",
-      description: "Gestión clínica de pacientes",
-      permissions: [permissions[0], permissions[1], permissions[2]],
-    },
-    {
-      id: "3",
-      name: "Recepcionista",
-      description: "Agenda y citas",
-      permissions: [permissions[0]],
-    },
-  ]);
+  const {
+    items: roles,
+    totalElements,
+    isLoading,
+    isFetching,
+  } = useRolesPaginated(page - 1, pageSize);
 
-  const toggleActive = (roleId: string) => {
-    setRoles((prev) =>
-      prev.map((r: any) =>
-        r.id === roleId ? { ...r, active: !r.active } : r
-      )
-    );
-  };
+
+  // const toggleActive = (roleId: string) => {
+  //   setRoles((prev) =>
+  //     prev.map((r: any) =>
+  //       r.id === roleId ? { ...r, active: !r.active } : r
+  //     )
+  //   );
+  // };
 
   const actions: TableAction<Role>[] = [
     {
@@ -57,7 +40,7 @@ const RolesPages = () => {
       color: BUTTON_COLORS.BLUE,
       permission: PERMISSIONS.ADMIN.ROLES_EDIT,
       onClick: (role) => navigate(`/admin/roles/${role.id}`, {
-        state: { role, permissions }
+        state: { role }
       }),
     },
     {
@@ -65,15 +48,10 @@ const RolesPages = () => {
       label: "Inactivar",
       color: BUTTON_COLORS.RED,
       permission: PERMISSIONS.ADMIN.INACTIVATE_ROLES,
-      onClick: (role) => toggleActive(role.id),
+      onClick: (role) => { },
     },
   ];
 
-  const columns = [
-    { key: "name", label: "Rol", sortable: true },
-    { key: "description", label: "Descripción" },
-    { key: "actions", label: "Acciones", hasActions: true },
-  ];
 
   return (
     <div className="p-6 lg:p-8 bg-slate-50 min-h-screen space-y-6">
@@ -90,21 +68,22 @@ const RolesPages = () => {
             label="Crear rol"
             icon={faUserLock}
             color="blue"
-            onClick={() => navigate("/admin/roles/new", {
-              state: { permissions }
-            })} />
+            onClick={() => navigate("/admin/roles/new")} />
         </CanAccess>
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <DataTable<Role>
-          columns={columns}
+          columns={[
+            { key: "roleName", label: "Rol", sortable: true },
+            { key: "actions", label: "Acciones", hasActions: true }]}
           data={roles}
+          loading={isLoading || isFetching}
           actions={actions}
-          page={1}
-          pageSize={10}
-          total={roles.length}
-          onPageChange={() => { }}
+          page={page}
+          pageSize={pageSize}
+          total={totalElements}
+          onPageChange={(newPage) => setPage(newPage)}
         />
       </div>
 

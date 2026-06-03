@@ -1,5 +1,6 @@
 package com.hospitaldb.backend.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 public class CitaRequestDTO {
     @NotNull(message = "La fecha y hora son obligatorias")
     @Future(message = "La cita debe ser en el futuro")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime fechaHora;
 
     private String estado;

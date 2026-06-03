@@ -47,7 +47,7 @@ public class OpenApiConfig {
                                 .email("soporte@hospitaldb.com")
                                 .url("https://github.com/hospital-db"))
                         .license(new License()
-                                .name("MIT License")
+                                .name("UPANA License")
                                 .url("https://opensource.org/licenses/MIT")))
                 .servers(List.of(
                         new Server().url("http://localhost:" + serverPort)
@@ -156,6 +156,49 @@ public class OpenApiConfig {
                             ### Módulos incluidos:
                             - **Bodegas**: CRUD de bodegas de almacenamiento
                             - **Inventario**: Control de stock de medicamentos
+                            """);
+                })
+                .build();
+    }
+
+    /**
+     * Grupo: APIs Hospitalario
+     * Incluye: Ingresos, egresos y areas
+     */
+    @Bean
+    public GroupedOpenApi hospitalarioApi() {
+        return GroupedOpenApi.builder()
+                .group("05 - Hospitalario")
+                .displayName("Gestión de Ingresos, egresos y areas")
+                .pathsToMatch("/api/hospitaldb/hospitalario/ingresos-egresos-areas/**")
+                .addOpenApiCustomizer(openApi -> {
+                    openApi.getInfo().setDescription("""
+                            Endpoints para la gestión de ingresos, egresos y areas.
+                            
+                            ### Módulos incluidos:
+                            - **Ingresos y egresos**: mantenimiento para ingresos y egresos hospitalarios
+                            - **Areas**: mantenimiento para areas hospitalarios
+                            """);
+                })
+                .build();
+    }
+
+    /**
+     * Grupo: APIs Auditoria
+     * Incluye: Logs de acciones realizadas en el sistema
+     */
+    @Bean
+    public GroupedOpenApi auditoriaApi() {
+        return GroupedOpenApi.builder()
+                .group("06 - Auditoria")
+                .displayName("Visualización de logs")
+                .pathsToMatch("/api/hospitaldb/auditoria/logs/**")
+                .addOpenApiCustomizer(openApi -> {
+                    openApi.getInfo().setDescription("""
+                            Endpoints para la visualización de logs.
+                            
+                            ### Módulos incluidos:
+                            - **Logs**: Visualización de logs
                             """);
                 })
                 .build();

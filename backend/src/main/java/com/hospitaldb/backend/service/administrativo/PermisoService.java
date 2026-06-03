@@ -28,7 +28,7 @@ public class PermisoService {
 
     public List<PermisoDTO> findAll() {
         log.info("Obteniendo todos los permisos");
-        List<Permiso> permisos = permisoRepository.findAll();
+        List<Permiso> permisos = permisoRepository.findAllByActivo(true);
         return permisos.stream()
                 .map(permiso -> modelMapper.map(permiso, PermisoDTO.class))
                 .collect(Collectors.toList());
@@ -36,7 +36,7 @@ public class PermisoService {
 
     public Page<PermisoDTO> findAll(Pageable pageable) {
         log.info("Obteniendo permisos paginados");
-        Page<Permiso> pageResult = permisoRepository.findAll(pageable);
+        Page<Permiso> pageResult = permisoRepository.findAllByActivo(true,pageable);
         return pageResult.map(permiso -> modelMapper.map(permiso, PermisoDTO.class));
     }
 
@@ -98,8 +98,8 @@ public class PermisoService {
         if (!permiso.getRolPermisos().isEmpty()) {
             throw new BusinessException("No se puede eliminar un permiso que está asignado a roles");
         }
-
-        permisoRepository.delete(permiso);
+        permiso.setActivo(false);
+        permisoRepository.save(permiso);
         log.info("Permiso eliminado exitosamente: {}", id);
     }
 

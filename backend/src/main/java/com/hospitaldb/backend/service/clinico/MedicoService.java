@@ -28,7 +28,7 @@ public class MedicoService {
 
     public List<MedicoDTO> findAll() {
         log.info("Obteniendo todos los médicos");
-        List<Medico> medicos = medicoRepository.findAll();
+        List<Medico> medicos = medicoRepository.findAllByActivo(true);
         return medicos.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -36,7 +36,7 @@ public class MedicoService {
 
     public Page<MedicoDTO> findAll(Pageable pageable) {
         log.info("Obteniendo médicos paginados");
-        Page<Medico> pageResult = medicoRepository.findAll(pageable);
+        Page<Medico> pageResult = medicoRepository.findAllByActivo(true, pageable);
         return pageResult.map(this::convertToDTO);
     }
 
@@ -111,8 +111,8 @@ public class MedicoService {
         if (!medico.getCitas().isEmpty()) {
             throw new BusinessException("No se puede eliminar un médico que tiene citas asociadas");
         }
-
-        medicoRepository.delete(medico);
+        medico.setActivo(false);
+        medicoRepository.save(medico);
         log.info("Médico eliminado exitosamente: {}", id);
     }
 

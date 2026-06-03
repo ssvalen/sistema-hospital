@@ -15,8 +15,6 @@ public class AsignacionPermisoRequestDTO {
     @Positive(message = "El ID del rol debe ser positivo")
     private Long idRol;
 
-    @NotNull(message = "El ID de los permisos son obligatorios")
-    @Positive(message = "El ID de los permisos deben de ser positivos")
     @Singular
     private List<Long> idPermisos;
 }

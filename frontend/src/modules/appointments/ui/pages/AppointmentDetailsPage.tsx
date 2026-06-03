@@ -17,6 +17,9 @@ import type { AppointmentDetails } from "../../types/AppointmentDetails";
 import { PERMISSIONS } from "@/shared/utils/permissions";
 import CanAccess from "@/shared/components/permissions/CanAccess";
 
+import { useAppointmentByPatient } from "../../hooks/useAppointmentByPatient";
+
+
 const mockAppointments: Record<
     string,
     AppointmentDetails
@@ -51,6 +54,12 @@ const statusStyles: Record<
 const AppointmentDetailsPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+
+    const { data: appointmentData } = useAppointmentByPatient(
+        Number(id)
+    );
+
+    console.log(appointmentData)
 
     //Modal
     const [open, setOpen] = useState(false);
@@ -142,48 +151,25 @@ const AppointmentDetailsPage = () => {
                             </p>
 
                             <h2 className="text-2xl font-semibold text-slate-800 mt-1">
-                                {data.patient}
+                                {appointmentData?.patient.fullName}
                             </h2>
 
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
 
-                            <div>
 
-                                <p className="text-xs text-slate-400 mb-1">
-                                    Fecha
-                                </p>
-
-                                <p className="font-medium text-slate-700">
-                                    {data.date}
-                                </p>
-
-                            </div>
-
-                            <div>
-
-                                <p className="text-xs text-slate-400 mb-1">
-                                    Horario
-                                </p>
-
-                                <p className="font-medium text-slate-700">
-                                    {data.startTime} -{" "}
-                                    {data.endTime}
-                                </p>
-
-                            </div>
 
                             <div>
 
                                 <p className="text-xs text-slate-400 mb-2">
-                                    Estado
+                                    Estado cita
                                 </p>
 
                                 <span
                                     className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${statusStyles[data.status]}`}
                                 >
-                                    {data.status}
+                                    {appointmentData?.status.toLocaleUpperCase()}
                                 </span>
 
                             </div>
@@ -257,7 +243,7 @@ const AppointmentDetailsPage = () => {
                         </p>
 
                         <p className="font-medium text-slate-700">
-                            {data.doctor}
+                            Dr. {appointmentData?.doctor.fullName}
                         </p>
 
                     </div>
@@ -265,11 +251,11 @@ const AppointmentDetailsPage = () => {
                     <div>
 
                         <p className="text-xs text-slate-400 mb-1">
-                            Motivo
+                            Especialidad
                         </p>
 
                         <p className="font-medium text-slate-700">
-                            {data.reason}
+                            {appointmentData?.doctor.specialty}
                         </p>
 
                     </div>
@@ -281,7 +267,7 @@ const AppointmentDetailsPage = () => {
                         </p>
 
                         <p className="font-medium text-slate-700">
-                            {data.date}
+                            {appointmentData?.startDate}
                         </p>
 
                     </div>
@@ -293,8 +279,8 @@ const AppointmentDetailsPage = () => {
                         </p>
 
                         <p className="font-medium text-slate-700">
-                            {data.startTime} -{" "}
-                            {data.endTime}
+                            {appointmentData?.startTime} 
+                            {/* -{" "} {appointmentData?.endTime} */}
                         </p>
 
                     </div>

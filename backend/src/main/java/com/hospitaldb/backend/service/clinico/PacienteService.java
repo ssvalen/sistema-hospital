@@ -29,7 +29,7 @@ public class PacienteService {
 
     public List<PacienteDTO> findAll() {
         log.info("Obteniendo todos los pacientes");
-        List<Paciente> pacientes = pacienteRepository.findAll();
+        List<Paciente> pacientes = pacienteRepository.findAllByActivo(true);
         return pacientes.stream()
                 .map(paciente -> modelMapper.map(paciente, PacienteDTO.class))
                 .collect(Collectors.toList());
@@ -38,7 +38,7 @@ public class PacienteService {
 
     public Page<PacienteDTO> findAll(Pageable pageable) {
         log.info("Obteniendo pacientes paginados");
-        Page<Paciente> pageResult = pacienteRepository.findAll(pageable);
+        Page<Paciente> pageResult = pacienteRepository.findAllByActivo(true,pageable);
         return pageResult.map(paciente -> modelMapper.map(paciente, PacienteDTO.class));
     }
 
@@ -99,7 +99,9 @@ public class PacienteService {
         log.info("Eliminando paciente con ID: {}", id);
         Paciente paciente = pacienteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado con ID: " + id));
-        pacienteRepository.delete(paciente);
+
+        paciente.setActivo(false);
+        pacienteRepository.save(paciente);
         log.info("Paciente eliminado exitosamente: {}", id);
     }
 

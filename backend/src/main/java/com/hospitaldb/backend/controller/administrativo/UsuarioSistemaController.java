@@ -35,7 +35,6 @@ public class UsuarioSistemaController {
     private final UsuarioSistemaService usuarioService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EntityResponse<List<UsuarioSistemaListDTO>>> getAll(HttpServletRequest request) {
         log.info("GET /api/usuarios - Listando todos los usuarios");
         List<UsuarioSistemaListDTO> usuarios = usuarioService.findAll();
@@ -45,7 +44,6 @@ public class UsuarioSistemaController {
     }
 
     @GetMapping("/paginado")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EntityResponse<PaginatedResponse<UsuarioSistemaListDTO>>> getAllPaginated(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -71,7 +69,6 @@ public class UsuarioSistemaController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EntityResponse<UsuarioSistemaDetailDTO>> getById(@PathVariable Long id, HttpServletRequest request) {
         log.info("GET /api/usuarios/{} - Buscando usuario", id);
         UsuarioSistemaDetailDTO usuario = usuarioService.findById(id);
@@ -105,13 +102,12 @@ public class UsuarioSistemaController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EntityResponse<UsuarioSistemaDetailDTO>> create(
             @Valid @RequestBody UsuarioSistemaRequestDTO requestDTO,
             HttpServletRequest request) {
 
         log.info("POST /api/usuarios - Creando nuevo usuario: {}", requestDTO.getUsername());
-        UsuarioSistemaDetailDTO created = usuarioService.create(requestDTO);
+        UsuarioSistemaDetailDTO created = usuarioService.create(requestDTO,request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 EntityResponse.success(created, "Usuario creado exitosamente", request.getRequestURI())
@@ -125,7 +121,7 @@ public class UsuarioSistemaController {
             HttpServletRequest request) {
 
         log.info("PUT /api/usuarios/{} - Actualizando usuario", id);
-        UsuarioSistemaDetailDTO updated = usuarioService.update(id, requestDTO);
+        UsuarioSistemaDetailDTO updated = usuarioService.update(id, requestDTO, request);
 
         return ResponseEntity.ok(
                 EntityResponse.success(updated, "Usuario actualizado exitosamente", request.getRequestURI())
@@ -135,7 +131,7 @@ public class UsuarioSistemaController {
     @DeleteMapping("/{id}")
     public ResponseEntity<EntityResponse<Void>> delete(@PathVariable Long id, HttpServletRequest request) {
         log.info("DELETE /api/usuarios/{} - Eliminando usuario", id);
-        usuarioService.delete(id);
+        usuarioService.delete(id, request);
 
         return ResponseEntity.ok(
                 EntityResponse.success(null, "Usuario eliminado exitosamente", request.getRequestURI())

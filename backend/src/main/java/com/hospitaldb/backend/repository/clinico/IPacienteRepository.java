@@ -1,6 +1,8 @@
 package com.hospitaldb.backend.repository.clinico;
 
 import com.hospitaldb.backend.entity.clinico.Paciente;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -28,4 +30,8 @@ public interface IPacienteRepository extends JpaRepository<Paciente, Long>{
     List<Paciente> findPacientesSinCitas();
 
     long countByGenero(Character genero);
+
+    List<Paciente> findAllByActivo(boolean activo);
+
+    Page<Paciente> findAllByActivo(boolean activo, Pageable pageable);
 }

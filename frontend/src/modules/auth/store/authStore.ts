@@ -1,12 +1,13 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { User } from "../domain/entities/User";
+import type { KeycloakToken } from "../domain/entities/KeycloakToken";
 
 type AuthState = {
   user: User | null;
   setUser: (user: User) => void;
   logout: () => void;
-  updateToken: (token: string) => void;
+  updateToken: (tokenMetadata: KeycloakToken) => void;
   hasRole: (role: string) => boolean;
   hasPermission: (permission: string) => boolean;
 };
@@ -22,10 +23,15 @@ export const useAuthStore = create<AuthState>()(
         set({ user: null });
       },
 
-      updateToken: (token: string) =>
-        set((state) =>
-          state.user ? { user: { ...state.user, token } } : state
-        ),
+      updateToken: (tokenMetadata) =>
+        set((state) => ({
+          user: state.user
+            ? {
+              ...state.user,
+              tokenMetadata,
+            }
+            : null,
+        })),
 
       hasRole: (role) => {
         const user = get().user;

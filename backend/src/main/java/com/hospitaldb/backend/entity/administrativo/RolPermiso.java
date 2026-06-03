@@ -1,16 +1,18 @@
 package com.hospitaldb.backend.entity.administrativo;
 
+import com.hospitaldb.backend.entity.common.BaseAuditableEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "rol_permiso", catalog ="administrativo_db")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RolPermiso {
+@SuperBuilder
+@EqualsAndHashCode(callSuper = true)
+public class RolPermiso extends BaseAuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,5 +24,6 @@ public class RolPermiso {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_permiso", nullable = false)
+    @ToString.Exclude
     private Permiso permiso;
 }

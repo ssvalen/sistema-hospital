@@ -17,9 +17,14 @@ const Checkbox: React.FC<CheckboxProps> = ({ label, checked, onChange }) => {
         }
       `}
     >
-      <input type="checkbox" checked={checked} onChange={onChange} />
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className="shrink-0"
+      />
 
-      <div>
+      <div className="min-w-0 break-words">
         {label}
       </div>
     </label>

@@ -1,5 +1,6 @@
 package com.hospitaldb.backend.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,6 +19,7 @@ public class EntityResponse<T> {
     private String message;
     private T data;
     private Object metadata;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime timestamp;
     private String path;
     private Integer statusCode;

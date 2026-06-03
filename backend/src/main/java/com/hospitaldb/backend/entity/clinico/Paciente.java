@@ -1,10 +1,10 @@
 package com.hospitaldb.backend.entity.clinico;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hospitaldb.backend.entity.common.BaseAuditableEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -13,9 +13,11 @@ import java.util.List;
 @Entity
 @Table(name = "paciente", catalog ="clinico_db")
 @Data
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Paciente {
+@EqualsAndHashCode(callSuper = true)
+public class Paciente extends BaseAuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_paciente")
@@ -41,5 +43,6 @@ public class Paciente {
 
     @JsonIgnore
     @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
     private List<Cita> citas = new ArrayList<>();
 }

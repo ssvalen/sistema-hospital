@@ -1,18 +1,21 @@
 package com.hospitaldb.backend.entity.medicamentos;
 
+import com.hospitaldb.backend.entity.common.BaseAuditableEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "medicamento", catalog = "medicamentos_db")
+@Table(name = "medicamento", catalog = "medicamento_db")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Medicamento {
+@SuperBuilder
+@EqualsAndHashCode
+public class Medicamento extends BaseAuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,9 +32,11 @@ public class Medicamento {
     private String unidadMedida;
 
     @OneToMany(mappedBy = "medicamento", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
     private List<TratamientoMedicamento> tratamientoMedicamentos = new ArrayList<>();
 
     @OneToMany(mappedBy = "medicamento", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
     private List<com.hospitaldb.backend.entity.inventario.InventarioMedicamento> inventarios = new ArrayList<>();
 
 }

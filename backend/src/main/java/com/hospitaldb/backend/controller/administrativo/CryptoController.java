@@ -2,6 +2,8 @@ package com.hospitaldb.backend.controller.administrativo;
 
 import com.hospitaldb.backend.config.JasyptCryptoService;
 import com.hospitaldb.backend.dto.response.EntityResponse;
+import com.hospitaldb.backend.service.auth.AccesoService;
+import com.hospitaldb.backend.utils.RolesPadre;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
-@Profile("dev")
+@Profile("dev-personal")
 @RestController
 @RequestMapping("/api/hospitaldb/administrativo/crypto")
 @RequiredArgsConstructor
@@ -20,13 +22,13 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class CryptoController {
     private final JasyptCryptoService cryptoService;
+    private final AccesoService accesoService;
 
     @PostMapping("/encrypt")
     public ResponseEntity<EntityResponse<Map<String, String>>> encrypt(
             @RequestParam String plainText,
             HttpServletRequest request
     ) {
-
 
         log.info("POST /api/crypto/encrypt - Cifrando texto");
 
@@ -45,7 +47,7 @@ public class CryptoController {
     public ResponseEntity<EntityResponse<Map<String, String>>> decrypt(
             @RequestParam String encryptedText,
             HttpServletRequest request) {
-
+        accesoService.verificarRolPadre(RolesPadre.ADMIN);
         log.info("POST /api/crypto/decrypt - Descifrando texto");
 
         String decrypted = cryptoService.decrypt(encryptedText);
@@ -63,7 +65,7 @@ public class CryptoController {
     public ResponseEntity<EntityResponse<Map<String, Object>>> check(
             @RequestParam String text,
             HttpServletRequest request) {
-
+        accesoService.verificarRolPadre(RolesPadre.ADMIN);
         boolean isEncrypted = cryptoService.isEncrypted(text);
 
         Map<String, Object> response = new HashMap<>();
