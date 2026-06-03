@@ -3,10 +3,7 @@ package com.hospitaldb.backend.entity.clinico;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hospitaldb.backend.entity.common.BaseAuditableEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
@@ -46,5 +43,6 @@ public class Paciente extends BaseAuditableEntity {
 
     @JsonIgnore
     @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
     private List<Cita> citas = new ArrayList<>();
 }

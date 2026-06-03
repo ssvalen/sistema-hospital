@@ -2,10 +2,7 @@ package com.hospitaldb.backend.entity.medicamentos;
 
 import com.hospitaldb.backend.entity.common.BaseAuditableEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
@@ -35,9 +32,11 @@ public class Medicamento extends BaseAuditableEntity {
     private String unidadMedida;
 
     @OneToMany(mappedBy = "medicamento", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
     private List<TratamientoMedicamento> tratamientoMedicamentos = new ArrayList<>();
 
     @OneToMany(mappedBy = "medicamento", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
     private List<com.hospitaldb.backend.entity.inventario.InventarioMedicamento> inventarios = new ArrayList<>();
 
 }

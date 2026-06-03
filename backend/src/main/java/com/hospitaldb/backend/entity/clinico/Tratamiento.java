@@ -3,10 +3,7 @@ package com.hospitaldb.backend.entity.clinico;
 import com.hospitaldb.backend.entity.common.BaseAuditableEntity;
 import com.hospitaldb.backend.entity.medicamentos.TratamientoMedicamento;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
@@ -38,9 +35,11 @@ public class Tratamiento extends BaseAuditableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_cita", nullable = false)
+    @ToString.Exclude
     private Cita cita;
 
     @OneToMany(mappedBy = "tratamiento", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
     private List<TratamientoMedicamento> tratamientoMedicamentos = new ArrayList<>();
 
     public void addTratamientoMedicamento(TratamientoMedicamento tm) {
