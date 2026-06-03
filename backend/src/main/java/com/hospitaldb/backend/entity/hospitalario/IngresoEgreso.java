@@ -9,7 +9,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "ingreso_egreso", schema = "hospitalario_db")
+@Table(name = "ingreso_egreso", catalog = "hospitalario_db")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,10 +23,12 @@ public class IngresoEgreso extends BaseAuditableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_paciente", nullable = false)
+    @ToString.Exclude
     private Paciente paciente;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_area", nullable = false)
+    @ToString.Exclude
     private Area area;
 
     @Column(name = "fecha_ingreso", nullable = false)

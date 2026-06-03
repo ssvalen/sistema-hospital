@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "area", schema = "hospitalario_db")
+@Table(name = "area", catalog = "hospitalario_db")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -32,5 +32,6 @@ public class Area extends BaseAuditableEntity {
     private Boolean activo = true;
 
     @OneToMany(mappedBy = "area", fetch = FetchType.LAZY)
+    @ToString.Exclude
     private List<IngresoEgreso> ingresos = new ArrayList<>();
 }

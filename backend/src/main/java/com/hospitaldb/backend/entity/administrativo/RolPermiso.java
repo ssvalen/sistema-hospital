@@ -2,10 +2,7 @@ package com.hospitaldb.backend.entity.administrativo;
 
 import com.hospitaldb.backend.entity.common.BaseAuditableEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Entity
@@ -27,5 +24,6 @@ public class RolPermiso extends BaseAuditableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_permiso", nullable = false)
+    @ToString.Exclude
     private Permiso permiso;
 }

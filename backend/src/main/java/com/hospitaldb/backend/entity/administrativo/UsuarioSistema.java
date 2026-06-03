@@ -2,10 +2,7 @@ package com.hospitaldb.backend.entity.administrativo;
 
 import com.hospitaldb.backend.entity.common.BaseAuditableEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
@@ -38,6 +35,7 @@ public class UsuarioSistema extends BaseAuditableEntity {
 
     // Relación con USUARIO_ROL
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
     private List<UsuarioRol> usuarioRoles = new ArrayList<>();
 
 }
