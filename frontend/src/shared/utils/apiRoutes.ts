@@ -8,6 +8,7 @@ export const API_ROUTES = {
   // ROLES
   ROLE_GET_ALL: '/api/hospitaldb/administrativo/roles',
   ROLE_CREATE: '/api/hospitaldb/administrativo/roles',
+  ROLE_UPDATE: '/api/hospitaldb/administrativo/roles',
   ROLE_GET_PAGINATED: '/api/hospitaldb/administrativo/roles/paginado',
   // PERMISSIONS
   PERMISSION_GET_ALL: '/api/hospitaldb/administrativo/permisos',

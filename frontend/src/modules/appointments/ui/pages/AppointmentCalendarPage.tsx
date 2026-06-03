@@ -31,14 +31,14 @@ import {
 import type { TableAction } from "@/shared/types/table/TableTypes";
 import { PERMISSIONS } from "@/shared/utils/permissions";
 import { useAccess } from "@/shared/hooks/useAccess";
+
 import { useAppointmentsCalendar } from "../../hooks/useAppointmentsCalendar";
 import { useAppointmentsTable } from "../../hooks/useAppointmentsTable";
+import { useGetAllDoctors } from "@/modules/hospital/hooks/doctor/useGetAllDoctors";
 
 import type { Appointment as DomainAppointment } from "@/modules/appointments/domain/entities/Appointment";
 
-/**
- * UI model (para pantalla calendario/tabla)
- */
+
 type AppointmentUI = {
   id: string;
   patientName: string;
@@ -91,6 +91,8 @@ export default function AppointmentCalendarPage() {
     medicId: selectedMedicId
   });
 
+  const { data: doctorsData = [] } = useGetAllDoctors(true)
+  console.log(doctorsData)
 
   const appointments: AppointmentUI[] = useMemo(() => {
     if (view === "calendar") {
@@ -191,9 +193,11 @@ export default function AppointmentCalendarPage() {
                   value={doctorId}
                   onChange={(e) => setDoctorId(e.target.value)}
                 >
-                  <option value="all">Todos</option>
-                  <option value="1">Dr. López</option>
-                  <option value="2">Dra. Méndez</option>
+                  <option value="all" disabled>Todos</option>
+                  {doctorsData.map((doctor) => (
+                    <option value={doctor.id}>{doctor.fullName}</option>
+                  ))}
+
                 </Select>
               </FormField>
             </CanAccess>

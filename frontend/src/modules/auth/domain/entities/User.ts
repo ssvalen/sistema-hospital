@@ -4,5 +4,6 @@ export type User = {
   username: string;
   roles: string[];
   permissions: string[];
-  tokenMetadata: KeycloakToken;
+  status: boolean;
+  tokenMetadata?: KeycloakToken;
 };

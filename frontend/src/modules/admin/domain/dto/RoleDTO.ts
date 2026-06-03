@@ -9,6 +9,15 @@ export type PaginatedRolesDTO = PaginatedResponse<RoleResponseDto>;
 
 export type RoleCreateRequestDto = {
   roleName: string;
+  parentRoleId: number;
+  permissions: number[];
+};
+
+export type RoleUpdateRequestDto = {
+  roleId: number;
+  roleName: string;
+  parentRoleId: number;
+  permissions: number[];
 };
 
 export type RoleCreateResponseDto = {
