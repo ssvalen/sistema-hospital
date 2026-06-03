@@ -21,6 +21,9 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PERMISSIONS } from "@/shared/utils/permissions";
 
+import { usePatientById } from "@/modules/patients/hooks/usePatientById";
+import { useGetAppointmentsByPatient } from "@/modules/appointments/hooks/appointments/useGetAppointmentsByPatient";
+
 type Consultation = {
     id: string;
     date: string;
@@ -34,7 +37,6 @@ type Consultation = {
 
 const PatientDetailsPage = () => {
     const navigate = useNavigate();
-
     const { id } = useParams();
 
     const { toast, hideToast } = useToast();
@@ -50,148 +52,122 @@ const PatientDetailsPage = () => {
     const [sortOrder, setSortOrder] =
         useState("desc");
 
-    // MOCK DATA
+    const { data: patientData } = usePatientById(Number(id));
+    const { data: appointmentsData } = useGetAppointmentsByPatient(Number(id));
+
+    console.log("Appointments data:", appointmentsData);
+
     const patient = {
-        id,
-        code: "EXP-000001",
-        firstName: "Juan",
-        lastName: "Pérez",
-        gender: "Masculino",
-        age: 35,
-        phone: "5555-1111",
-        email: "juan@example.com",
-        address: "Ciudad de Guatemala",
-        bloodType: "O+",
-        allergies: "Penicilina",
-        chronicDiseases: "Diabetes",
-        active: true
+        id: patientData?.id ?? id,
+        code: (patientData as any)?.code ?? "EXP-000001",
+        firstName: (patientData as any)?.nombre ?? "Juan",
+        lastName: (patientData as any)?.apellido ?? "Pérez",
+        gender: (patientData as any)?.genero ?? "Masculino",
+        age: (patientData as any)?.edad ?? 35,
+        phone: (patientData as any)?.telefono ?? "5555-1111",
+        email: (patientData as any)?.email ?? "juan@example.com",
+        address: (patientData as any)?.direccion ?? "Ciudad de Guatemala",
+        bloodType: (patientData as any)?.tipoSangre ?? "O+",
+        allergies: (patientData as any)?.alergias ?? "Penicilina",
+        chronicDiseases: (patientData as any)?.enfermedadesCronicas ?? "Diabetes",
+        active: (patientData as any)?.activo ?? true
     };
 
-    const consultations: Consultation[] = [
-        {
-            id: "1",
-            date: "2026-05-01",
-            doctor: "Dr. López",
-            reason: "Dolor de cabeza intenso",
-            diagnosis: "Migraña",
-            treatment: [
-                "Reposo",
-                "Hidratación",
-                "Evitar pantallas"
-            ],
-            medications: [
-                "Ibuprofeno 400mg cada 8h por 5 días"
-            ],
-            notes:
-                "Paciente estable, sin signos neurológicos."
-        },
-        {
-            id: "2",
-            date: "2026-04-20",
-            doctor: "Dra. Méndez",
-            reason: "Control diabetes",
-            diagnosis: "Diabetes tipo 2",
-            treatment: [
-                "Dieta baja en azúcar",
-                "Ejercicio diario"
-            ],
-            medications: [
-                "Metformina 850mg diaria"
-            ],
-            notes:
-                "Paciente estable, glucosa controlada."
-        },
-        {
-            id: "3",
-            date: "2026-03-10",
-            doctor: "Dr. López",
-            reason: "Fiebre y tos",
-            diagnosis: "Infección respiratoria",
-            treatment: [
-                "Reposo",
-                "Hidratación",
-                "Control temperatura"
-            ],
-            medications: [
-                "Acetaminofén 500mg",
-                "Jarabe para tos"
-            ],
-            notes:
-                "Paciente responde bien al tratamiento."
-        }
-    ];
 
+    const parseDescription = (description: string) => {
+        const diagnosisMatch = description.match(
+            /Diagnóstico:\s*([\s\S]*?)\s*Tratamiento:/i
+        );
+
+        const treatmentMatch = description.match(
+            /Tratamiento:\s*([\s\S]*?)\s*Observaciones:/i
+        );
+
+        const notesMatch = description.match(
+            /Observaciones:\s*([\s\S]*)/i
+        );
+
+        return {
+            diagnosis: diagnosisMatch?.[1]?.trim() ?? "",
+            treatment: treatmentMatch?.[1]?.trim() ?? "",
+            notes: notesMatch?.[1]?.trim() ?? ""
+        };
+    };
+
+    const consultations: Consultation[] =
+        appointmentsData?.map((appointment) => {
+            const parsed = parseDescription(
+                appointment.description
+            );
+
+            return {
+                id: appointment.id.toString(),
+
+                date: appointment.appointment.date,
+
+                doctor: `${appointment.doctor.fullName} - ${appointment.doctor.specialty}`,
+
+                reason: "Consulta médica",
+
+                diagnosis: parsed.diagnosis,
+
+                treatment: parsed.treatment
+                    ? [parsed.treatment]
+                    : [],
+
+                medications: appointment.medications.map(
+                    (medication) =>
+                        `${medication.commercialName} - ${medication.dosage} (${medication.quantity} ${medication.medicalUnit})`
+                ),
+
+                notes: parsed.notes
+            };
+        }) ?? [];
+
+
+    const doctors = [
+        ...new Set(
+            consultations.map(
+                (consultation) => consultation.doctor
+            )
+        )
+    ];
     const filteredConsultations = useMemo(() => {
         return consultations
             .filter((consultation) => {
-                const searchText =
-                    search.toLowerCase();
+                const searchText = search.toLowerCase();
 
                 const matchesSearch =
-                    consultation.reason
-                        .toLowerCase()
-                        .includes(searchText) ||
-                    consultation.diagnosis
-                        .toLowerCase()
-                        .includes(searchText) ||
-                    consultation.doctor
-                        .toLowerCase()
-                        .includes(searchText) ||
-                    consultation.medications.some(
-                        (m) =>
-                            m
-                                .toLowerCase()
-                                .includes(searchText)
+                    consultation.reason.toLowerCase().includes(searchText) ||
+                    consultation.diagnosis.toLowerCase().includes(searchText) ||
+                    consultation.doctor.toLowerCase().includes(searchText) ||
+                    consultation.medications.some((m) =>
+                        m.toLowerCase().includes(searchText)
                     );
 
                 const matchesDoctor =
                     doctorFilter === "all"
                         ? true
-                        : consultation.doctor ===
-                        doctorFilter;
+                        : consultation.doctor === doctorFilter;
 
-                return (
-                    matchesSearch &&
-                    matchesDoctor
-                );
+                return matchesSearch && matchesDoctor;
             })
             .sort((a, b) => {
                 if (sortOrder === "desc") {
-                    return (
-                        new Date(
-                            b.date
-                        ).getTime() -
-                        new Date(
-                            a.date
-                        ).getTime()
-                    );
+                    return new Date(b.date).getTime() - new Date(a.date).getTime();
                 }
 
-                return (
-                    new Date(
-                        a.date
-                    ).getTime() -
-                    new Date(
-                        b.date
-                    ).getTime()
-                );
+                return new Date(a.date).getTime() - new Date(b.date).getTime();
             });
-    }, [
-        consultations,
-        search,
-        doctorFilter,
-        sortOrder
-    ]);
+    }, [consultations, search, doctorFilter, sortOrder]);
 
-    const toggleConsultation = (
-        consultationId: string
-    ) => {
+    const toggleConsultation = (consultationId: string) => {
         setOpenConsultation((prev) =>
-            prev === consultationId
-                ? null
-                : consultationId
+            prev === consultationId ? null : consultationId
         );
     };
+
+
 
     return (
         <>
@@ -204,8 +180,7 @@ const PatientDetailsPage = () => {
                         <div className="flex items-center gap-3">
 
                             <h1 className="text-2xl font-semibold text-slate-800">
-                                {patient.firstName}{" "}
-                                {patient.lastName}
+                                {patient.firstName} {patient.lastName}
                             </h1>
 
                             <span
@@ -214,17 +189,13 @@ const PatientDetailsPage = () => {
                                     : "bg-red-100 text-red-700"
                                     }`}
                             >
-                                {patient.active
-                                    ? "Activo"
-                                    : "Inactivo"}
+                                {patient.active ? "Activo" : "Inactivo"}
                             </span>
 
                         </div>
 
                         <p className="text-sm text-slate-500">
-                            Expediente:
-                            {" "}
-                            {patient.code}
+                            Expediente: {patient.code}
                         </p>
 
                     </div>
@@ -236,23 +207,16 @@ const PatientDetailsPage = () => {
                             label="Volver"
                             color="gray"
                             variant="outline"
-                            onClick={() =>
-                                navigate(
-                                    "/admin/patients"
-                                )
-                            }
+                            onClick={() => navigate("/admin/patients")}
                         />
-                        <CanAccess
-                            permission={PERMISSIONS.PATIENT.EDIT}
-                        >
+
+                        <CanAccess permission={PERMISSIONS.PATIENT.EDIT}>
                             <Button
                                 icon={faPen}
                                 label="Editar"
                                 color="blue"
                                 onClick={() =>
-                                    navigate(
-                                        `/admin/patients/${id}/edit`
-                                    )
+                                    navigate(`/admin/patients/${id}/edit`)
                                 }
                             />
                         </CanAccess>
@@ -264,40 +228,28 @@ const PatientDetailsPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
 
                     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-                        <p className="text-sm text-slate-400">
-                            Género
-                        </p>
-
+                        <p className="text-sm text-slate-400">Género</p>
                         <p className="text-lg font-semibold text-slate-700">
                             {patient.gender}
                         </p>
                     </div>
 
                     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-                        <p className="text-sm text-slate-400">
-                            Edad
-                        </p>
-
+                        <p className="text-sm text-slate-400">Edad</p>
                         <p className="text-lg font-semibold text-slate-700">
                             {patient.age} años
                         </p>
                     </div>
 
                     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-                        <p className="text-sm text-slate-400">
-                            Tipo sangre
-                        </p>
-
+                        <p className="text-sm text-slate-400">Tipo sangre</p>
                         <p className="text-lg font-semibold text-slate-700">
                             {patient.bloodType}
                         </p>
                     </div>
 
                     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-                        <p className="text-sm text-slate-400">
-                            Teléfono
-                        </p>
-
+                        <p className="text-sm text-slate-400">Teléfono</p>
                         <p className="text-lg font-semibold text-slate-700">
                             {patient.phone}
                         </p>
@@ -319,7 +271,6 @@ const PatientDetailsPage = () => {
                                 <p className="text-xs text-slate-400">
                                     Correo electrónico
                                 </p>
-
                                 <p className="font-medium text-slate-700">
                                     {patient.email}
                                 </p>
@@ -329,7 +280,6 @@ const PatientDetailsPage = () => {
                                 <p className="text-xs text-slate-400">
                                     Dirección
                                 </p>
-
                                 <p className="font-medium text-slate-700">
                                     {patient.address}
                                 </p>
@@ -343,7 +293,6 @@ const PatientDetailsPage = () => {
                                 <p className="text-xs text-slate-400">
                                     Alergias
                                 </p>
-
                                 <p className="font-medium text-slate-700">
                                     {patient.allergies}
                                 </p>
@@ -353,7 +302,6 @@ const PatientDetailsPage = () => {
                                 <p className="text-xs text-slate-400">
                                     Enfermedades crónicas
                                 </p>
-
                                 <p className="font-medium text-slate-700">
                                     {patient.chronicDiseases}
                                 </p>
@@ -373,23 +321,22 @@ const PatientDetailsPage = () => {
                             <h2 className="text-lg font-semibold text-slate-700">
                                 Historial clínico
                             </h2>
-
                             <p className="text-sm text-slate-400">
                                 Consultas médicas registradas
                             </p>
                         </div>
-                        <CanAccess
-                            permission={PERMISSIONS.APPOINTMENT.CREATE}
-                        >
+
+                        <CanAccess permission={PERMISSIONS.APPOINTMENT.CREATE}>
                             <Button
                                 icon={faUserDoctor}
                                 label="Nueva consulta"
                                 color="blue"
                                 onClick={() =>
-                                    navigate('/admin/appointments/new', {
+                                    navigate("/admin/appointments/new", {
                                         state: {
-                                            patientId: patient.id,
-                                            patientName: `${patient.firstName} ${patient.lastName}`
+                                            patientId: String(patient.id),
+                                            patientName: `${patient.firstName} ${patient.lastName}`,
+                                            patientCode: patient.code
                                         }
                                     })
                                 }
@@ -404,53 +351,35 @@ const PatientDetailsPage = () => {
                             <Input
                                 placeholder="Diagnóstico, motivo, medicamento..."
                                 value={search}
-                                onChange={(e) =>
-                                    setSearch(
-                                        e.target.value
-                                    )
-                                }
+                                onChange={(e) => setSearch(e.target.value)}
                             />
                         </FormField>
 
                         <FormField label="Médico">
                             <Select
                                 value={doctorFilter}
-                                onChange={(e) =>
-                                    setDoctorFilter(
-                                        e.target.value
-                                    )
-                                }
+                                onChange={(e) => setDoctorFilter(e.target.value)}
                             >
-                                <option value="all">
-                                    Todos
-                                </option>
+                                <option value="all">Todos</option>
 
-                                <option value="Dr. López">
-                                    Dr. López
-                                </option>
-
-                                <option value="Dra. Méndez">
-                                    Dra. Méndez
-                                </option>
+                                {doctors.map((doctor) => (
+                                    <option
+                                        key={doctor}
+                                        value={doctor}
+                                    >
+                                        {doctor}
+                                    </option>
+                                ))}
                             </Select>
                         </FormField>
 
                         <FormField label="Orden">
                             <Select
                                 value={sortOrder}
-                                onChange={(e) =>
-                                    setSortOrder(
-                                        e.target.value
-                                    )
-                                }
+                                onChange={(e) => setSortOrder(e.target.value)}
                             >
-                                <option value="desc">
-                                    Más recientes
-                                </option>
-
-                                <option value="asc">
-                                    Más antiguas
-                                </option>
+                                <option value="desc">Más recientes</option>
+                                <option value="asc">Más antiguas</option>
                             </Select>
                         </FormField>
 
@@ -458,174 +387,130 @@ const PatientDetailsPage = () => {
 
                     <div className="space-y-4">
 
-                        {filteredConsultations.map(
-                            (consultation) => {
-                                const isOpen =
-                                    openConsultation ===
-                                    consultation.id;
+                        {filteredConsultations.map((consultation) => {
+                            const isOpen =
+                                openConsultation === consultation.id;
 
-                                return (
-                                    <div
-                                        key={
-                                            consultation.id
+                            return (
+                                <div
+                                    key={consultation.id}
+                                    className="border border-slate-200 rounded-2xl overflow-hidden"
+                                >
+
+                                    <button
+                                        onClick={() =>
+                                            toggleConsultation(consultation.id)
                                         }
-                                        className="border border-slate-200 rounded-2xl overflow-hidden"
+                                        className="w-full p-5 bg-white hover:bg-slate-50 transition flex items-center justify-between text-left"
                                     >
 
-                                        <button
-                                            onClick={() =>
-                                                toggleConsultation(
-                                                    consultation.id
-                                                )
+                                        <div className="space-y-1">
+
+                                            <div className="flex items-center gap-3 flex-wrap">
+
+                                                <h3 className="font-semibold text-slate-700">
+                                                    Consulta médica
+                                                </h3>
+
+                                                <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700">
+                                                    {consultation.date}
+                                                </span>
+
+                                            </div>
+
+                                            <p className="text-sm text-slate-500">
+                                                Dr. {consultation.doctor}
+                                            </p>
+
+                                        </div>
+
+                                        <FontAwesomeIcon
+                                            icon={
+                                                isOpen
+                                                    ? faChevronUp
+                                                    : faChevronDown
                                             }
-                                            className="w-full p-5 bg-white hover:bg-slate-50 transition flex items-center justify-between text-left"
-                                        >
+                                            className="text-slate-400"
+                                        />
 
-                                            <div className="space-y-1">
+                                    </button>
 
-                                                <div className="flex items-center gap-3 flex-wrap">
+                                    {isOpen && (
+                                        <div className="border-t border-slate-100 bg-slate-50 p-6 space-y-6">
 
-                                                    <h3 className="font-semibold text-slate-700">
-                                                        Consulta médica
-                                                    </h3>
+                                            <div>
+                                                <p className="text-xs text-slate-400 mb-1">
+                                                    Motivo consulta
+                                                </p>
+                                                <p className="font-medium text-slate-700">
+                                                    {consultation.reason}
+                                                </p>
+                                            </div>
 
-                                                    <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700">
-                                                        {
-                                                            consultation.date
-                                                        }
-                                                    </span>
+                                            <div>
+                                                <p className="text-xs text-slate-400 mb-1">
+                                                    Diagnóstico
+                                                </p>
+                                                <p className="font-medium text-slate-700">
+                                                    {consultation.diagnosis}
+                                                </p>
+                                            </div>
 
-                                                </div>
-
-                                                <p className="text-sm text-slate-500">
-                                                    {
-                                                        consultation.doctor
-                                                    }
+                                            <div>
+                                                <p className="text-xs text-slate-400 mb-2">
+                                                    Tratamiento
                                                 </p>
 
+                                                <ul className="space-y-2">
+                                                    {consultation.treatment.map(
+                                                        (item, index) => (
+                                                            <li
+                                                                key={index}
+                                                                className="text-sm text-slate-700 flex items-start gap-2"
+                                                            >
+                                                                <span className="w-2 h-2 rounded-full bg-blue-500 mt-2" />
+                                                                <span>{item}</span>
+                                                            </li>
+                                                        )
+                                                    )}
+                                                </ul>
                                             </div>
 
-                                            <FontAwesomeIcon
-                                                icon={
-                                                    isOpen
-                                                        ? faChevronUp
-                                                        : faChevronDown
-                                                }
-                                                className="text-slate-400"
-                                            />
+                                            <div>
+                                                <p className="text-xs text-slate-400 mb-2">
+                                                    Medicamentos
+                                                </p>
 
-                                        </button>
-
-                                        {isOpen && (
-                                            <div className="border-t border-slate-100 bg-slate-50 p-6 space-y-6">
-
-                                                <div>
-                                                    <p className="text-xs text-slate-400 mb-1">
-                                                        Motivo consulta
-                                                    </p>
-
-                                                    <p className="font-medium text-slate-700">
-                                                        {
-                                                            consultation.reason
-                                                        }
-                                                    </p>
-                                                </div>
-
-                                                <div>
-                                                    <p className="text-xs text-slate-400 mb-1">
-                                                        Diagnóstico
-                                                    </p>
-
-                                                    <p className="font-medium text-slate-700">
-                                                        {
-                                                            consultation.diagnosis
-                                                        }
-                                                    </p>
-                                                </div>
-
-                                                <div>
-                                                    <p className="text-xs text-slate-400 mb-2">
-                                                        Tratamiento
-                                                    </p>
-
-                                                    <ul className="space-y-2">
-
-                                                        {consultation.treatment.map(
-                                                            (
-                                                                item,
-                                                                index
-                                                            ) => (
-                                                                <li
-                                                                    key={
-                                                                        index
-                                                                    }
-                                                                    className="text-sm text-slate-700 flex items-start gap-2"
-                                                                >
-                                                                    <span className="w-2 h-2 rounded-full bg-blue-500 mt-2" />
-
-                                                                    <span>
-                                                                        {
-                                                                            item
-                                                                        }
-                                                                    </span>
-                                                                </li>
-                                                            )
-                                                        )}
-
-                                                    </ul>
-                                                </div>
-
-                                                <div>
-                                                    <p className="text-xs text-slate-400 mb-2">
-                                                        Medicamentos
-                                                    </p>
-
-                                                    <ul className="space-y-2">
-
-                                                        {consultation.medications.map(
-                                                            (
-                                                                item,
-                                                                index
-                                                            ) => (
-                                                                <li
-                                                                    key={
-                                                                        index
-                                                                    }
-                                                                    className="text-sm text-slate-700 flex items-start gap-2"
-                                                                >
-                                                                    <span className="w-2 h-2 rounded-full bg-emerald-500 mt-2" />
-
-                                                                    <span>
-                                                                        {
-                                                                            item
-                                                                        }
-                                                                    </span>
-                                                                </li>
-                                                            )
-                                                        )}
-
-                                                    </ul>
-                                                </div>
-
-                                                <div>
-                                                    <p className="text-xs text-slate-400 mb-1">
-                                                        Observaciones
-                                                    </p>
-
-                                                    <p className="text-slate-700">
-                                                        {
-                                                            consultation.notes
-                                                        }
-                                                    </p>
-                                                </div>
-
+                                                <ul className="space-y-2">
+                                                    {consultation.medications.map(
+                                                        (item, index) => (
+                                                            <li
+                                                                key={index}
+                                                                className="text-sm text-slate-700 flex items-start gap-2"
+                                                            >
+                                                                <span className="w-2 h-2 rounded-full bg-emerald-500 mt-2" />
+                                                                <span>{item}</span>
+                                                            </li>
+                                                        )
+                                                    )}
+                                                </ul>
                                             </div>
-                                        )}
 
-                                    </div>
-                                );
-                            }
-                        )}
+                                            <div>
+                                                <p className="text-xs text-slate-400 mb-1">
+                                                    Observaciones
+                                                </p>
+                                                <p className="text-slate-700">
+                                                    {consultation.notes}
+                                                </p>
+                                            </div>
+
+                                        </div>
+                                    )}
+
+                                </div>
+                            );
+                        })}
 
                         {!filteredConsultations.length && (
                             <div className="text-center py-10 text-slate-400">

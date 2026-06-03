@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Input from "@/shared/components/forms/Input";
 
 type Option = {
@@ -25,6 +25,7 @@ export default function DataList({
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
     const [editing, setEditing] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (!editing) {
@@ -32,6 +33,33 @@ export default function DataList({
             else setSearch("");
         }
     }, [value, editing]);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                containerRef.current &&
+                !containerRef.current.contains(event.target as Node)
+            ) {
+                setOpen(false);
+
+                if (!value) {
+                    setEditing(false);
+                }
+            }
+        };
+
+        document.addEventListener(
+            "mousedown",
+            handleClickOutside
+        );
+
+        return () => {
+            document.removeEventListener(
+                "mousedown",
+                handleClickOutside
+            );
+        };
+    }, [value]);
 
     const filtered = useMemo(() => {
         const q = search.toLowerCase();
@@ -57,7 +85,10 @@ export default function DataList({
     };
 
     return (
-        <div className="relative w-full">
+        <div
+            ref={containerRef}
+            className="relative w-full"
+        >
 
             {value && !editing ? (
                 <div className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 flex items-center justify-between">
@@ -95,11 +126,26 @@ export default function DataList({
                             setOpen(true);
                             setEditing(true);
                         }}
+                        onBlur={() => {
+                            setTimeout(() => {
+                                setOpen(false);
+
+                                if (!value) {
+                                    setEditing(false);
+                                }
+                            }, 150);
+                        }}
                         onChange={(e) => {
                             setSearch(e.target.value);
                             setOpen(true);
                             setEditing(true);
-                            if (value) onChange(null);
+
+                            if (
+                                value &&
+                                value.label !== e.target.value
+                            ) {
+                                onChange(null);
+                            }
                         }}
                     />
 

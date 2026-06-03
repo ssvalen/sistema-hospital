@@ -12,7 +12,7 @@ import FormField from "@/shared/components/forms/FormField";
 import DataTable from "@/shared/components/DataTable";
 import CanAccess from "@/shared/components/permissions/CanAccess";
 
-import { APPOINTMENT_PERMISSIONS, type AppointmentPermission } from "../utils/appointmentsPermissions";
+import { APPOINTMENT_PERMISSIONS } from "../utils/appointmentsPermissions";
 
 import {
   faCalendarDays,
@@ -22,8 +22,17 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import type { TableAction } from "@/shared/types/table/TableTypes";
+import { PERMISSIONS } from "@/shared/utils/permissions";
+import { useAccess } from "@/shared/hooks/useAccess";
+import { useAppointmentsCalendar } from "../../hooks/useAppointmentsCalendar";
+import { useAppointmentsTable } from "../../hooks/useAppointmentsTable";
 
-type Appointment = {
+import type { Appointment as DomainAppointment } from "@/modules/appointments/domain/entities/Appointment";
+
+/**
+ * UI model (para pantalla calendario/tabla)
+ */
+type AppointmentUI = {
   id: string;
   patientName: string;
   doctorId: string;
@@ -34,28 +43,16 @@ type Appointment = {
   status: "scheduled" | "completed" | "cancelled" | "in_progress";
 };
 
-const mockAppointments: Appointment[] = [
-  {
-    id: "1",
-    patientName: "Juan Pérez",
-    doctorId: "d1",
-    doctorName: "Dr. López",
-    start: "2026-05-28T09:00:00",
-    end: "2026-05-28T09:30:00",
-    reason: "Control general",
-    status: "scheduled"
-  },
-  {
-    id: "2",
-    patientName: "María López",
-    doctorId: "d2",
-    doctorName: "Dra. Méndez",
-    start: "2026-05-28T10:00:00",
-    end: "2026-05-28T10:30:00",
-    reason: "Seguimiento",
-    status: "completed"
-  }
-];
+const normalizeAppointment = (a: DomainAppointment): AppointmentUI => ({
+  id: String(a.id),
+  patientName: `${a.patient.firstName} ${a.patient.lastName}`,
+  doctorId: String(a.doctor.id),
+  doctorName: a.doctor.fullName,
+  start: a.startDate,
+  end: a.startDate,
+  reason: "",
+  status: a.status as AppointmentUI["status"],
+});
 
 export default function AppointmentCalendarPage() {
   const navigate = useNavigate();
@@ -63,14 +60,55 @@ export default function AppointmentCalendarPage() {
   const [doctorId, setDoctorId] = useState("all");
   const [view, setView] = useState<"calendar" | "table">("calendar");
 
-  const filteredAppointments = useMemo(() => {
-    return mockAppointments.filter(a =>
+  const [page] = useState(1);
+  const pageSize = 10;
+
+  const selectedMedicId =
+    doctorId !== "all" ? Number(doctorId) : undefined;
+
+  const canViewAllAppointments = useAccess({
+    permissions: [PERMISSIONS.APPOINTMENT.VIEW_ALL_APPOINTMENTS]
+  });
+
+  const calendarQuery = useAppointmentsCalendar({
+    canViewAll: canViewAllAppointments,
+    medicId: selectedMedicId
+  });
+
+  const tableQuery = useAppointmentsTable({
+    page: page - 1,
+    size: pageSize,
+    canViewAll: canViewAllAppointments,
+    medicId: selectedMedicId
+  });
+
+  console.log("table data", tableQuery.data);
+  console.log("table error", tableQuery.error);
+
+  const appointments: AppointmentUI[] = useMemo(() => {
+    if (view === "calendar") {
+      return (calendarQuery.data ?? []).map(normalizeAppointment);
+    }
+
+    const data = tableQuery.data;
+
+    if (!data) return [];
+
+    if (Array.isArray(data)) {
+      return data.map(normalizeAppointment);
+    }
+
+    return data.content.map(normalizeAppointment);
+  }, [view, calendarQuery.data, tableQuery.data]);
+
+  const filteredAppointments: AppointmentUI[] = useMemo(() => {
+    return appointments.filter((a) =>
       doctorId === "all" ? true : a.doctorId === doctorId
     );
-  }, [doctorId]);
+  }, [appointments, doctorId]);
 
   const events = useMemo(() => {
-    return filteredAppointments.map(a => ({
+    return filteredAppointments.map((a) => ({
       id: a.id,
       title: `${a.patientName} - ${a.reason}`,
       start: a.start,
@@ -87,16 +125,7 @@ export default function AppointmentCalendarPage() {
     }));
   }, [filteredAppointments]);
 
-  const columns = [
-    { key: "patientName", label: "Paciente" },
-    { key: "doctorName", label: "Médico" },
-    { key: "start", label: "Fecha" },
-    { key: "reason", label: "Motivo" },
-    { key: "status", label: "Estado" },
-    { key: "actions", label: "Acciones", hasActions: true }
-  ];
-
-  const actions: TableAction<Appointment>[] = [
+  const actions: TableAction<AppointmentUI>[] = [
     {
       title: "Ver",
       permission: APPOINTMENT_PERMISSIONS.VIEW_DETAIL,
@@ -144,9 +173,7 @@ export default function AppointmentCalendarPage() {
         </div>
       </div>
 
-      <CanAccess
-        permission={APPOINTMENT_PERMISSIONS.FILTER}
-      >
+      <CanAccess permission={APPOINTMENT_PERMISSIONS.FILTER}>
         <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
           <div className="max-w-xs">
             <FormField label="Médico">
@@ -155,8 +182,8 @@ export default function AppointmentCalendarPage() {
                 onChange={(e) => setDoctorId(e.target.value)}
               >
                 <option value="all">Todos</option>
-                <option value="d1">Dr. López</option>
-                <option value="d2">Dra. Méndez</option>
+                <option value="1">Dr. López</option>
+                <option value="2">Dra. Méndez</option>
               </Select>
             </FormField>
           </div>
@@ -190,12 +217,25 @@ export default function AppointmentCalendarPage() {
       {view === "table" && (
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
           <DataTable
-            columns={columns}
+            columns={[
+              { key: "patientName", label: "Paciente" },
+              { key: "doctorName", label: "Médico" },
+              { key: "start", label: "Fecha" },
+              { key: "reason", label: "Motivo" },
+              { key: "status", label: "Estado" },
+              { key: "actions", label: "Acciones", hasActions: true }
+            ]}
             data={filteredAppointments}
             actions={actions}
-            page={1}
-            pageSize={10}
-            total={filteredAppointments.length}
+            page={page}
+            pageSize={pageSize}
+            total={
+              tableQuery.data &&
+                !Array.isArray(tableQuery.data) &&
+                "totalElements" in tableQuery.data
+                ? tableQuery.data.totalElements
+                : filteredAppointments.length
+            }
             onPageChange={() => { }}
           />
         </div>

@@ -19,6 +19,7 @@ import AppointmentCalendarPage from "@/modules/appointments/ui/pages/Appointment
 import AppointmentDetailsPage from "@/modules/appointments/ui/pages/AppointmentDetailsPage";
 
 import { PERMISSIONS } from "@/shared/utils/permissions";
+import AttendAppointmentPage from "@/modules/appointments/ui/pages/AttendAppointmentPage";
 
 
 const DummyPage = ({ title }: { title: string }) => (
@@ -95,6 +96,12 @@ export const adminRoutes: SidebarRoute[] = [
       {
         path: "appointments/:id/edit",
         element: AppointmentFormPage,
+        showInSidebar: false,
+        permissions: [PERMISSIONS.APPOINTMENT.EDIT],
+      },
+      {
+        path: "appointments/:id/attend",
+        element: AttendAppointmentPage,
         showInSidebar: false,
         permissions: [PERMISSIONS.APPOINTMENT.EDIT],
       },
