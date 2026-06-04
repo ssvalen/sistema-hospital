@@ -101,7 +101,7 @@ public class RolService {
         if (request.getPermissions() != null && !request.getPermissions().isEmpty()) {
             guardarPermisosUI(saved, request.getPermissions());
         }
-
+        keycloakService.createRealmRole(request.getNombreRol()).block();
         return modelMapper.map(saved, RolDTO.class);
     }
 
