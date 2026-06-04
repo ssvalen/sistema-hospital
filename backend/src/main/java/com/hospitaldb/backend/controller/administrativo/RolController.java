@@ -4,10 +4,7 @@ import com.hospitaldb.backend.dto.request.AsignacionPermisoRequestDTO;
 import com.hospitaldb.backend.dto.request.RolRequestDTO;
 import com.hospitaldb.backend.dto.response.EntityResponse;
 import com.hospitaldb.backend.dto.response.PaginatedResponse;
-import com.hospitaldb.backend.dto.response.administrativo.PermisoDTO;
-import com.hospitaldb.backend.dto.response.administrativo.RolDTO;
-import com.hospitaldb.backend.dto.response.administrativo.RolPadreDTO;
-import com.hospitaldb.backend.dto.response.administrativo.RolPermisoDTO;
+import com.hospitaldb.backend.dto.response.administrativo.*;
 import com.hospitaldb.backend.entity.administrativo.Permiso;
 import com.hospitaldb.backend.entity.administrativo.Rol;
 import com.hospitaldb.backend.entity.administrativo.RolPermiso;
@@ -35,9 +32,9 @@ public class RolController {
     private final RolService rolService;
 
     @GetMapping
-    public ResponseEntity<EntityResponse<List<RolDTO>>> getAll(HttpServletRequest request) {
+    public ResponseEntity<EntityResponse<List<RolJoinDTO>>> getAll(HttpServletRequest request) {
         log.info("GET /api/roles - Listando todos los roles");
-        List<RolDTO> roles = rolService.findAll();
+        List<RolJoinDTO> roles = rolService.findAll();
         return ResponseEntity.ok(
                 EntityResponse.success(roles, "Roles obtenidos exitosamente", request.getRequestURI())
         );
@@ -53,16 +50,16 @@ public class RolController {
     }
 
     @GetMapping("/paginado")
-    public ResponseEntity<EntityResponse<PaginatedResponse<RolDTO>>> getAllPaginated(
+    public ResponseEntity<EntityResponse<PaginatedResponse<RolJoinDTO>>> getAllPaginated(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
 
         log.info("GET /api/roles/paginado - page={}, size={}", page, size);
         Pageable pageable = PageRequest.of(page, size, Sort.by("nombreRol").ascending());
-        Page<RolDTO> pageResult = rolService.findAll(pageable);
+        Page<RolJoinDTO> pageResult = rolService.findAll(pageable);
 
-        PaginatedResponse<RolDTO> response = PaginatedResponse.<RolDTO>builder()
+        PaginatedResponse<RolJoinDTO> response = PaginatedResponse.<RolJoinDTO>builder()
                 .content(pageResult.getContent())
                 .pageNumber(pageResult.getNumber())
                 .pageSize(pageResult.getSize())
