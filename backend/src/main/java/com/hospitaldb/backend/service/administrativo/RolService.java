@@ -2,10 +2,7 @@ package com.hospitaldb.backend.service.administrativo;
 
 import com.hospitaldb.backend.dto.request.AsignacionPermisoRequestDTO;
 import com.hospitaldb.backend.dto.request.RolRequestDTO;
-import com.hospitaldb.backend.dto.response.administrativo.PermisoDTO;
-import com.hospitaldb.backend.dto.response.administrativo.RolDTO;
-import com.hospitaldb.backend.dto.response.administrativo.RolPadreDTO;
-import com.hospitaldb.backend.dto.response.administrativo.RolPermisoDTO;
+import com.hospitaldb.backend.dto.response.administrativo.*;
 import com.hospitaldb.backend.entity.administrativo.Permiso;
 import com.hospitaldb.backend.entity.administrativo.Rol;
 import com.hospitaldb.backend.entity.administrativo.RolPadre;
@@ -44,11 +41,13 @@ public class RolService {
 
     private final ModelMapper modelMapper;
 
-    public List<RolDTO> findAll() {
+    public List<RolJoinDTO> findAll() {
         log.info("Obteniendo todos los roles");
+
         List<Rol> roles = rolRepository.findAllByActivo(true);
+
         return roles.stream()
-                .map(rol -> modelMapper.map(rol, RolDTO.class))
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
@@ -59,10 +58,10 @@ public class RolService {
                 .collect(Collectors.toList());
     }
 
-    public Page<RolDTO> findAll(Pageable pageable) {
+    public Page<RolJoinDTO> findAll(Pageable pageable) {
         log.info("Obteniendo roles paginados");
         Page<Rol> pageResult = rolRepository.findAllByActivo(true, pageable);
-        return pageResult.map(rol -> modelMapper.map(rol, RolDTO.class));
+        return pageResult.map(this::convertToDTO);
     }
 
     public RolDTO findById(Long id) {
@@ -101,7 +100,7 @@ public class RolService {
         if (request.getPermissions() != null && !request.getPermissions().isEmpty()) {
             guardarPermisosUI(saved, request.getPermissions());
         }
-
+        keycloakService.createRealmRole(request.getNombreRol()).block();
         return modelMapper.map(saved, RolDTO.class);
     }
 
@@ -260,5 +259,31 @@ public class RolService {
         return permisos.stream()
                 .map(permiso -> modelMapper.map(permiso, PermisoDTO.class))
                 .collect(Collectors.toList());
+    }
+
+    private RolJoinDTO convertToDTO(Rol rol) {
+        RolJoinDTO rolDTO = RolJoinDTO.builder()
+                .idRol(rol.getIdRol())
+                .nombreRol(rol.getNombreRol())
+                .build();
+
+        if (rol.getRolPadre() != null) {
+            RolPadreDTO rolPadreDTO = RolPadreDTO.builder()
+                    .modelRoleId(rol.getRolPadre().getIdRolPadre())
+                    .nombreRolPadre(rol.getRolPadre().getNombreRolPadre())
+                    .build();
+            rolDTO.setRolPadre(rolPadreDTO);
+        }
+
+        List<PermisoDTO> permisos = permisoRepository.findPermisosByRolId(rol.getIdRol())
+                .stream()
+                .map(permiso -> PermisoDTO.builder()
+                        .idPermiso(permiso.getIdPermiso())
+                        .nombrePermiso(permiso.getNombrePermiso())
+                        .build())
+                .collect(Collectors.toList());
+        rolDTO.setPermisos(permisos);
+
+        return rolDTO;
     }
 }
