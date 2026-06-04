@@ -5,10 +5,12 @@ import com.hospitaldb.backend.dto.request.KeycloakUserRequestDTO;
 import com.hospitaldb.backend.dto.response.keycloak.KeycloakRoleResponseDTO;
 import com.hospitaldb.backend.dto.response.keycloak.KeycloakTokenResponse;
 import com.hospitaldb.backend.dto.response.keycloak.KeycloakUserResponseDTO;
+import com.hospitaldb.backend.exception.KeycloakException;
 import com.hospitaldb.backend.properties.KeycloakAdminProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -57,8 +59,16 @@ public class KeycloakService {
                         .retrieve()
                         .onStatus(HttpStatusCode::isError, response ->
                                 response.bodyToMono(String.class)
-                                        .flatMap(error -> Mono.error(
-                                                new RuntimeException("Error creando usuario: " + error))))
+                                        .flatMap(errorBody -> {
+                                            log.error("Error de Keycloak al crear el usuario: {}", errorBody);
+                                            String errorMessage = extractErrorMessage(errorBody);
+                                            return Mono.error(new KeycloakException(
+                                                    errorMessage,
+                                                    response.statusCode().value(),
+                                                    errorBody
+                                            ));
+                                        })
+                        )
                         .toBodilessEntity()
                         .then())
                 .doOnSuccess(v -> log.info("Usuario {} creado en Keycloak", request.getUsername()))
@@ -81,8 +91,6 @@ public class KeycloakService {
                 ))
         );
     }
-
-    // Asignar rol a usuario
     public Mono<Void> assignRole(String userId, String roleName) {
         return getAdminToken()
                 .flatMap(token -> getRoleByName(token, roleName)
@@ -93,12 +101,40 @@ public class KeycloakService {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .bodyValue(List.of(role))
                                 .retrieve()
+                                .onStatus(HttpStatusCode::isError, response ->
+                                        response.bodyToMono(String.class)
+                                                .flatMap(errorBody -> {
+                                                    log.error("Error de Keycloak al asignar rol: {}", errorBody);
+                                                    String errorMessage = extractErrorMessage(errorBody);
+                                                    return Mono.error(new KeycloakException(
+                                                            errorMessage,
+                                                            response.statusCode().value(),
+                                                            errorBody
+                                                    ));
+                                                })
+                                )
                                 .toBodilessEntity()
                                 .then()))
-                .doOnSuccess(v -> log.info("Rol {} asignado al usuario {}", roleName, userId));
+                .doOnSuccess(v -> log.info("Rol {} asignado al usuario {}", roleName, userId))
+                .doOnError(e -> log.error("Error asignando rol {} al usuario {}: {}", roleName, userId, e.getMessage()));
     }
 
-    // Buscar usuario por username
+    private String extractErrorMessage(String errorBody) {
+        try {
+            if (errorBody.contains("errorMessage")) {
+                int start = errorBody.indexOf("\"errorMessage\":\"") + 16;
+                int end = errorBody.indexOf("\"", start);
+                if (start > 16 && end > start) {
+                    return errorBody.substring(start, end);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("No se pudo extraer mensaje de error del cuerpo: {}", errorBody);
+        }
+        return errorBody;
+    }
+
+
     public String getUserId(String username) {
         return getAdminToken()
                 .flatMap(token -> keycloakWebClient.get()
