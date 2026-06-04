@@ -8,9 +8,9 @@ export type HospitalitationResponseDTO = {
     idArea: number,
     nombreArea: string,
     fechaIngreso: string,
-    fechaEgreso: string,
+    fechaEgreso?: string,
     motivoIngreso: string,
-    motivoEgreso: string,
+    motivoEgreso?: string,
     estado: string,
     observaciones: string,
     activo: boolean

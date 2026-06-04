@@ -13,6 +13,7 @@ export interface HospitalitationRepository {
         signal?: AbortSignal
     ): Promise<PaginatedResponse<Hospitalitation>>;
     getHospitalitationById(hospitalitationId: number, signal?: AbortSignal): Promise<Hospitalitation>;
+    getHospitalitationsByPatient(patientId: number, signal?: AbortSignal): Promise<Hospitalitation[]>;
     ingressHospitalitation(params: HospitalitationRequestParams, signal?: AbortSignal): Promise<Hospitalitation>;
     egressHospitalitation(params: HospitalitationEgressRequestParams, signal?: AbortSignal): Promise<Hospitalitation>;
 }

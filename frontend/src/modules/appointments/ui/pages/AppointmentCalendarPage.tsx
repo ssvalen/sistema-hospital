@@ -37,6 +37,7 @@ import { useAppointmentsTable } from "../../hooks/useAppointmentsTable";
 import { useGetAllDoctors } from "@/modules/hospital/hooks/doctor/useGetAllDoctors";
 
 import type { Appointment as DomainAppointment } from "@/modules/appointments/domain/entities/Appointment";
+import { toDatetimeLocal } from "@/shared/utils/toDatetimeLocal";
 
 
 type AppointmentUI = {
@@ -238,15 +239,15 @@ export default function AppointmentCalendarPage() {
 
 
                 if (start.getTime() < now.setSeconds(0, 0)) {
-                  console.log("aq")
                   showToast("No puedes crear citas en el pasado", TOAST_TYPES.ERROR);
                   return;
                 }
 
+                console.log(start)
+
                 navigate("/admin/appointments/new", {
                   state: {
-                    start: info.start.toISOString(),
-                    end: info.end?.toISOString() ?? null
+                    start: toDatetimeLocal(info.start)
                   }
                 })
               }

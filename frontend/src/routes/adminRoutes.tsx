@@ -27,6 +27,7 @@ import TransferHospitalizationPage from "@/modules/hospital/ui/pages/TransferHos
 import DischargeHospitalizationPage from "@/modules/hospital/ui/pages/DischargeHospitalizationPage";
 import HospitalizationDetailsPage from "@/modules/hospital/ui/pages/HospitalizationDetailsPage";
 import DoctorsPage from "@/modules/hospital/ui/pages/DoctorsPage";
+import ETLAdminPage from "@/modules/admin/ui/pages/ETLAdminPage";
 
 
 const DummyPage = ({ title }: { title: string }) => (
@@ -138,7 +139,7 @@ export const adminRoutes: SidebarRoute[] = [
         path: "hospital/admission/:id/discharge",
         element: DischargeHospitalizationPage,
         showInSidebar: false,
-        permissions: [PERMISSIONS.HOSPITAL.EGRESS_PATIENT],
+        // permissions: [PERMISSIONS.HOSPITAL.EGRESS_PATIENT],
       },
       {
         path: "hospital/admission/:id/detail",
@@ -195,6 +196,12 @@ export const adminRoutes: SidebarRoute[] = [
         path: "users",
         element: UsersPage,
         label: "Usuarios",
+        permissions: [PERMISSIONS.ADMIN.USERS],
+      },
+      {
+        path: "cargas-etl",
+        element: ETLAdminPage,
+        label: "Cargas ETL",
         permissions: [PERMISSIONS.ADMIN.USERS],
       },
     ],

@@ -46,6 +46,23 @@ export function createHospitalitationRepository(http: HttpClient): Hospitalitati
         },
 
         async getHospitalitationById(hospitalitationId: number, signal?: AbortSignal) {
+
+            const hospitalitationResponseDTODummy: HospitalitationResponseDTO = {
+                idIngreso: 1,
+                idPaciente: 100,
+                nombrePaciente: "María",
+                apellidoPaciente: "González",
+                idArea: 3,
+                nombreArea: "Unidad de Terapia Intensiva",
+                fechaIngreso: "2026-06-01T08:30:00Z",
+                fechaEgreso: "2026-06-05T14:20:00Z",
+                motivoIngreso: "Neumonía bilateral",
+                motivoEgreso: "Alta médica por evolución favorable",
+                estado: "INTERNADO", // Puede ser "INTERNADO" | "EGRESADO" | "TRASLADADO"
+                observaciones: "Paciente respondió adecuadamente al tratamiento antibiótico.",
+                activo: true
+            };
+
             const dto = await http.request<ApiResponse<HospitalitationResponseDTO>>({
                 url: `${API_ROUTES.HOSPITALITATION_GET_BY_ID}/${hospitalitationId}`,
                 method: "GET",
@@ -54,8 +71,59 @@ export function createHospitalitationRepository(http: HttpClient): Hospitalitati
                 signal,
             });
 
-            return hospitalitationToDomain(dto.data);
+            // return hospitalitationToDomain(dto.data);
+            const x = hospitalitationToDomain(hospitalitationResponseDTODummy);
+            console.log(x)
+            return x
         },
+
+        async getHospitalitationsByPatient(patientId, signal) {
+            const dto: HospitalitationResponseDTO[] = [
+                {
+                    idIngreso: 1,
+                    idPaciente: 100,
+                    nombrePaciente: "María",
+                    apellidoPaciente: "González",
+                    idArea: 3,
+                    nombreArea: "Unidad de Terapia Intensiva",
+                    fechaIngreso: "2026-06-01T08:30:00Z",
+                    // fechaEgreso: "2026-06-05T14:20:00Z",
+                    motivoIngreso: "Neumonía bilateral",
+                    // motivoEgreso: "Alta médica por evolución favorable",
+                    estado: "EGRESADO", // Puede ser "INTERNADO" | "EGRESADO" | "TRASLADADO"
+                    observaciones: "Paciente respondió adecuadamente al tratamiento antibiótico.",
+                    activo: true
+                },
+                {
+                    idIngreso: 2,
+                    idPaciente: 100,
+                    nombrePaciente: "María",
+                    apellidoPaciente: "González",
+                    idArea: 3,
+                    nombreArea: "Unidad de Terapia Intensiva",
+                    fechaIngreso: "2026-06-01T08:30:00Z",
+                    fechaEgreso: "2026-06-05T14:20:00Z",
+                    motivoIngreso: "Neumonía bilateral 2",
+                    motivoEgreso: "Alta médica por evolución favorable",
+                    estado: "EGRESADO", // Puede ser "INTERNADO" | "EGRESADO" | "TRASLADADO"
+                    observaciones: "Paciente respondió adecuadamente al tratamiento antibiótico.",
+                    activo: true
+                }
+            ];
+
+            // const dto = await http.request<ApiResponse<HospitalitationResponseDTO>>({
+            //     url: `${API_ROUTES.HOSPITALITATION_GET_BY_ID}/${hospitalitationId}`,
+            //     method: "GET",
+            //     withCredentials: false,
+            //     timeoutMs: 15_000,
+            //     signal,
+            // });
+
+            return hospitalitationsToDomain(dto)
+
+        },
+
+
         async ingressHospitalitation(params: HospitalitationRequestParams, signal?: AbortSignal) {
             const body: HospitalitationIngressRequestDTO = {
                 idPaciente: params.patientId,
