@@ -10,6 +10,7 @@ export const API_ROUTES = {
   ROLE_CREATE: '/api/hospitaldb/administrativo/roles',
   ROLE_UPDATE: '/api/hospitaldb/administrativo/roles',
   ROLE_GET_PAGINATED: '/api/hospitaldb/administrativo/roles/paginado',
+  ROLES_GET_PARENT_ROLE: '/api/hospitaldb/administrativo/roles/rol-padre',
   // PERMISSIONS
   PERMISSION_GET_ALL: '/api/hospitaldb/administrativo/permisos',
   PERMISSION_GET_BY_ROLE: (roleId: number) => `/api/hospitaldb/administrativo/roles/${roleId}/permisos`,
@@ -46,5 +47,15 @@ export const API_ROUTES = {
   DOCTORS_GET_ALL: '/api/hospitaldb/clinico/medicos',
   DOCTORS_GET_PAGINATED: '/api/hospitaldb/clinico/medicos/paginado',
   DOCTORS_CREATE: '/api/hospitaldb/clinico/medicos',
-  DOCTORS_UPDATE: '/api/hospitaldb/clinico/medicos'
+  DOCTORS_UPDATE: '/api/hospitaldb/clinico/medicos',
+  // HOSPITALITATION 
+  HOSPITALITATION_INGRESS: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/ingresos',
+  HOSPITALITATION_EGRESS:(id: number) => `/api/hospitaldb/hospitalario/ingresos-egresos-areas/ingresos/${id}/egreso`,
+  HOSPITALITATION_GET_ALL: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/ingresos',
+  HOSPITALITATION_GET_BY_ID: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/ingresos',
+  HOSPITALITATION_GET_PAGINATED: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/ingresos/paginado',
+  // HOSPITAL AREAS
+  HOSPITAL_AREA_GET_ALL: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/areas',
+  HOSPITAL_AREA_CREATE: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/areas',
+  HOSPITAL_AREA_UPDATE: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/areas',
 } as const;

@@ -92,7 +92,6 @@ export default function AppointmentCalendarPage() {
   });
 
   const { data: doctorsData = [] } = useGetAllDoctors(true)
-  console.log(doctorsData)
 
   const appointments: AppointmentUI[] = useMemo(() => {
     if (view === "calendar") {

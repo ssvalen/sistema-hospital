@@ -35,6 +35,18 @@ interface DataTableProps<T> {
   rowKey?: keyof T;
 }
 
+const getNestedValue = (
+  obj: Record<string, any>,
+  path: string
+): unknown => {
+  return path
+    .split(".")
+    .reduce<any>(
+      (acc, part) => (acc == null ? undefined : acc[part]),
+      obj
+    );
+};
+
 const DataTable = <T extends Record<string, any>>({
   columns,
   data,
@@ -95,19 +107,26 @@ const DataTable = <T extends Record<string, any>>({
       Object.entries(filters).every(([key, value]) => {
         if (!value) return true;
 
-        const cellValue = row[key];
+        const cellValue = getNestedValue(row, key);
 
         if (cellValue == null) return false;
 
         const col = columns.find((c) => c.key === key);
         const isDate = col?.inputType === "date";
 
-        // 🔥 DATE FIX REAL
         if (isDate) {
-          const dateStr =
-            typeof cellValue === "string"
-              ? cellValue.slice(0, 10)
-              : new Date(cellValue).toISOString().slice(0, 10);
+          let dateStr = "";
+
+          if (typeof cellValue === "string") {
+            dateStr = cellValue.slice(0, 10);
+          } else if (
+            typeof cellValue === "number" ||
+            cellValue instanceof Date
+          ) {
+            dateStr = new Date(cellValue)
+              .toISOString()
+              .slice(0, 10);
+          }
 
           return dateStr.includes(value);
         }
@@ -123,14 +142,25 @@ const DataTable = <T extends Record<string, any>>({
     if (!sortConfig.key) return filteredData;
 
     return [...filteredData].sort((a, b) => {
-      const aVal = a[sortConfig.key!];
-      const bVal = b[sortConfig.key!];
+      const aVal = getNestedValue(a, sortConfig.key!);
+      const bVal = getNestedValue(b, sortConfig.key!);
 
       if (aVal == null) return 1;
       if (bVal == null) return -1;
 
-      const aDate = new Date(aVal).getTime();
-      const bDate = new Date(bVal).getTime();
+      const aDate =
+        typeof aVal === "string" ||
+          typeof aVal === "number" ||
+          aVal instanceof Date
+          ? new Date(aVal).getTime()
+          : NaN;
+
+      const bDate =
+        typeof bVal === "string" ||
+          typeof bVal === "number" ||
+          bVal instanceof Date
+          ? new Date(bVal).getTime()
+          : NaN;
 
       const isDate =
         !isNaN(aDate) &&
@@ -143,10 +173,13 @@ const DataTable = <T extends Record<string, any>>({
           : bDate - aDate;
       }
 
-      if (aVal < bVal)
+      const aCompare = String(aVal);
+      const bCompare = String(bVal);
+
+      if (aCompare < bCompare)
         return sortConfig.direction === "asc" ? -1 : 1;
 
-      if (aVal > bVal)
+      if (aCompare > bCompare)
         return sortConfig.direction === "asc" ? 1 : -1;
 
       return 0;
@@ -170,7 +203,6 @@ const DataTable = <T extends Record<string, any>>({
 
   return (
     <div className="flex flex-col w-full rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-
       <Toast
         show={toast.show}
         type={toast.type}
@@ -180,7 +212,6 @@ const DataTable = <T extends Record<string, any>>({
 
       <div className="flex-1 min-h-0 overflow-auto">
         <table className="w-full text-sm text-gray-700">
-
           <thead className="sticky top-0 z-10 bg-slate-800 text-white">
             <tr>
               {columns.map((col) => (
@@ -189,9 +220,8 @@ const DataTable = <T extends Record<string, any>>({
                   className="px-4 py-3 text-left font-semibold border-b border-slate-700"
                 >
                   <div
-                    className={`flex items-center gap-2 select-none ${
-                      col.sortable ? "cursor-pointer" : ""
-                    }`}
+                    className={`flex items-center gap-2 select-none ${col.sortable ? "cursor-pointer" : ""
+                      }`}
                     onClick={() =>
                       col.sortable && handleSort(col.key)
                     }
@@ -209,7 +239,7 @@ const DataTable = <T extends Record<string, any>>({
                   {col.hasInput && (
                     <div className="mt-2">
                       <input
-                        type={col.inputType || "text"}   
+                        type={col.inputType || "text"}
                         value={filters[col.key] || ""}
                         onChange={(e) =>
                           handleFilterChange(
@@ -232,7 +262,6 @@ const DataTable = <T extends Record<string, any>>({
           </thead>
 
           <tbody className="bg-white">
-
             {isInitialLoading ? (
               Array(5)
                 .fill(null)
@@ -261,29 +290,38 @@ const DataTable = <T extends Record<string, any>>({
                     >
                       {col.hasActions ? (
                         <div className="flex justify-center gap-2">
-                          {actions.map((action) => (
-                            <CanAccess
-                              key={action.label}
-                              permission={action.permission}
-                            >
-                              <Button
-                                icon={action.icon}
-                                label={action.label}
-                                title={action.title}
-                                color={action.color}
-                                onClick={() => action.onClick(row)}
-                              />
-                            </CanAccess>
-                          ))}
+                          {actions
+                            .filter(
+                              (action) =>
+                                action.visible?.(row) ?? true
+                            )
+                            .map((action) => (
+                              <CanAccess
+                                key={action.label}
+                                permission={action.permission}
+                              >
+                                <Button
+                                  icon={action.icon}
+                                  label={action.label}
+                                  title={action.title}
+                                  color={action.color}
+                                  onClick={() => action.onClick(row)}
+                                />
+                              </CanAccess>
+                            ))}
                         </div>
                       ) : (
                         <span
                           onClick={() =>
-                            copyToClipboard(row[col.key])
+                            copyToClipboard(
+                              getNestedValue(row, col.key)
+                            )
                           }
-                          className="block cursor-pointer truncate "
+                          className="block cursor-pointer truncate"
                         >
-                          {String(row[col.key] ?? "-")}
+                          {String(
+                            getNestedValue(row, col.key) ?? "-"
+                          )}
                         </span>
                       )}
                     </td>
@@ -291,9 +329,7 @@ const DataTable = <T extends Record<string, any>>({
                 </tr>
               ))
             )}
-
           </tbody>
-
         </table>
       </div>
 
@@ -309,7 +345,7 @@ const DataTable = <T extends Record<string, any>>({
             onClick={goPrev}
             disabled={page === 1}
           />
-
+          { }
           <Button
             label="Siguiente"
             color="blue"
@@ -318,7 +354,6 @@ const DataTable = <T extends Record<string, any>>({
           />
         </div>
       </div>
-
     </div>
   );
 };

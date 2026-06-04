@@ -15,12 +15,25 @@ import {
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
+import type { Hospitalitation } from "../../domain/entities/Hospitalitation";
+import { useHospitalitationById } from "../../hooks/hospitalitation/useHospitalitationById";
+
+import { canExecuteHospitalitationAction } from "../utils/canExecuteHospitalitationAction.ts";
+import { HOSPITALITATION_ACTIONS } from "../../types/HospitalitationActions";
+import type { HospitalitationStatus } from "../../types/HospitalitationStatus";
+import { HOSPITALITATION_STATUS_CONFIG } from "../../types/HospitalitationStatusConfig";
+
 const HospitalizationDetailsPage = () => {
 
     const navigate = useNavigate();
 
     const { id } = useParams();
 
+    const { data: hospitalitationData, isLoading: hospitalitationLoading } = useHospitalitationById(Number(id))
+
+    if (!hospitalitationData) return
+
+    const statusStyles = HOSPITALITATION_STATUS_CONFIG[hospitalitationData.hospitalitation.status];
     const hospitalization = {
         id,
 
@@ -73,7 +86,7 @@ const HospitalizationDetailsPage = () => {
     const stayDays = useMemo(() => {
 
         const start =
-            new Date(hospitalization.admissionDate);
+            new Date(hospitalitationData.hospitalitation.startDate);
 
         const end = new Date();
 
@@ -99,21 +112,15 @@ const HospitalizationDetailsPage = () => {
 
                         <h1 className="text-2xl font-semibold text-slate-800">
 
-                            {hospitalization.patient.nombre}
-                            {" "}
-                            {hospitalization.patient.apellido}
+                            {hospitalitationData?.patient.fullname}
 
                         </h1>
 
-                        <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
-                            {hospitalization.status}
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium  ${statusStyles.className}`}>
+                            {hospitalitationData?.hospitalitation.status}
                         </span>
 
                     </div>
-
-                    <p className="text-sm text-slate-500 mt-2">
-                        Expediente: {hospitalization.patient.expediente}
-                    </p>
 
                 </div>
 
@@ -151,7 +158,7 @@ const HospitalizationDetailsPage = () => {
                     </p>
 
                     <p className="text-lg font-semibold text-slate-700">
-                        {hospitalization.area}
+                        {hospitalitationData.hospitalArea.name}
                     </p>
 
                 </div>
@@ -163,7 +170,7 @@ const HospitalizationDetailsPage = () => {
                     </p>
 
                     <p className="text-lg font-semibold text-slate-700">
-                        {hospitalization.admissionDate}
+                        {hospitalitationData.hospitalitation.startDate}
                     </p>
 
                 </div>
@@ -171,11 +178,11 @@ const HospitalizationDetailsPage = () => {
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
 
                     <p className="text-sm text-slate-400">
-                        Médico responsable
+                        Fecha egreso
                     </p>
 
                     <p className="text-lg font-semibold text-slate-700">
-                        {hospitalization.doctor}
+                        {hospitalitationData.hospitalitation.endDate || "-"}
                     </p>
 
                 </div>
@@ -206,42 +213,6 @@ const HospitalizationDetailsPage = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                            <div>
-
-                                <p className="text-xs text-slate-400">
-                                    Fecha ingreso
-                                </p>
-
-                                <p className="font-medium text-slate-700">
-                                    {hospitalization.admissionDate}
-                                </p>
-
-                            </div>
-
-                            <div>
-
-                                <p className="text-xs text-slate-400">
-                                    Médico responsable
-                                </p>
-
-                                <p className="font-medium text-slate-700">
-                                    {hospitalization.doctor}
-                                </p>
-
-                            </div>
-
-                            <div className="md:col-span-2">
-
-                                <p className="text-xs text-slate-400">
-                                    Diagnóstico de ingreso
-                                </p>
-
-                                <p className="font-medium text-slate-700">
-                                    {hospitalization.diagnosis}
-                                </p>
-
-                            </div>
-
                             <div className="md:col-span-2">
 
                                 <p className="text-xs text-slate-400">
@@ -249,7 +220,19 @@ const HospitalizationDetailsPage = () => {
                                 </p>
 
                                 <p className="font-medium text-slate-700">
-                                    {hospitalization.reason}
+                                    {hospitalitationData.hospitalitation.motiveIngress}
+                                </p>
+
+                            </div>
+
+                            <div className="md:col-span-2">
+
+                                <p className="text-xs text-slate-400">
+                                    Motivo de egreso
+                                </p>
+
+                                <p className="font-medium text-slate-700">
+                                    {hospitalitationData.hospitalitation.motiveIngress}
                                 </p>
 
                             </div>

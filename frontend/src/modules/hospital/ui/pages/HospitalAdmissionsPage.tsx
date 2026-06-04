@@ -1,61 +1,77 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Button, { BUTTON_COLORS } from "@/shared/components/forms/Button";
-import Input from "@/shared/components/forms/Input";
-import Select from "@/shared/components/forms/Select";
-import FormField from "@/shared/components/forms/FormField";
-
 import CanAccess from "@/shared/components/permissions/CanAccess";
-import { PERMISSIONS } from "@/shared/utils/permissions";
 
-// import type { Permission } from "@/modules/admin/domain/entities/Permission";
 import type { TableAction } from "@/shared/types/table/TableTypes";
 
 import {
     faPlus,
     faArrowRightFromBracket,
-    faBed,
-    faArrowRightArrowLeft,
     faEye
 } from "@fortawesome/free-solid-svg-icons";
+
 import DataTable from "@/shared/components/DataTable";
 
-type Admission = {
-    id: number;
-    expediente: string;
-    paciente: string;
-    area: string;
-    fechaIngreso: string;
-    fechaEgreso?: string;
-    medico: string;
-    estado: "HOSPITALIZADO" | "EGRESADO";
-};
+import { PERMISSIONS } from "@/shared/utils/permissions";
 
+import type { Hospitalitation } from "../../domain/entities/Hospitalitation";
+import { useHospitalitations } from "../../hooks/hospitalitation/useHospitalitations";
+
+import { canExecuteHospitalitationAction } from "../utils/canExecuteHospitalitationAction.ts";
+import { HOSPITALITATION_ACTIONS } from "../../types/HospitalitationActions";
+import type { HospitalitationStatus } from "../../types/HospitalitationStatus";
 const HospitalAdmissionsPage = () => {
 
     const navigate = useNavigate();
 
     const [page, setPage] = useState(1);
     const pageSize = 10;
-    const totalElements = 2
 
+    const {
+        data: admissions = [],
+        isLoading
+    } = useHospitalitations();
 
-    const openAdmissionDetail = (admission: Admission) => {
-        navigate(`admission/${admission.id}/detail`)
-    }
+    const totalElements = admissions.length;
 
-    const openEgressForm = (admission: Admission) => {
-        navigate(`admission/${admission.id}/discharge`)
-    }
+    const totalHospitalizados =
+        admissions.filter(
+            (x) =>
+                x.hospitalitation.status === "INTERNADO"
+        ).length;
 
-    const actions: TableAction<Admission>[] = [
+    const totalEgresados =
+        admissions.filter(
+            (x) =>
+                x.hospitalitation.status === "EGRESADO"
+        ).length;
+
+    const openAdmissionDetail = (
+        admission: Hospitalitation
+    ) => {
+        navigate(
+            `admission/${admission.id}/detail`
+        );
+    };
+
+    const openEgressForm = (
+        admission: Hospitalitation
+    ) => {
+        navigate(
+            `admission/${admission.id}/discharge`
+        );
+    };
+
+    const actions: TableAction<Hospitalitation>[] = [
         {
             title: "Ver detalles de admisión",
             label: "Ver",
             icon: faEye,
             color: BUTTON_COLORS.BLUE,
-            permission: PERMISSIONS.HOSPITAL.VIEW_ADMISSION_DETAIL,
+            permission:
+                PERMISSIONS.HOSPITAL.VIEW_ADMISSION_DETAIL,
             onClick: openAdmissionDetail,
         },
         {
@@ -63,83 +79,16 @@ const HospitalAdmissionsPage = () => {
             label: "Egreso",
             icon: faArrowRightFromBracket,
             color: BUTTON_COLORS.GREEN,
-            permission: PERMISSIONS.HOSPITAL.EGRESS_PATIENT,
-            onClick: openEgressForm
+            permission:
+                PERMISSIONS.HOSPITAL.EGRESS_PATIENT,
+            onClick: openEgressForm,
+            visible: (row) =>
+                canExecuteHospitalitationAction(
+                    row.hospitalitation.status as HospitalitationStatus,
+                    HOSPITALITATION_ACTIONS.DISCHARGE
+                )
         }
     ];
-
-
-
-
-    const [search, setSearch] = useState("");
-    const [areaFilter, setAreaFilter] = useState("all");
-    const [statusFilter, setStatusFilter] = useState("all");
-
-    const admissions: Admission[] = [
-        {
-            id: 1,
-            expediente: "EXP-000123",
-            paciente: "Juan Pérez",
-            area: "Medicina Interna",
-            fechaIngreso: "2026-06-01",
-            medico: "Dr. Carlos López",
-            estado: "HOSPITALIZADO"
-        },
-        {
-            id: 2,
-            expediente: "EXP-000124",
-            paciente: "Ana García",
-            area: "Cirugía",
-            fechaIngreso: "2026-05-28",
-            fechaEgreso: "2026-06-01",
-            medico: "Dr. Roberto Méndez",
-            estado: "EGRESADO"
-        }
-    ];
-
-    const filteredAdmissions = useMemo(() => {
-        return admissions.filter((item) => {
-
-            const matchesSearch =
-                item.paciente
-                    .toLowerCase()
-                    .includes(search.toLowerCase()) ||
-                item.expediente
-                    .toLowerCase()
-                    .includes(search.toLowerCase());
-
-            const matchesArea =
-                areaFilter === "all"
-                    ? true
-                    : item.area === areaFilter;
-
-            const matchesStatus =
-                statusFilter === "all"
-                    ? true
-                    : item.estado === statusFilter;
-
-            return (
-                matchesSearch &&
-                matchesArea &&
-                matchesStatus
-            );
-        });
-    }, [
-        admissions,
-        search,
-        areaFilter,
-        statusFilter
-    ]);
-
-    const totalHospitalizados =
-        admissions.filter(
-            (x) => x.estado === "HOSPITALIZADO"
-        ).length;
-
-    const totalEgresados =
-        admissions.filter(
-            (x) => x.estado === "EGRESADO"
-        ).length;
 
     return (
         <div className="p-6 lg:p-8 bg-slate-50 min-h-screen space-y-6">
@@ -157,6 +106,7 @@ const HospitalAdmissionsPage = () => {
                 </div>
 
                 <div className="flex gap-3">
+
                     <CanAccess permission={PERMISSIONS.HOSPITAL.CREATE_ADMISION}>
                         <Button
                             icon={faPlus}
@@ -179,7 +129,7 @@ const HospitalAdmissionsPage = () => {
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
 
                     <p className="text-sm text-slate-400">
-                        Hospitalizados
+                        Internados
                     </p>
 
                     <p className="text-3xl font-bold text-blue-700">
@@ -207,7 +157,7 @@ const HospitalAdmissionsPage = () => {
                     </p>
 
                     <p className="text-3xl font-bold text-slate-700">
-                        {admissions.length}
+                        {totalElements}
                     </p>
 
                 </div>
@@ -215,16 +165,47 @@ const HospitalAdmissionsPage = () => {
             </div>
 
             <div className="py-6">
-                <DataTable<Admission>
+                <DataTable<Hospitalitation>
                     columns={[
-                        { key: "paciente", label: "Nombre paciente", sortable: true, hasInput: true },
-                        { key: "medico", label: "Médico", sortable: true, hasInput: true },
-                        { key: "area", label: "Área", sortable: true, hasInput: true },
-                        { key: "fechaIngreso", label: "Ingreso", sortable: true, hasInput: true , inputType: "date"},
-                        { key: "fechaEgreso", label: "Egreso", sortable: true, hasInput: true, inputType: "date"},
-                        { key: "actions", label: "Acciones", hasActions: true },
+                        {
+                            key: "patient.fullname",
+                            label: "Paciente",
+                            sortable: true,
+                            hasInput: true
+                        },
+                        {
+                            key: "hospitalArea.name",
+                            label: "Área",
+                            sortable: true,
+                            hasInput: true
+                        },
+                        {
+                            key: "hospitalitation.startDate",
+                            label: "Ingreso",
+                            sortable: true,
+                            hasInput: true,
+                            inputType: "date"
+                        },
+                        {
+                            key: "hospitalitation.endDate",
+                            label: "Egreso",
+                            sortable: true,
+                            hasInput: true,
+                            inputType: "date"
+                        },
+                        {
+                            key: "hospitalitation.status",
+                            label: "Estado",
+                            sortable: true,
+                            hasInput: true
+                        },
+                        {
+                            key: "actions",
+                            label: "Acciones",
+                            hasActions: true
+                        }
                     ]}
-                    loading={false}
+                    loading={isLoading}
                     data={admissions}
                     page={page}
                     pageSize={pageSize}
@@ -233,7 +214,6 @@ const HospitalAdmissionsPage = () => {
                     actions={actions}
                 />
             </div>
-
 
         </div>
     );
