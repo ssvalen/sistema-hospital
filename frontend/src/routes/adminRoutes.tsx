@@ -28,6 +28,7 @@ import DischargeHospitalizationPage from "@/modules/hospital/ui/pages/DischargeH
 import HospitalizationDetailsPage from "@/modules/hospital/ui/pages/HospitalizationDetailsPage";
 import DoctorsPage from "@/modules/hospital/ui/pages/DoctorsPage";
 import ETLAdminPage from "@/modules/admin/ui/pages/ETLAdminPage";
+import AuditLogsPage from "@/modules/audit/ui/pages/AuditLogsPage";
 
 
 const DummyPage = ({ title }: { title: string }) => (
@@ -205,5 +206,21 @@ export const adminRoutes: SidebarRoute[] = [
         permissions: [PERMISSIONS.ADMIN.USERS],
       },
     ],
+    
+  },
+  {
+    label: "Auditoria",
+    icon: faFileLines,
+    showInSidebar: true,
+    permissions: [PERMISSIONS.ADMIN.MODULE_ACCESS],
+    children: [
+      {
+        path: "audit",
+        element: AuditLogsPage,
+        label: "Auditoria",
+        permissions: [PERMISSIONS.ADMIN.ROLES],
+      }
+    ],
+    
   },
 ];

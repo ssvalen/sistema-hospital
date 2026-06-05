@@ -61,4 +61,6 @@ export const API_ROUTES = {
   HOSPITAL_AREA_GET_ALL: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/areas',
   HOSPITAL_AREA_CREATE: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/areas',
   HOSPITAL_AREA_UPDATE: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/areas',
+  // AUDIT LOGS
+  AUDIT_ENDPOINT: ''
 } as const;
