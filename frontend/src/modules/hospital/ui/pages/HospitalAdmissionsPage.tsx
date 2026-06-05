@@ -34,6 +34,7 @@ const HospitalAdmissionsPage = () => {
         isLoading
     } = useHospitalitations();
 
+
     const totalElements = admissions.length;
 
     const totalHospitalizados =
@@ -56,13 +57,6 @@ const HospitalAdmissionsPage = () => {
         );
     };
 
-    const openEgressForm = (
-        admission: Hospitalitation
-    ) => {
-        navigate(
-            `admission/${admission.id}/discharge`
-        );
-    };
 
     const actions: TableAction<Hospitalitation>[] = [
         {
@@ -73,20 +67,6 @@ const HospitalAdmissionsPage = () => {
             permission:
                 PERMISSIONS.HOSPITAL.VIEW_ADMISSION_DETAIL,
             onClick: openAdmissionDetail,
-        },
-        {
-            title: "Egresar paciente",
-            label: "Egreso",
-            icon: faArrowRightFromBracket,
-            color: BUTTON_COLORS.GREEN,
-            permission:
-                PERMISSIONS.HOSPITAL.EGRESS_PATIENT,
-            onClick: openEgressForm,
-            visible: (row) =>
-                canExecuteHospitalitationAction(
-                    row.hospitalitation.status as HospitalitationStatus,
-                    HOSPITALITATION_ACTIONS.DISCHARGE
-                )
         }
     ];
 

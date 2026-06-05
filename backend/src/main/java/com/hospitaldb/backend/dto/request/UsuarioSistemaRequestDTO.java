@@ -22,6 +22,12 @@ public class UsuarioSistemaRequestDTO {
     private Boolean activo = true;
 
     private String idKeycloak;
+    
+    @NotBlank(message = "El nombre del usuario es obligatorio")
+    private String primerNombre;
+
+    @NotBlank(message = "Los apellidos del usuario es obligatorio")
+    private String apellidos;
 
     @NotBlank(message = "Contraseña obligatoria")
     private String password;

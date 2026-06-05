@@ -3,12 +3,13 @@ import { rolesRepository } from "@/modules/admin/infrastructure/repositories/Rol
 
 export const useParentRoles = (enabled = true) => {
   return useQuery({
-    queryKey: ["roles"],
+    queryKey: ["parentRoles"],
     queryFn: async ({ signal }) => {
 
       return await rolesRepository.getParentRoles(signal);
 
     },
-    enabled
+    enabled,
+    refetchOnWindowFocus: true
   });
 };

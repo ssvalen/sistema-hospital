@@ -1,18 +1,18 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { hospitalitationRepository } from "@/modules/hospital/infrastructure/repositories/HospitalitationRepositoryImpl";
-import type { HospitalitationRequestParams } from "../../types/HospitalitationTypes";
+import type { HospitalitationEgressRequestParams } from "../../types/HospitalitationTypes";
 
 
-export const useCreateIngress = () => {
+export const useCreateEgress = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (params: HospitalitationRequestParams) =>
-            hospitalitationRepository.ingressHospitalitation(params),
+        mutationFn: (params: HospitalitationEgressRequestParams) =>
+            hospitalitationRepository.egressHospitalitation(params),
 
         onSuccess: () => {
             queryClient.invalidateQueries({
-                queryKey: ["ingress"]
+                queryKey: ["egress"]
             });
         }
     });

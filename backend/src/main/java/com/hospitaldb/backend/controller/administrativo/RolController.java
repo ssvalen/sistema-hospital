@@ -29,163 +29,162 @@ import java.util.List;
 @Slf4j
 @CrossOrigin(origins = "*")
 public class RolController {
-    private final RolService rolService;
+        private final RolService rolService;
 
-    @GetMapping
-    public ResponseEntity<EntityResponse<List<RolJoinDTO>>> getAll(HttpServletRequest request) {
-        log.info("GET /api/roles - Listando todos los roles");
-        List<RolJoinDTO> roles = rolService.findAll();
-        return ResponseEntity.ok(
-                EntityResponse.success(roles, "Roles obtenidos exitosamente", request.getRequestURI())
-        );
-    }
+        @GetMapping
+        public ResponseEntity<EntityResponse<List<RolJoinDTO>>> getAll(HttpServletRequest request) {
+                log.info("GET /api/roles - Listando todos los roles");
+                List<RolJoinDTO> roles = rolService.findAll();
+                return ResponseEntity.ok(
+                                EntityResponse.success(roles, "Roles obtenidos exitosamente", request.getRequestURI()));
+        }
 
-    @GetMapping("/rol-padre")
-    public ResponseEntity<EntityResponse<List<RolPadreDTO>>> getAllRolePadre(HttpServletRequest request) {
-        log.info("GET /api/roles - Listando todos los roles");
-        List<RolPadreDTO> roles = rolService.findAllRolPadre();
-        return ResponseEntity.ok(
-                EntityResponse.success(roles, "Roles padre obtenidos exitosamente", request.getRequestURI())
-        );
-    }
+        @GetMapping("/rol-padre")
+        public ResponseEntity<EntityResponse<List<RolPadreDTO>>> getAllRolePadre(HttpServletRequest request) {
+                log.info("GET /api/roles - Listando todos los roles");
+                List<RolPadreDTO> roles = rolService.findAllRolPadre();
+                return ResponseEntity.ok(
+                                EntityResponse.success(roles, "Roles padre obtenidos exitosamente",
+                                                request.getRequestURI()));
+        }
 
-    @GetMapping("/paginado")
-    public ResponseEntity<EntityResponse<PaginatedResponse<RolJoinDTO>>> getAllPaginated(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            HttpServletRequest request) {
+        @GetMapping("/paginado")
+        public ResponseEntity<EntityResponse<PaginatedResponse<RolJoinDTO>>> getAllPaginated(
+                        @RequestParam(defaultValue = "0") int page,
+                        @RequestParam(defaultValue = "10") int size,
+                        HttpServletRequest request) {
 
-        log.info("GET /api/roles/paginado - page={}, size={}", page, size);
-        Pageable pageable = PageRequest.of(page, size, Sort.by("nombreRol").ascending());
-        Page<RolJoinDTO> pageResult = rolService.findAll(pageable);
+                log.info("GET /api/roles/paginado - page={}, size={}", page, size);
+                Pageable pageable = PageRequest.of(page, size, Sort.by("nombreRol").ascending());
+                Page<RolJoinDTO> pageResult = rolService.findAll(pageable);
 
-        PaginatedResponse<RolJoinDTO> response = PaginatedResponse.<RolJoinDTO>builder()
-                .content(pageResult.getContent())
-                .pageNumber(pageResult.getNumber())
-                .pageSize(pageResult.getSize())
-                .totalElements(pageResult.getTotalElements())
-                .totalPages(pageResult.getTotalPages())
-                .first(pageResult.isFirst())
-                .last(pageResult.isLast())
-                .build();
+                PaginatedResponse<RolJoinDTO> response = PaginatedResponse.<RolJoinDTO>builder()
+                                .content(pageResult.getContent())
+                                .pageNumber(pageResult.getNumber())
+                                .pageSize(pageResult.getSize())
+                                .totalElements(pageResult.getTotalElements())
+                                .totalPages(pageResult.getTotalPages())
+                                .first(pageResult.isFirst())
+                                .last(pageResult.isLast())
+                                .build();
 
-        return ResponseEntity.ok(
-                EntityResponse.success(response, "Roles obtenidos exitosamente", request.getRequestURI())
-        );
-    }
+                return ResponseEntity.ok(
+                                EntityResponse.success(response, "Roles obtenidos exitosamente",
+                                                request.getRequestURI()));
+        }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<EntityResponse<RolDTO>> getById(@PathVariable Long id, HttpServletRequest request) {
-        log.info("GET /api/roles/{} - Buscando rol", id);
-        RolDTO rol = rolService.findById(id);
-        return ResponseEntity.ok(
-                EntityResponse.success(rol, "Rol encontrado", request.getRequestURI())
-        );
-    }
+        @GetMapping("/{id}")
+        public ResponseEntity<EntityResponse<RolJoinDTO>> getById(
+                        @PathVariable Long id,
+                        HttpServletRequest request) {
 
-    @GetMapping("/nombre/{nombreRol}")
-    public ResponseEntity<EntityResponse<RolDTO>> getByNombre(
-            @PathVariable String nombreRol,
-            HttpServletRequest request) {
+                log.info("GET /api/roles/{} - Buscando rol", id);
 
-        log.info("GET /api/roles/nombre/{} - Buscando por nombre", nombreRol);
-        RolDTO rol = rolService.findByNombre(nombreRol);
-        return ResponseEntity.ok(
-                EntityResponse.success(rol, "Rol encontrado", request.getRequestURI())
-        );
-    }
+                RolJoinDTO rol = rolService.findById(id);
 
-    @PostMapping
-    public ResponseEntity<EntityResponse<RolDTO>> create(
-            @Valid @RequestBody RolRequestDTO requestDTO,
-            HttpServletRequest request) {
+                return ResponseEntity.ok(
+                                EntityResponse.success(rol, "Rol encontrado", request.getRequestURI()));
+        }
 
-        log.info("POST /api/roles - Creando nuevo rol: {}", requestDTO.getNombreRol());
-        RolDTO created = rolService.create(requestDTO);
+        @GetMapping("/nombre/{nombreRol}")
+        public ResponseEntity<EntityResponse<RolDTO>> getByNombre(
+                        @PathVariable String nombreRol,
+                        HttpServletRequest request) {
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-                EntityResponse.success(created, "Rol creado exitosamente", request.getRequestURI())
-        );
-    }
+                log.info("GET /api/roles/nombre/{} - Buscando por nombre", nombreRol);
+                RolDTO rol = rolService.findByNombre(nombreRol);
+                return ResponseEntity.ok(
+                                EntityResponse.success(rol, "Rol encontrado", request.getRequestURI()));
+        }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<EntityResponse<RolDTO>> update(
-            @PathVariable Long id,
-            @Valid @RequestBody RolRequestDTO requestDTO,
-            HttpServletRequest request) {
+        @PostMapping
+        public ResponseEntity<EntityResponse<RolDTO>> create(
+                        @Valid @RequestBody RolRequestDTO requestDTO,
+                        HttpServletRequest request) {
 
-        log.info("PUT /api/roles/{} - Actualizando rol", id);
-        RolDTO updated = rolService.update(id, requestDTO);
+                log.info("POST /api/roles - Creando nuevo rol: {}", requestDTO.getNombreRol());
+                RolDTO created = rolService.create(requestDTO);
 
-        return ResponseEntity.ok(
-                EntityResponse.success(updated, "Rol actualizado exitosamente", request.getRequestURI())
-        );
-    }
+                return ResponseEntity.status(HttpStatus.CREATED).body(
+                                EntityResponse.success(created, "Rol creado exitosamente", request.getRequestURI()));
+        }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<EntityResponse<Void>> delete(@PathVariable Long id, HttpServletRequest request) {
-        log.info("DELETE /api/roles/{} - Eliminando rol", id);
-        rolService.delete(id);
+        @PutMapping("/{id}")
+        public ResponseEntity<EntityResponse<RolDTO>> update(
+                        @PathVariable Long id,
+                        @Valid @RequestBody RolRequestDTO requestDTO,
+                        HttpServletRequest request) {
 
-        return ResponseEntity.ok(
-                EntityResponse.success(null, "Rol eliminado exitosamente", request.getRequestURI())
-        );
-    }
+                log.info("PUT /api/roles/{} - Actualizando rol", id);
+                RolDTO updated = rolService.update(id, requestDTO);
 
-    @PostMapping("/asignar-permisos")
-    public ResponseEntity<EntityResponse<List<RolPermisoDTO>>> asignarPermisos(
-            @Valid @RequestBody AsignacionPermisoRequestDTO requestDTO,
-            HttpServletRequest request) {
+                return ResponseEntity.ok(
+                                EntityResponse.success(updated, "Rol actualizado exitosamente",
+                                                request.getRequestURI()));
+        }
 
-        log.info("POST /api/roles/asignar-permisos - Asignando {} permisos al rol",
-                requestDTO.getIdPermisos() != null ? requestDTO.getIdPermisos().size() : 0);
-        List<RolPermisoDTO> asignaciones = rolService.asignarPermisos(requestDTO);
+        @DeleteMapping("/{id}")
+        public ResponseEntity<EntityResponse<Void>> delete(@PathVariable Long id, HttpServletRequest request) {
+                log.info("DELETE /api/roles/{} - Eliminando rol", id);
+                rolService.delete(id);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-                EntityResponse.success(asignaciones, "Permisos asignados exitosamente", request.getRequestURI())
-        );
-    }
+                return ResponseEntity.ok(
+                                EntityResponse.success(null, "Rol eliminado exitosamente", request.getRequestURI()));
+        }
 
-    @DeleteMapping("/{idRol}/permisos")
-    public ResponseEntity<EntityResponse<Void>> removerPermisos(
-            @PathVariable Long idRol,
-            @RequestBody List<Long> idPermisos,
-            HttpServletRequest request) {
+        @PostMapping("/asignar-permisos")
+        public ResponseEntity<EntityResponse<List<RolPermisoDTO>>> asignarPermisos(
+                        @Valid @RequestBody AsignacionPermisoRequestDTO requestDTO,
+                        HttpServletRequest request) {
 
-        log.info("DELETE /api/roles/{}/permisos - Removiendo {} permisos del rol", idRol,
-                idPermisos != null ? idPermisos.size() : 0);
-        rolService.removerPermisos(idRol, idPermisos);
+                log.info("POST /api/roles/asignar-permisos - Asignando {} permisos al rol",
+                                requestDTO.getIdPermisos() != null ? requestDTO.getIdPermisos().size() : 0);
+                List<RolPermisoDTO> asignaciones = rolService.asignarPermisos(requestDTO);
 
-        return ResponseEntity.ok(
-                EntityResponse.success(null, "Permisos removidos exitosamente", request.getRequestURI())
-        );
-    }
+                return ResponseEntity.status(HttpStatus.CREATED).body(
+                                EntityResponse.success(asignaciones, "Permisos asignados exitosamente",
+                                                request.getRequestURI()));
+        }
 
-    // Endpoint legacy para compatibilidad (remover un solo permiso)
-    @DeleteMapping("/{idRol}/permisos/{idPermiso}")
-    public ResponseEntity<EntityResponse<Void>> removerPermiso(
-            @PathVariable Long idRol,
-            @PathVariable Long idPermiso,
-            HttpServletRequest request) {
+        @DeleteMapping("/{idRol}/permisos")
+        public ResponseEntity<EntityResponse<Void>> removerPermisos(
+                        @PathVariable Long idRol,
+                        @RequestBody List<Long> idPermisos,
+                        HttpServletRequest request) {
 
-        log.info("DELETE /api/roles/{}/permisos/{} - Removiendo permiso del rol", idRol, idPermiso);
-        rolService.removerPermiso(idRol, idPermiso);
+                log.info("DELETE /api/roles/{}/permisos - Removiendo {} permisos del rol", idRol,
+                                idPermisos != null ? idPermisos.size() : 0);
+                rolService.removerPermisos(idRol, idPermisos);
 
-        return ResponseEntity.ok(
-                EntityResponse.success(null, "Permiso removido exitosamente", request.getRequestURI())
-        );
-    }
+                return ResponseEntity.ok(
+                                EntityResponse.success(null, "Permisos removidos exitosamente",
+                                                request.getRequestURI()));
+        }
 
-    @GetMapping("/{idRol}/permisos")
-    public ResponseEntity<EntityResponse<List<PermisoDTO>>> getPermisosByRol(
-            @PathVariable Long idRol,
-            HttpServletRequest request) {
+        // Endpoint legacy para compatibilidad (remover un solo permiso)
+        @DeleteMapping("/{idRol}/permisos/{idPermiso}")
+        public ResponseEntity<EntityResponse<Void>> removerPermiso(
+                        @PathVariable Long idRol,
+                        @PathVariable Long idPermiso,
+                        HttpServletRequest request) {
 
-        log.info("GET /api/roles/{}/permisos - Permisos del rol", idRol);
-        List<PermisoDTO> permisos = rolService.findPermisosByRol(idRol);
+                log.info("DELETE /api/roles/{}/permisos/{} - Removiendo permiso del rol", idRol, idPermiso);
+                rolService.removerPermiso(idRol, idPermiso);
 
-        return ResponseEntity.ok(
-                EntityResponse.success(permisos, "Permisos del rol obtenidos", request.getRequestURI())
-        );
-    }
+                return ResponseEntity.ok(
+                                EntityResponse.success(null, "Permiso removido exitosamente", request.getRequestURI()));
+        }
+
+        @GetMapping("/{idRol}/permisos")
+        public ResponseEntity<EntityResponse<List<PermisoDTO>>> getPermisosByRol(
+                        @PathVariable Long idRol,
+                        HttpServletRequest request) {
+
+                log.info("GET /api/roles/{}/permisos - Permisos del rol", idRol);
+                List<PermisoDTO> permisos = rolService.findPermisosByRol(idRol);
+
+                return ResponseEntity.ok(
+                                EntityResponse.success(permisos, "Permisos del rol obtenidos",
+                                                request.getRequestURI()));
+        }
 }

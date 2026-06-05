@@ -3,7 +3,7 @@ import { hospitalitationRepository } from "@/modules/hospital/infrastructure/rep
 
 export const useHospitalitations = (enabled = true) => {
   return useQuery({
-    queryKey: ["hospitalitations"],
+    queryKey: ["allHospitalitations"],
     queryFn: async ({ signal }) => {
       return await hospitalitationRepository.getAllHospitalitations(signal);
     },

@@ -1,14 +1,15 @@
 package com.hospitaldb.backend.controller.etl;
 
-import com.hospitaldb.backend.dto.request.etl.EtlUploadRequestDTO;
 import com.hospitaldb.backend.dto.response.EntityResponse;
 import com.hospitaldb.backend.dto.response.etl.EtlUploadResponseDTO;
+import com.hospitaldb.backend.enums.EtlLoadType;
 import com.hospitaldb.backend.service.etl.EtlService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,28 +18,24 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/hospitaldb/etl")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = "*")
+@Tag(name = "ETL")
 public class EtlController {
 
-    private final EtlService etlService;
+        private final EtlService etlService;
 
-    @PostMapping(value = "/upload", consumes = "multipart/form-data")
-    public ResponseEntity<EntityResponse<EtlUploadResponseDTO>> upload(
-            @RequestParam("file") MultipartFile file,
-            @Valid @ModelAttribute EtlUploadRequestDTO requestDTO,
-            HttpServletRequest request
-    ) {
+        @Operation(summary = "Subir archivo ETL")
+        @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+        public ResponseEntity<EntityResponse<EtlUploadResponseDTO>> upload(
+                        @RequestPart("file") MultipartFile file,
+                        @RequestParam("loadType") EtlLoadType loadType,
+                        HttpServletRequest request) {
 
-        log.info("POST /api/hospitaldb/etl/upload - Tipo: {}", requestDTO.getLoadType());
+                log.info("ETL upload iniciado - tipo: {}", loadType);
 
-        EtlUploadResponseDTO response = etlService.uploadFile(file, requestDTO);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-                EntityResponse.success(
-                        response,
-                        "Archivo ETL cargado exitosamente",
-                        request.getRequestURI()
-                )
-        );
-    }
+                return ResponseEntity.ok(
+                                EntityResponse.success(
+                                                etlService.uploadFile(file, loadType),
+                                                "Archivo subido correctamente",
+                                                request.getRequestURI()));
+        }
 }

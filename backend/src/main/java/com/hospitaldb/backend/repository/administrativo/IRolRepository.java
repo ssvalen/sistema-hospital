@@ -25,5 +25,5 @@ public interface IRolRepository extends JpaRepository<Rol, Long> {
     @Query("SELECT r FROM Rol r JOIN r.usuarioRoles ur WHERE ur.usuario.idUsuario = :idUsuario")
     List<Rol> findRolesByUsuarioId(@Param("idUsuario") Long idUsuario);
 
-
+    
 }

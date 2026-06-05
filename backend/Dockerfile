@@ -20,6 +20,9 @@ WORKDIR /app
 
 COPY --from=build /app/target/*.jar app.jar
 
+RUN mkdir -p /app/uploads /app/logs \
+    && chmod -R 777 /app/uploads /app/logs
+
 RUN chown spring:spring app.jar
 USER spring
 

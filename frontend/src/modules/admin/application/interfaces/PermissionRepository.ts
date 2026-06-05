@@ -12,5 +12,5 @@ export interface PermissionsRepository {
     ): Promise<PaginatedResponse<Permission>>;
     createPermission(name: string): Promise<Permission>;
     updatePermission(id: number, name: string): Promise<Permission>;
-    // inactivatePermission(id: number): Promise<void>;
+    removePermission(id: number, signal?: AbortSignal): Promise<Boolean>;
 }

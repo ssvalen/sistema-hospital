@@ -1,26 +1,28 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import Button from "@/shared/components/forms/Button";
 import FormField from "@/shared/components/forms/FormField";
 import Checkbox from "@/shared/components/forms/Checkbox";
 import Select from "@/shared/components/forms/Select";
+import Input from "@/shared/components/forms/Input";
 
 import Toast from "@/shared/components/Toast";
 import { useToast } from "@/shared/hooks/useToast";
 import { TOAST_TYPES } from "@/shared/types/ToastType";
+import { TOAST_CONFIG } from "@/shared/types/ToastConfig";
 
 import type { Role } from "@/modules/admin/domain/entities/Role";
 import type { Permission } from "@/modules/admin/domain/entities/Permission";
+import type { ParentRole } from "@/modules/admin/domain/entities/ParentRole";
 
 import { useGetAllPermissions } from "@/modules/admin/hooks/permissions/useGetAllPermissions";
 import { useGetRolePermissions } from "@/modules/admin/hooks/permissions/useGetRolePermissions";
 import { useParentRoles } from "../../hooks/roles/useParentRoles";
 import { usePutRole } from "../../hooks/roles/usePutRole";
 
-import Input from "@/shared/components/forms/Input";
-import { TOAST_CONFIG } from "@/shared/types/ToastConfig";
 import type { CreateRoleParams } from "../../types/AdminTypes";
+import { useRoleById } from "../../hooks/roles/useRoleById";
 
 interface LocationState {
   role?: Role;
@@ -40,22 +42,17 @@ const RoleFormPage = () => {
   const putRoleMutation = usePutRole();
 
   const state = location.state as LocationState | null;
+
   const initialRole = state?.role ?? null;
   const isEditMode = Boolean(initialRole);
 
-  const {
-    data: permissions = [],
-    isLoading: permissionsLoading,
-  } = useGetAllPermissions();
+  const roleId: number = Number(initialRole?.id)
 
-  const {
-    data: rolePermissions = [],
-    isLoading: rolePermissionsLoading,
-  } = useGetRolePermissions(initialRole?.id ?? 0, {
-    enabled: isEditMode,
-  });
 
-  const { data: parentRolesData } = useParentRoles(true);
+  const { data: roleData, isLoading: rolePermissionsLoading } = useRoleById(roleId || 0, { enabled: isEditMode, });
+  const { data: parentRolesData = [] } = useParentRoles(true);
+  const { data: permissions = [], isLoading: permissionsLoading } = useGetAllPermissions();
+
 
   const [name, setName] = useState("");
   const [parentRole, setParentRole] = useState("");
@@ -63,9 +60,11 @@ const RoleFormPage = () => {
   const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
   const [errors, setErrors] = useState<Errors>({});
 
+
   useEffect(() => {
     if (!initialRole) {
       setName("");
+      setParentRole("");
       setSelectedPermissions([]);
       return;
     }
@@ -74,86 +73,159 @@ const RoleFormPage = () => {
   }, [initialRole]);
 
   useEffect(() => {
-    if (!isEditMode) return;
-    if (!rolePermissions.length) return;
+    if (
+      !isEditMode ||
+      !initialRole ||
+      !parentRolesData.length
+    ) {
+      return;
+    }
 
-    setSelectedPermissions(rolePermissions.map((p: Permission) => p.id));
-  }, [rolePermissions, isEditMode]);
+    const parentRoleFound = parentRolesData.find(
+      (role: ParentRole) =>
+        role.id === initialRole.parentRole?.id
+    );
+
+    if (parentRoleFound) {
+      setParentRole(String(parentRoleFound.id));
+    }
+  }, [
+    isEditMode,
+    initialRole,
+    parentRolesData,
+  ]);
+
+
+
+
+  useEffect(() => {
+    if (!isEditMode || !roleData) return;
+
+    setSelectedPermissions(
+      roleData.permissions.map((p) => p.id)
+    );
+  }, [roleData, isEditMode]);
 
   const initialSnapshot = useMemo(() => {
     return {
       name: initialRole?.roleName ?? "",
-      permissions: rolePermissions.map((p: Permission) => p.id),
+      parentRole:
+        initialRole?.parentRole?.id
+          ? String(initialRole.parentRole.id)
+          : "",
+      permissions:
+        roleData?.permissions?.map(
+          (p) => p.id
+        ) ?? [],
     };
-  }, [initialRole, rolePermissions]);
+  }, [initialRole, roleData]);
 
-  const samePermissions = (a: number[], b: number[]) => {
-    if (a.length !== b.length) return false;
+  const samePermissions = (
+    first: number[],
+    second: number[]
+  ) => {
+    if (first.length !== second.length) {
+      return false;
+    }
 
-    const aSorted = [...a].sort((x, y) => x - y);
-    const bSorted = [...b].sort((x, y) => x - y);
+    const sortedFirst = [...first].sort(
+      (a, b) => a - b
+    );
 
-    return aSorted.every((value, index) => value === bSorted[index]);
+    const sortedSecond = [...second].sort(
+      (a, b) => a - b
+    );
+
+    return sortedFirst.every(
+      (value, index) =>
+        value === sortedSecond[index]
+    );
   };
 
   const hasChanges = () => {
     return (
       name !== initialSnapshot.name ||
-      !samePermissions(selectedPermissions, initialSnapshot.permissions)
+      parentRole !== initialSnapshot.parentRole ||
+      !samePermissions(
+        selectedPermissions,
+        initialSnapshot.permissions
+      )
     );
   };
 
   const filteredPermissions = useMemo(() => {
-    const q = search.toLowerCase().trim();
-    if (!q) return permissions;
+    const query = search.toLowerCase().trim();
 
-    return permissions.filter((p: Permission) =>
-      p.permissionName.toLowerCase().includes(q)
+    if (!query) {
+      return permissions;
+    }
+
+    return permissions.filter(
+      (permission: Permission) =>
+        permission.permissionName
+          .toLowerCase()
+          .includes(query)
     );
   }, [permissions, search]);
 
-  const togglePermission = (permission: Permission) => {
-    setSelectedPermissions((prev) => {
-      const exists = prev.includes(permission.id);
+  const togglePermission = (
+    permission: Permission
+  ) => {
+    setSelectedPermissions((previous) => {
+      const exists = previous.includes(
+        permission.id
+      );
 
       return exists
-        ? prev.filter((p) => p !== permission.id)
-        : [...prev, permission.id];
+        ? previous.filter(
+          (id) => id !== permission.id
+        )
+        : [...previous, permission.id];
     });
   };
 
-  const validate = (): boolean => {
+  const validate = () => {
     const newErrors: Errors = {};
 
     if (!name.trim()) {
-      newErrors.name = "El nombre es obligatorio";
-    }
-
-    if (selectedPermissions.length === 0) {
-      newErrors.permissions = "Debes seleccionar al menos un permiso";
+      newErrors.name =
+        "El nombre es obligatorio";
     }
 
     if (!parentRole) {
-      newErrors.parentRole = "Debes seleccionar un rol modelo";
+      newErrors.parentRole =
+        "Debes seleccionar un rol modelo";
     }
 
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
-      showToast("Revisa los campos del formulario", TOAST_TYPES.ERROR);
+      showToast(
+        "Revisa los campos del formulario",
+        TOAST_TYPES.ERROR
+      );
+
       return false;
     }
 
     return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
 
-    if (!validate()) return;
+    if (!validate()) {
+      return;
+    }
 
     if (isEditMode && !hasChanges()) {
-      showToast("No hay cambios para guardar", TOAST_TYPES.ERROR);
+      showToast(
+        "No hay cambios para guardar",
+        TOAST_TYPES.ERROR
+      );
+
       return;
     }
 
@@ -165,21 +237,26 @@ const RoleFormPage = () => {
     };
 
     try {
-
       await putRoleMutation.mutateAsync({
         edit: isEditMode,
         params: payload,
       });
 
       showToast(
-        isEditMode ? "Rol actualizado" : "Rol creado",
+        isEditMode
+          ? "Rol actualizado"
+          : "Rol creado",
         TOAST_TYPES.SUCCESS
       );
 
-      setTimeout(() => navigate(-1), TOAST_CONFIG.success.duration);
+      setTimeout(
+        () => navigate(-1),
+        TOAST_CONFIG.success.duration
+      );
     } catch {
       showToast(
-        `Error al ${isEditMode ? "editar" : "crear"} rol`,
+        `Error al ${isEditMode ? "editar" : "crear"
+        } rol`,
         TOAST_TYPES.ERROR
       );
     }
@@ -190,7 +267,9 @@ const RoleFormPage = () => {
   };
 
   const isLoading =
-    permissionsLoading || (isEditMode && rolePermissionsLoading);
+    permissionsLoading ||
+    (isEditMode &&
+      rolePermissionsLoading);
 
   if (isLoading) {
     return (
@@ -206,35 +285,61 @@ const RoleFormPage = () => {
         <div className="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
           <div className="px-6 lg:px-8 py-6 border-b border-slate-100">
             <h1 className="text-2xl font-semibold text-slate-800">
-              {isEditMode ? "Editar rol" : "Crear rol"}
+              {isEditMode
+                ? "Editar rol"
+                : "Crear rol"}
             </h1>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-6 lg:p-8 space-y-8">
+          <form
+            onSubmit={handleSubmit}
+            className="p-6 lg:p-8 space-y-8"
+          >
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              <FormField label="Nombre del rol" error={errors.name}>
+              <FormField
+                label="Nombre del rol"
+                error={errors.name}
+              >
                 <Input
                   value={name}
                   disabled={isEditMode}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) =>
+                    setName(e.target.value)
+                  }
                   placeholder="Ingrese el nombre del rol"
                 />
               </FormField>
 
-              <FormField label="Rol modelo" error={errors.parentRole}>
+              <FormField
+                label="Rol modelo"
+                error={errors.parentRole}
+              >
                 <Select
                   value={parentRole}
-                  onChange={(e) => setParentRole(e.target.value)}
+                  onChange={(e) =>
+                    setParentRole(
+                      e.target.value
+                    )
+                  }
                 >
-                  <option value="" disabled>
+                  <option value="">
                     Seleccionar
                   </option>
 
-                  {parentRolesData?.map((parentRole) => (
-                    <option key={parentRole.id} value={parentRole.id}>
-                      {parentRole.name}
-                    </option>
-                  ))}
+                  {parentRolesData.map(
+                    (
+                      role: ParentRole
+                    ) => (
+                      <option
+                        key={role.id}
+                        value={String(
+                          role.id
+                        )}
+                      >
+                        {role.name}
+                      </option>
+                    )
+                  )}
                 </Select>
               </FormField>
             </div>
@@ -242,13 +347,19 @@ const RoleFormPage = () => {
             <div className="rounded-3xl border border-slate-200 bg-slate-50/70 overflow-hidden">
               <div className="p-5 lg:p-6 border-b border-slate-200 bg-white/70">
                 <div className="flex flex-col lg:flex-row lg:justify-between gap-4">
-                  <h2 className="text-lg font-semibold">Permisos</h2>
+                  <h2 className="text-lg font-semibold">
+                    Permisos
+                  </h2>
 
                   <div className="w-full lg:w-[320px]">
                     <FormField label="Buscar permiso">
                       <Input
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                        onChange={(e) =>
+                          setSearch(
+                            e.target.value
+                          )
+                        }
                         placeholder="Buscar permisos..."
                       />
                     </FormField>
@@ -263,32 +374,42 @@ const RoleFormPage = () => {
               </div>
 
               <div className="p-5 lg:p-6 max-h-[520px] overflow-auto">
-                {filteredPermissions.length === 0 ? (
+                {filteredPermissions.length ===
+                  0 ? (
                   <p className="text-sm text-slate-500 text-center">
-                    No se han encontrado permisos
+                    No se han encontrado
+                    permisos
                   </p>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-                    {filteredPermissions.map((permission: Permission) => {
-                      const checked = selectedPermissions.includes(
-                        permission.id
-                      );
-
-                      return (
+                    {filteredPermissions.map(
+                      (
+                        permission: Permission
+                      ) => (
                         <Checkbox
-                          key={permission.id}
-                          checked={checked}
-                          onChange={() => togglePermission(permission)}
+                          key={
+                            permission.id
+                          }
+                          checked={selectedPermissions.includes(
+                            permission.id
+                          )}
+                          onChange={() =>
+                            togglePermission(
+                              permission
+                            )
+                          }
                           label={
                             <div>
                               <p className="text-sm">
-                                {permission.permissionName}
+                                {
+                                  permission.permissionName
+                                }
                               </p>
                             </div>
                           }
                         />
-                      );
-                    })}
+                      )
+                    )}
                   </div>
                 )}
               </div>
@@ -305,7 +426,11 @@ const RoleFormPage = () => {
 
               <Button
                 type="submit"
-                label={isEditMode ? "Actualizar" : "Crear"}
+                label={
+                  isEditMode
+                    ? "Actualizar"
+                    : "Crear"
+                }
                 color="blue"
               />
             </div>

@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/hospitaldb/hospitalario/ingresos-egresos-areas")
 @RequiredArgsConstructor
 @Slf4j
+@CrossOrigin(origins = "*")
 public class HospitalarioController {
 
     private final IngresoEgresoService ingresoEgresoService;

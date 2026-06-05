@@ -51,12 +51,11 @@ public class UsuarioSistemaService {
 
     private final AuditService auditService;
 
-//    @Value("${spring.data.mongodb.username}")
-//    private String user;
-//
-//    @Value("${spring.data.mongodb.password}")
-//    private String pass;
-
+    // @Value("${spring.data.mongodb.username}")
+    // private String user;
+    //
+    // @Value("${spring.data.mongodb.password}")
+    // private String pass;
 
     public List<UsuarioSistemaListDTO> findAll() {
         log.info("Obteniendo todos los usuarios del sistema");
@@ -68,7 +67,7 @@ public class UsuarioSistemaService {
 
     public Page<UsuarioSistemaListDTO> findAll(Pageable pageable) {
         log.info("Obteniendo usuarios paginados");
-        Page<UsuarioSistema> pageResult = usuarioRepository.findAllByActivo(true,pageable);
+        Page<UsuarioSistema> pageResult = usuarioRepository.findAllByActivo(true, pageable);
         return pageResult.map(usuario -> modelMapper.map(usuario, UsuarioSistemaListDTO.class));
     }
 
@@ -100,9 +99,8 @@ public class UsuarioSistemaService {
     public UsuarioSistemaDetailDTO create(UsuarioSistemaRequestDTO request, HttpServletRequest httpRequest) {
         log.info("Creando nuevo usuario: {}", request.getUsername());
 
-        if (usuarioRepository.existsByUsername(request.getUsername())) 
+        if (usuarioRepository.existsByUsername(request.getUsername()))
             throw new BusinessException("Ya existe un usuario con el username: " + request.getUsername());
-
 
         if (usuarioRepository.existsByEmail(request.getEmail()))
             throw new BusinessException("Ya existe un usuario con el email: " + request.getEmail());
@@ -110,9 +108,9 @@ public class UsuarioSistemaService {
         keycloakAdminService.createUser(buildKeycloakUserRequest(request)).block();
         String keycloakId = keycloakAdminService.getUserId(request.getUsername());
 
-        if(keycloakId.isBlank())
+        if (keycloakId.isBlank())
             throw new ResourceNotFoundException("Usuario no encontrado en Keycloak, verifique los logs");
-        //log.info("Contraseña: {}, usuario: {}",pass,user);
+        // log.info("Contraseña: {}, usuario: {}",pass,user);
         UsuarioSistema usuario = new UsuarioSistema();
         usuario.setUsername(request.getUsername());
         usuario.setEmail(request.getEmail());
@@ -123,13 +121,14 @@ public class UsuarioSistemaService {
 
         if (request.getIdRolesHijo() != null && !request.getIdRolesHijo().isEmpty()) {
             for (Long idRole : request.getIdRolesHijo()) {
-                Rol rol = rolRepository.findById(idRole).orElseThrow(() -> new BusinessException("Rol no encontrado: " + idRole));
+                Rol rol = rolRepository.findById(idRole)
+                        .orElseThrow(() -> new BusinessException("Rol no encontrado: " + idRole));
 
                 UsuarioRol usuarioRol = new UsuarioRol();
                 usuarioRol.setUsuario(saved);
                 usuarioRol.setRol(rol);
                 usuarioRolRepository.save(usuarioRol);
-                keycloakAdminService.assignRole(usuario.getIdKeycloak(),rol.getNombreRol()).block();
+                keycloakAdminService.assignRole(usuario.getIdKeycloak(), rol.getNombreRol()).block();
             }
         }
         log.info("Usuario creado exitosamente con ID: {}", saved.getIdUsuario());
@@ -137,17 +136,20 @@ public class UsuarioSistemaService {
                 AuditAction.CREATE,
                 "Usuario",
                 String.valueOf(saved.getIdUsuario()),
-                null,        // before → null porque es creación
-                saved.toString(),       // after
-                null,        // reason
-                httpRequest
-        );
+                null, // before → null porque es creación
+                saved.toString(), // after
+                null, // reason
+                httpRequest);
         return buildUsuarioDetailDTO(saved);
     }
 
-    private KeycloakUserRequestDTO buildKeycloakUserRequest(UsuarioSistemaRequestDTO user){
+    private KeycloakUserRequestDTO buildKeycloakUserRequest(
+            UsuarioSistemaRequestDTO user) {
+
         return KeycloakUserRequestDTO.builder()
                 .username(user.getUsername())
+                .firstName(user.getPrimerNombre())
+                .lastName(user.getApellidos())
                 .email(user.getEmail())
                 .password(user.getPassword())
                 .enabled(user.getActivo())
@@ -189,14 +191,12 @@ public class UsuarioSistemaService {
                 AuditAction.CREATE,
                 "Usuario",
                 String.valueOf(usuario.getIdUsuario()),
-                usuario.toString(),        // before
-                updated.toString(),       // after
-                null,        // reason
-                httpRequest
-        );
+                usuario.toString(), // before
+                updated.toString(), // after
+                null, // reason
+                httpRequest);
         return buildUsuarioDetailDTO(updated);
     }
-
 
     @Transactional
     public void delete(Long id, HttpServletRequest request) {
@@ -206,7 +206,7 @@ public class UsuarioSistemaService {
 
         // Eliminar de Keycloak
         if (usuario.getIdKeycloak() != null) {
-            //keycloakAdminService.deleteKeycloakUser(usuario.getIdKeycloak());
+            // keycloakAdminService.deleteKeycloakUser(usuario.getIdKeycloak());
         }
 
         // Eliminar relaciones locales
@@ -219,11 +219,10 @@ public class UsuarioSistemaService {
                 AuditAction.CREATE,
                 "Usuario",
                 String.valueOf(usuario.getIdUsuario()),
-                usuario.toString(),        // before
-                null,       // after
-                null,        // reason
-                request
-        );
+                usuario.toString(), // before
+                null, // after
+                null, // reason
+                request);
         log.info("Usuario eliminado exitosamente: {}", id);
     }
 
@@ -232,7 +231,8 @@ public class UsuarioSistemaService {
         log.info("Asignando rol {} al usuario {}", request.getIdRol(), request.getIdUsuario());
 
         UsuarioSistema usuario = usuarioRepository.findById(request.getIdUsuario())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + request.getIdUsuario()));
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Usuario no encontrado con ID: " + request.getIdUsuario()));
 
         Rol rol = rolRepository.findById(request.getIdRol())
                 .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con ID: " + request.getIdRol()));
@@ -250,7 +250,8 @@ public class UsuarioSistemaService {
 
         // También asignar rol en Keycloak
         if (usuario.getIdKeycloak() != null) {
-           // keycloakAdminService.assignRoleToUser(usuario.getIdKeycloak(), rol.getNombreRol());
+            // keycloakAdminService.assignRoleToUser(usuario.getIdKeycloak(),
+            // rol.getNombreRol());
         }
 
         return saved;

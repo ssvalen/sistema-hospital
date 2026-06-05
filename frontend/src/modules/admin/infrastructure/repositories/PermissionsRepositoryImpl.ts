@@ -5,7 +5,14 @@ import { createApiClient } from "@/shared/http/createApiClient";
 
 import type { PermissionsRepository } from "../../application/interfaces/PermissionRepository";
 import { createPermissionToDomain, paginatedPermissionsToDomain, permissionToDomain, permissionsToDomain } from "../mappers/permissionMapper";
-import type { CreatePermissionResponseDTO, PermissionResponseDTO, CreatePermissionRequestDTO, UpdatePermissionRequestDTO, PaginatedPermissionsDTO } from "../../domain/dto/PermissionDTO";
+import type {
+  CreatePermissionResponseDTO,
+  PermissionResponseDTO,
+  CreatePermissionRequestDTO,
+  UpdatePermissionRequestDTO,
+  PaginatedPermissionsDTO,
+  PermissionRemoveResponseDTO
+} from "../../domain/dto/PermissionDTO";
 
 import { API_ROUTES } from "@/shared/utils/apiRoutes";
 
@@ -23,6 +30,9 @@ export function createPermissionsRepository(http: HttpClient): PermissionsReposi
 
       return permissionsToDomain(dto.data);
     },
+
+
+
 
     async getPermissionsByRole(roleId: number, signal?: AbortSignal) {
       const dto = await http.request<ApiResponse<PermissionResponseDTO[]>>({
@@ -72,6 +82,18 @@ export function createPermissionsRepository(http: HttpClient): PermissionsReposi
       });
 
       return createPermissionToDomain(dto.data);
+    },
+    async removePermission(permissionId: number, signal?: AbortSignal) {
+      const dto = await http.request<ApiResponse<PermissionRemoveResponseDTO>>({
+        url: `${API_ROUTES.PERMISSION_ENDPOINT}/${permissionId}`,
+        method: "DELETE",
+        withCredentials: false,
+        timeoutMs: 15_000,
+        signal,
+      });
+
+      return dto.success
+
     }
   };
 }

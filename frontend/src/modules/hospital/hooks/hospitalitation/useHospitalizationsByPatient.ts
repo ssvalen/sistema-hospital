@@ -3,11 +3,10 @@ import { hospitalitationRepository } from "@/modules/hospital/infrastructure/rep
 
 export const useHospitalizationsByPatient = (id: number) => {
   return useQuery({
-    queryKey: ["hospitalitations", id],
+    queryKey: ["hospitalitationsByPatient", id],
     queryFn: async ({ signal }) => {
       return await hospitalitationRepository.getHospitalitationsByPatient(id, signal);
     },
-    refetchOnWindowFocus: false,
     initialData: [],
     enabled: !!id
   });

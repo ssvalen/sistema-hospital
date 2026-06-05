@@ -34,56 +34,6 @@ const HospitalizationHistory = ({
     const { data: hospitalizationHistoryData } = useHospitalizationsByPatient(idHospitalization)
 
 
-    // const hospitalization = {
-    //     id: 1,
-
-    //     patient: {
-    //         id: 1,
-    //         expediente: "EXP-000123",
-    //         nombre: "Juan",
-    //         apellido: "Pérez",
-    //         edad: 45,
-    //         genero: "Masculino",
-    //         telefono: "5555-1111"
-    //     },
-
-    //     admissionDate: "2026-05-25",
-
-    //     diagnosis:
-    //         "Neumonía adquirida en la comunidad",
-
-    //     reason:
-    //         "Dificultad respiratoria y fiebre persistente",
-
-    //     doctor:
-    //         "Dr. Carlos López",
-
-    //     area:
-    //         "Medicina Interna",
-
-    //     status:
-    //         "HOSPITALIZADO",
-
-    //     observations:
-    //         "Paciente estable, responde adecuadamente al tratamiento y continúa bajo observación médica.",
-
-    //     transfers: [
-    //         {
-    //             date: "2026-05-25 08:30",
-    //             from: "Emergencia",
-    //             to: "Medicina Interna",
-    //             reason: "Ingreso hospitalario"
-    //         },
-    //         {
-    //             date: "2026-05-27 14:10",
-    //             from: "Medicina Interna",
-    //             to: "Observación",
-    //             reason: "Monitoreo clínico"
-    //         }
-    //     ]
-    // };
-
-
     return (
 
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">

@@ -6,12 +6,14 @@ export const API_ROUTES = {
   KEYCLOAK_LOGOUT: '/realms/hotel-db/protocol/openid-connect/logout',
   KEYCLOAK_REFRESH: '/realms/hotel-db/protocol/openid-connect/token',
   // ROLES
+  ROLE_ENDPOINT: '/api/hospitaldb/administrativo/roles',
   ROLE_GET_ALL: '/api/hospitaldb/administrativo/roles',
   ROLE_CREATE: '/api/hospitaldb/administrativo/roles',
   ROLE_UPDATE: '/api/hospitaldb/administrativo/roles',
   ROLE_GET_PAGINATED: '/api/hospitaldb/administrativo/roles/paginado',
   ROLES_GET_PARENT_ROLE: '/api/hospitaldb/administrativo/roles/rol-padre',
   // PERMISSIONS
+  PERMISSION_ENDPOINT: '/api/hospitaldb/administrativo/permisos',
   PERMISSION_GET_ALL: '/api/hospitaldb/administrativo/permisos',
   PERMISSION_GET_BY_ROLE: (roleId: number) => `/api/hospitaldb/administrativo/roles/${roleId}/permisos`,
   PERMISSION_GET_PAGINATED: '/api/hospitaldb/administrativo/permisos/paginado',
@@ -53,6 +55,7 @@ export const API_ROUTES = {
   HOSPITALITATION_EGRESS:(id: number) => `/api/hospitaldb/hospitalario/ingresos-egresos-areas/ingresos/${id}/egreso`,
   HOSPITALITATION_GET_ALL: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/ingresos',
   HOSPITALITATION_GET_BY_ID: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/ingresos',
+  HOSPITALITATION_GET_BY_PATIENT_ID: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/ingresos/paciente',
   HOSPITALITATION_GET_PAGINATED: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/ingresos/paginado',
   // HOSPITAL AREAS
   HOSPITAL_AREA_GET_ALL: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/areas',

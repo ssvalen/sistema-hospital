@@ -4,13 +4,16 @@ import Modal from "@/shared/components/Modal";
 import Button from "@/shared/components/forms/Button";
 import FormField from "@/shared/components/forms/FormField";
 import Input from "@/shared/components/forms/Input";
+
 import Toast from "@/shared/components/Toast";
 import { useToast } from "@/shared/hooks/useToast";
 import { TOAST_TYPES } from "@/shared/types/ToastType";
+
 import { faRemove, faUserPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useGetAllRoles } from "@/modules/admin/hooks/roles/useGetAllRoles";
+
 import type { Role } from "@/modules/admin/domain/entities/Role";
+import { useGetAllRoles } from "@/modules/admin/hooks/roles/useGetAllRoles";
 
 type User = {
     id: string;

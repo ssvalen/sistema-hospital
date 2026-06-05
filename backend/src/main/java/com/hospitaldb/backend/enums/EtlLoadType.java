@@ -1,4 +1,4 @@
-package com.hospitaldb.backend.domain.etl;
+package com.hospitaldb.backend.enums;
 
 public enum EtlLoadType {
     PACIENTES,

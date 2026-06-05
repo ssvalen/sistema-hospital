@@ -5,7 +5,8 @@ export type PermissionResponseDTO = {
   nombrePermiso: string;
 };
 
-export type PaginatedPermissionsDTO = PaginatedResponse<PermissionResponseDTO>;
+export type PaginatedPermissionsDTO =
+  PaginatedResponse<PermissionResponseDTO>;
 
 export type CreatePermissionRequestDTO = {
   nombrePermiso: string;
@@ -19,3 +20,8 @@ export type CreatePermissionResponseDTO = {
 export type UpdatePermissionRequestDTO = {
   nombrePermiso: string;
 };
+
+export type PermissionRemoveResponseDTO = {
+  success: boolean;
+  message: string;
+}

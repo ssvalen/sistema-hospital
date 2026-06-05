@@ -51,7 +51,7 @@ public class RolService {
                 .collect(Collectors.toList());
     }
 
-    public List<RolPadreDTO> findAllRolPadre(){
+    public List<RolPadreDTO> findAllRolPadre() {
         List<RolPadre> roles = rolPadreRepository.findAll();
         return roles.stream()
                 .map(rol -> modelMapper.map(rol, RolPadreDTO.class))
@@ -64,11 +64,13 @@ public class RolService {
         return pageResult.map(this::convertToDTO);
     }
 
-    public RolDTO findById(Long id) {
+    public RolJoinDTO findById(Long id) {
         log.info("Buscando rol con ID: {}", id);
+
         Rol rol = rolRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con ID: " + id));
-        return modelMapper.map(rol, RolDTO.class);
+
+        return convertToDTO(rol);
     }
 
     public RolDTO findByNombre(String nombreRol) {
@@ -127,20 +129,44 @@ public class RolService {
 
     @Transactional
     public RolDTO update(Long id, RolRequestDTO request) {
+
         log.info("Actualizando rol con ID: {}", id);
 
         Rol rol = rolRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado con ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Rol no encontrado con ID: " + id));
 
-        if (!rol.getNombreRol().equals(request.getNombreRol()) &&
-                rolRepository.existsByNombreRol(request.getNombreRol())) {
-            throw new BusinessException("Ya existe un rol con el nombre: " + request.getNombreRol());
+        if (!rol.getNombreRol().equals(request.getNombreRol())
+                && rolRepository.existsByNombreRol(request.getNombreRol())) {
+
+            throw new BusinessException(
+                    "Ya existe un rol con el nombre: "
+                            + request.getNombreRol());
         }
 
+        RolPadre rolPadre = rolPadreRepository
+                .findById(request.getModelRoleId())
+                .orElseThrow(() -> new BusinessException(
+                        "No existe el rol padre con id: "
+                                + request.getModelRoleId()));
+
         rol.setNombreRol(request.getNombreRol());
+        rol.setRolPadre(rolPadre);
 
         Rol updated = rolRepository.save(rol);
+
+        rolPermisoRepository.deleteByRol_IdRol(id);
+
+        if (request.getPermissions() != null
+                && !request.getPermissions().isEmpty()) {
+
+            guardarPermisosUI(
+                    updated,
+                    request.getPermissions());
+        }
+
         log.info("Rol actualizado exitosamente: {}", id);
+
         return modelMapper.map(updated, RolDTO.class);
     }
 
@@ -177,11 +203,13 @@ public class RolService {
             permisos.add(permiso);
         }
 
-        List<Long> existingPermisoIds = rolPermisoRepository.findExistingPermisoIds(request.getIdRol(), request.getIdPermisos());
+        List<Long> existingPermisoIds = rolPermisoRepository.findExistingPermisoIds(request.getIdRol(),
+                request.getIdPermisos());
 
         if (!existingPermisoIds.isEmpty()) {
             log.warn("Los permisos {} ya están asignados al rol {}", existingPermisoIds, request.getIdRol());
-            throw new BusinessException("Los permisos con IDs " + existingPermisoIds + " ya están asignados a este rol");
+            throw new BusinessException(
+                    "Los permisos con IDs " + existingPermisoIds + " ya están asignados a este rol");
         }
 
         List<RolPermisoDTO> resultados = new ArrayList<>();
@@ -268,11 +296,15 @@ public class RolService {
                 .build();
 
         if (rol.getRolPadre() != null) {
-            RolPadreDTO rolPadreDTO = RolPadreDTO.builder()
-                    .modelRoleId(rol.getRolPadre().getIdRolPadre())
-                    .nombreRolPadre(rol.getRolPadre().getNombreRolPadre())
-                    .build();
-            rolDTO.setRolPadre(rolPadreDTO);
+            if (rol.getRolPadre() != null) {
+                RolPadreDTO rolPadreDTO = RolPadreDTO.builder()
+                        .idRolPadre(rol.getRolPadre().getIdRolPadre())
+                        .nombreRolPadre(rol.getRolPadre().getNombreRolPadre())
+                        .build();
+
+                rolDTO.setRolPadre(rolPadreDTO);
+            }
+
         }
 
         List<PermisoDTO> permisos = permisoRepository.findPermisosByRolId(rol.getIdRol())

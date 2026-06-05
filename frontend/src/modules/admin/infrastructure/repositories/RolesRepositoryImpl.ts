@@ -9,12 +9,14 @@ import type {
   RoleCreateRequestDto,
   RoleCreateResponseDto,
   PaginatedRolesDTO,
-  RoleUpdateRequestDto
+  RoleUpdateRequestDto,
+  RoleRemoveResponseDTO
 } from "../../domain/dto/RoleDTO";
 import type { ParentRoleResponseDTO } from "../../domain/dto/ParentRoleDTO";
 
 import {
   rolesToDomain,
+  roleToDomain,
   createRoleToDomain,
   paginatedRolesToDomain,
 } from "../mappers/rolesMapper";
@@ -28,7 +30,7 @@ export function createRolesRepository(http: HttpClient): RolesRepository {
 
     async getParentRoles(signal?: AbortSignal) {
       const dto = await http.request<ApiResponse<ParentRoleResponseDTO[]>>({
-        url: API_ROUTES.ROLE_GET_ALL,
+        url: API_ROUTES.ROLES_GET_PARENT_ROLE,
         method: "GET",
         withCredentials: false,
         timeoutMs: 15_000,
@@ -51,7 +53,27 @@ export function createRolesRepository(http: HttpClient): RolesRepository {
       return rolesToDomain(dto.data);
 
     },
+    async getRoleById(
+      roleId: number,
+      signal?: AbortSignal
+    ) {
+      console.log(`impl ${roleId}`);
 
+      const dto =
+        await http.request<ApiResponse<RoleResponseDto>>({
+          url: `${API_ROUTES.ROLE_GET_ALL}/${roleId}`,
+          method: "GET",
+          withCredentials: false,
+          timeoutMs: 15_000,
+          signal,
+        });
+
+      const role = roleToDomain(dto.data);
+
+      console.log(role);
+
+      return role;
+    },
     async getRolesPaginated(page, size, signal) {
       const dto = await http.request<ApiResponse<PaginatedRolesDTO>>({
         url: `${API_ROUTES.ROLE_GET_PAGINATED}?page=${page}&size=${size}`,
@@ -69,8 +91,8 @@ export function createRolesRepository(http: HttpClient): RolesRepository {
       signal?: AbortSignal) {
 
       const body: RoleCreateRequestDto = {
-        roleName: roleName,
-        parentRoleId: parentRoleId,
+        nombreRol: roleName,
+        modelRoleId: parentRoleId,
         permissions: permissions
       };
 
@@ -94,15 +116,14 @@ export function createRolesRepository(http: HttpClient): RolesRepository {
       signal?: AbortSignal) {
 
       const body: RoleUpdateRequestDto = {
-        roleId: roleId,
-        roleName: roleName,
-        parentRoleId: parentRoleId,
+        nombreRol: roleName,
+        modelRoleId: parentRoleId,
         permissions: permissions
       };
 
       const dto = await http.request<ApiResponse<RoleCreateResponseDto>>({
-        url: API_ROUTES.ROLE_UPDATE,
-        method: "POST",
+        url: `${API_ROUTES.ROLE_UPDATE}/${roleId}`,
+        method: "PUT",
         body,
         withCredentials: false,
         timeoutMs: 15_000,
@@ -111,6 +132,24 @@ export function createRolesRepository(http: HttpClient): RolesRepository {
 
       return createRoleToDomain(dto.data);
     },
+
+    async removeRole(roleId: number, signal?: AbortSignal) {
+      const dto = await http.request<ApiResponse<RoleRemoveResponseDTO>>({
+        url: `${API_ROUTES.ROLE_ENDPOINT}/${roleId}`,
+        method: "DELETE",
+        withCredentials: false,
+        timeoutMs: 15_000,
+        signal,
+      });
+      
+      return {
+        message: dto.message,
+        success: dto.success
+      }
+
+
+    }
+
   };
 }
 
