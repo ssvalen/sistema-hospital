@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -18,18 +17,55 @@ import {
     faDatabase,
     faFileCsv
 } from "@fortawesome/free-solid-svg-icons";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+import type { EtlLoadTypes } from "../../types/EtlTypes";
+import { useUploadEtl } from "../../hooks/etl/useUploadEtl";
+import { HttpError } from "@/shared/errors/HttpError";
+import Input from "@/shared/components/forms/Input";
 
 const ETLAdminPage = () => {
 
     const navigate = useNavigate();
     const { toast, showToast, hideToast } = useToast();
 
+    const uploadFile = useUploadEtl()
+
     const [file, setFile] = useState<File | null>(null);
-    const [processType, setProcessType] = useState("PATIENTS");
+    const [processType, setProcessType] = useState<EtlLoadTypes>("PATIENTS");
     const [openConfirm, setOpenConfirm] = useState(false);
-    const [uploading, setUploading] = useState(false);
+
+    const [inputKey, setInputKey] = useState(0);
+
+    const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+        const selectedFile = e.target.files?.[0] || null;
+
+        if (!selectedFile) return;
+
+        const isCsvExtension = selectedFile.name.toLowerCase().endsWith(".csv");
+
+        const isCsvMime =
+            selectedFile.type === "text/csv" ||
+            selectedFile.type === "application/vnd.ms-excel" ||
+            selectedFile.type === "";
+
+        if (!isCsvExtension || !isCsvMime) {
+            showToast("Solo se permiten archivos CSV válidos", TOAST_TYPES.ERROR);
+
+            setInputKey(prev => prev + 1);
+            return;
+        }
+
+        const maxSize = 10 * 1024 * 1024;
+        if (selectedFile.size > maxSize) {
+            showToast("El archivo excede el tamaño máximo de 10MB", TOAST_TYPES.ERROR);
+            setInputKey(prev => prev + 1);
+            return;
+        }
+
+        setFile(selectedFile);
+    };
 
     const validate = () => {
 
@@ -38,36 +74,64 @@ const ETLAdminPage = () => {
             return false;
         }
 
+        const isCsvExtension = file.name.toLowerCase().endsWith(".csv");
+
+        const isCsvMime =
+            file.type === "text/csv" ||
+            file.type === "application/vnd.ms-excel" ||
+            file.type === "";
+
+        if (!isCsvExtension || !isCsvMime) {
+            showToast("El archivo debe ser un CSV válido", TOAST_TYPES.ERROR);
+            return false;
+        }
+
+        const maxSize = 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+            showToast("El archivo excede el tamaño máximo de 10MB", TOAST_TYPES.ERROR);
+            return false;
+        }
+
         return true;
     };
 
     const handleUpload = async () => {
 
-        if (!validate()) return;
-
-        setUploading(true);
+        if (!validate() || !file) return;
 
         try {
+
+            const uploadStatus = await uploadFile.mutateAsync({
+                file,
+                loadType: processType
+            });
+
+            if (!uploadStatus) {
+                showToast("No se pudo completar la carga del archivo", TOAST_TYPES.ERROR);
+                return;
+            }
+
+            // ✅ RESET DEL FORMULARIO
+            setFile(null);
+            setProcessType("PATIENTS");
+            setInputKey(prev => prev + 1);
+
+            setOpenConfirm(false);
 
             showToast(
                 "Archivo cargado correctamente. El ETL lo procesará automáticamente y los resultados estarán disponibles cuando finalice la carga.",
                 TOAST_TYPES.SUCCESS
             );
 
-            setTimeout(() => {
-
-                setUploading(false);
-                setOpenConfirm(false);
-                navigate(-1);
-
-            }, TOAST_CONFIG.success.duration);
-
         } catch (error) {
 
-            setUploading(false);
+            if (error instanceof HttpError) {
+                showToast(`${error.message}`, TOAST_TYPES.ERROR)
+                return
+            }
 
             showToast(
-                "Error al cargar archivo",
+                "Ocurrio un error al cargar el archivo",
                 TOAST_TYPES.ERROR
             );
         }
@@ -138,7 +202,7 @@ const ETLAdminPage = () => {
                                             value={processType}
                                             onChange={(e) =>
                                                 setProcessType(
-                                                    e.target.value
+                                                    e.target.value as EtlLoadTypes
                                                 )
                                             }
                                         >
@@ -173,15 +237,12 @@ const ETLAdminPage = () => {
                                             "
                                         >
 
-                                            <input
+                                            <Input
+                                                key={inputKey}
                                                 type="file"
                                                 accept=".csv"
                                                 className="hidden"
-                                                onChange={(e) =>
-                                                    setFile(
-                                                        e.target.files?.[0] || null
-                                                    )
-                                                }
+                                                onChange={handleFile}
                                             />
 
                                             <FontAwesomeIcon
@@ -360,7 +421,7 @@ const ETLAdminPage = () => {
                         <Button
                             icon={faUpload}
                             label={
-                                uploading
+                                uploadFile.isPending
                                     ? "Subiendo..."
                                     : "Confirmar"
                             }
