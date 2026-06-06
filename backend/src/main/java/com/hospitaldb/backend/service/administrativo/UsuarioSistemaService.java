@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -120,15 +121,15 @@ public class UsuarioSistemaService {
 
         UsuarioSistema saved = usuarioRepository.save(usuario);
 
-        if (request.getRealmRoles() != null && !request.getRealmRoles().isEmpty()) {
-            for (String roleName : request.getRealmRoles()) {
-                Rol rol = rolRepository.findByNombreRol(roleName)
-                        .orElseThrow(() -> new BusinessException("Rol no encontrado: " + roleName));
+        if (request.getIdRolesHijo() != null && !request.getIdRolesHijo().isEmpty()) {
+            for (Long idRole : request.getIdRolesHijo()) {
+                Rol rol = rolRepository.findById(idRole).orElseThrow(() -> new BusinessException("Rol no encontrado: " + idRole));
 
                 UsuarioRol usuarioRol = new UsuarioRol();
                 usuarioRol.setUsuario(saved);
                 usuarioRol.setRol(rol);
                 usuarioRolRepository.save(usuarioRol);
+                keycloakAdminService.assignRole(usuario.getIdKeycloak(),rol.getNombreRol()).block();
             }
         }
         log.info("Usuario creado exitosamente con ID: {}", saved.getIdUsuario());

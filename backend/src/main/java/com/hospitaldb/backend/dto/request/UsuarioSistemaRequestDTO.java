@@ -1,10 +1,7 @@
 package com.hospitaldb.backend.dto.request;
 
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
@@ -29,5 +26,6 @@ public class UsuarioSistemaRequestDTO {
     @NotBlank(message = "Contraseña obligatoria")
     private String password;
 
-    private List<String> realmRoles;
+    @NotEmpty(message = "La lista de permisos no puede estar vacía")
+    private List<Long> idRolesHijo;
 }
