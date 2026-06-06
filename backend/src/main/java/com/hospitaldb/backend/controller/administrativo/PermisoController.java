@@ -92,7 +92,7 @@ public class PermisoController {
             HttpServletRequest request) {
 
         log.info("POST /api/permisos - Creando nuevo permiso: {}", requestDTO.getNombrePermiso());
-        PermisoDTO created = permisoService.create(requestDTO);
+        PermisoDTO created = permisoService.create(requestDTO, request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 EntityResponse.success(created, "Permiso creado exitosamente", request.getRequestURI())
@@ -106,7 +106,7 @@ public class PermisoController {
             HttpServletRequest request) {
 
         log.info("PUT /api/permisos/{} - Actualizando permiso", id);
-        PermisoDTO updated = permisoService.update(id, requestDTO);
+        PermisoDTO updated = permisoService.update(id, requestDTO, request);
 
         return ResponseEntity.ok(
                 EntityResponse.success(updated, "Permiso actualizado exitosamente", request.getRequestURI())
@@ -116,7 +116,7 @@ public class PermisoController {
     @DeleteMapping("/{id}")
     public ResponseEntity<EntityResponse<Void>> delete(@PathVariable Long id, HttpServletRequest request) {
         log.info("DELETE /api/permisos/{} - Eliminando permiso", id);
-        permisoService.delete(id);
+        permisoService.delete(id, request);
 
         return ResponseEntity.ok(
                 EntityResponse.success(null, "Permiso eliminado exitosamente", request.getRequestURI())

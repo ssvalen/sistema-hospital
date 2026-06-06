@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RolPadreDTO {
-    private Long modelRoleId;
+    private Long idRolPadre;
     private String nombreRolPadre;
 }

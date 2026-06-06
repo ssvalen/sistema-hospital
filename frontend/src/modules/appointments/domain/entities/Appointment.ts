@@ -1,10 +1,11 @@
 import type { Medication } from "./Medication";
+import type { AppointmentStatus } from "../../types/AppointmentStatus";
 
 export type Appointment = {
   id: number;
   startDate: string;
   startTime: string;
-  status: string;
+  status: AppointmentStatus;
 
   patient: {
     id: number;

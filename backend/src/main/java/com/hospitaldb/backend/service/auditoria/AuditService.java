@@ -13,7 +13,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
-
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,20 +25,17 @@ import java.util.Objects;
 public class AuditService {
 
     private final IAuditLogRepository auditLogRepository;
-    private final com.fasterxml.jackson.databind.ObjectMapper jacksonMapper =
-            new com.fasterxml.jackson.databind.ObjectMapper();
-
+    private final com.fasterxml.jackson.databind.ObjectMapper jacksonMapper = new com.fasterxml.jackson.databind.ObjectMapper();
 
     public void log(String action,
-                    String entityType,
-                    String entityId,
-                    String before,
-                    String after,
-                    String reason,
-                    HttpServletRequest request) {
+            String entityType,
+            String entityId,
+            Object before,
+            Object after,
+            String reason,
+            HttpServletRequest request) {
 
         try {
-
 
             AuditLog auditLog = AuditLog.builder()
                     .timestamp(Instant.now())
@@ -48,10 +44,11 @@ public class AuditService {
                     .entityId(entityId)
                     .user(buildUser())
                     .source(buildSource(request))
-                    .change(AuditLog.AuditChange.builder()
-                            .before(before)
-                            .after(after)
-                            .build())
+                    .change(
+                            AuditLog.AuditChange.builder()
+                                    .before(sanitize(before))
+                                    .after(sanitize(after))
+                                    .build())
                     .diff(buildDiff(before, after))
                     .reason(reason)
                     .metadata(buildMetadata(request))
@@ -66,46 +63,62 @@ public class AuditService {
         }
     }
 
-    private Object sanitize(Object obj) {
-        if (obj == null) return null;
+    private Map<String, Object> sanitize(Object obj) {
+        if (obj == null) {
+            return null;
+        }
+
         try {
-            String json = jacksonMapper.writeValueAsString(obj);
-            return jacksonMapper.readValue(json,
-                    new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
+            return jacksonMapper.convertValue(
+                    obj,
+                    new TypeReference<Map<String, Object>>() {
+                    });
         } catch (Exception e) {
-            log.warn("No se pudo sanitizar objeto para audit: {}", e.getMessage());
-            return obj.toString();
+            log.warn("No se pudo sanitizar objeto para auditoría: {}", e.getMessage());
+
+            Map<String, Object> fallback = new LinkedHashMap<>();
+            fallback.put("value", obj.toString());
+
+            return fallback;
         }
     }
 
     private AuditLog.AuditUser buildUser() {
         try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth instanceof JwtAuthenticationToken jwtAuth) {
-                Jwt jwt = jwtAuth.getToken();
-                Map<String, Object> realmAccess = jwt.getClaimAsMap("realm_access");
-                List<String> roles = realmAccess != null
-                        ? (List<String>) realmAccess.get("roles")
-                        : List.of();
+            Jwt jwt = getJwt();
 
+            if (jwt == null) {
                 return AuditLog.AuditUser.builder()
-                        .id(jwt.getSubject())
-                        .username(jwt.getClaimAsString("preferred_username"))
-                        .email(jwt.getClaimAsString("email"))
-                        .roles(roles)
+                        .id("system")
+                        .username("system")
                         .build();
             }
+
+            Map<String, Object> realmAccess = jwt.getClaimAsMap("realm_access");
+            List<String> roles = realmAccess != null
+                    ? (List<String>) realmAccess.get("roles")
+                    : List.of();
+
+            return AuditLog.AuditUser.builder()
+                    .id(jwt.getSubject()) // Keycloak ID (SUB)
+                    .username(jwt.getClaimAsString("preferred_username"))
+                    .email(jwt.getClaimAsString("email"))
+                    .roles(roles)
+                    .build();
+
         } catch (Exception e) {
-            log.warn("No se pudo obtener usuario del token: {}", e.getMessage());
+            log.warn("Error obteniendo usuario del JWT: {}", e.getMessage());
+
+            return AuditLog.AuditUser.builder()
+                    .id("system")
+                    .username("system")
+                    .build();
         }
-        return AuditLog.AuditUser.builder()
-                .id("system")
-                .username("system")
-                .build();
     }
 
     private AuditLog.AuditSource buildSource(HttpServletRequest request) {
-        if (request == null) return null;
+        if (request == null)
+            return null;
         return AuditLog.AuditSource.builder()
                 .ip(getClientIp(request))
                 .userAgent(request.getHeader("User-Agent"))
@@ -130,14 +143,17 @@ public class AuditService {
 
     // Genera diff entre before y after
     private Map<String, AuditLog.AuditDiff> buildDiff(Object before, Object after) {
-        if (before == null || after == null) return null;
+        if (before == null || after == null)
+            return null;
 
         try {
             ObjectMapper mapper = new ObjectMapper();
             Map<String, Object> beforeMap = mapper.convertValue(before,
-                    new TypeReference<Map<String, Object>>() {});
+                    new TypeReference<Map<String, Object>>() {
+                    });
             Map<String, Object> afterMap = mapper.convertValue(after,
-                    new TypeReference<Map<String, Object>>() {});
+                    new TypeReference<Map<String, Object>>() {
+                    });
 
             Map<String, AuditLog.AuditDiff> diff = new LinkedHashMap<>();
             afterMap.forEach((key, newVal) -> {
@@ -155,5 +171,15 @@ public class AuditService {
             log.warn("No se pudo generar diff: {}", e.getMessage());
             return null;
         }
+    }
+
+    private Jwt getJwt() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth instanceof JwtAuthenticationToken jwtAuth) {
+            return jwtAuth.getToken();
+        }
+
+        return null;
     }
 }

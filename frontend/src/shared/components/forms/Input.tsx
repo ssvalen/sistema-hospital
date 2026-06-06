@@ -20,7 +20,8 @@ const invalidStyles =
 const Input: React.FC<InputProps> = ({
   invalid,
   disabled,
-  type,
+  type = "text",
+  placeholder,
   className = "",
   ...props
 }) => {
@@ -32,6 +33,7 @@ const Input: React.FC<InputProps> = ({
       {...props}
       type={type}
       disabled={disabled}
+      placeholder={placeholder}
       className={[
         base,
         isDate ? "h-12 pr-2" : "",

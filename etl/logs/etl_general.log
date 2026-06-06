@@ -52,3 +52,127 @@
 2026-06-02 01:06:35,107 - INFO -    - Inventario: /app/uploads/inventario
 2026-06-02 01:06:35,108 - INFO -  Intervalo de escaneo: 5 segundos
 2026-06-02 01:06:35,108 - INFO - 🔍 Escaneando carpetas en busca de archivos CSV...
+2026-06-02 06:12:07,990 - INFO - Archivo detectado en inventario: stock.csv
+2026-06-02 06:12:08,249 - ERROR - Error fila 2: 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`inventario_db`.`inventario_medicamento`, CONSTRAINT `FK_inventario_medicamento` FOREIGN KEY (`id_medicamento`) REFERENCES `medicamento_db`.`medicamento` (`id_medicamento`))
+2026-06-02 06:12:08,254 - ERROR - Error fila 3: 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`inventario_db`.`inventario_medicamento`, CONSTRAINT `FK_inventario_medicamento` FOREIGN KEY (`id_medicamento`) REFERENCES `medicamento_db`.`medicamento` (`id_medicamento`))
+2026-06-02 06:12:08,256 - ERROR - Error fila 4: 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`inventario_db`.`inventario_medicamento`, CONSTRAINT `FK_inventario_medicamento` FOREIGN KEY (`id_medicamento`) REFERENCES `medicamento_db`.`medicamento` (`id_medicamento`))
+2026-06-02 06:12:08,258 - ERROR - Error fila 5: 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`inventario_db`.`inventario_medicamento`, CONSTRAINT `FK_inventario_medicamento` FOREIGN KEY (`id_medicamento`) REFERENCES `medicamento_db`.`medicamento` (`id_medicamento`))
+2026-06-02 06:12:08,260 - ERROR - Error fila 6: 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`inventario_db`.`inventario_medicamento`, CONSTRAINT `FK_inventario_medicamento` FOREIGN KEY (`id_medicamento`) REFERENCES `medicamento_db`.`medicamento` (`id_medicamento`))
+2026-06-02 06:12:08,262 - ERROR - Error fila 7: 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`inventario_db`.`inventario_medicamento`, CONSTRAINT `FK_inventario_medicamento` FOREIGN KEY (`id_medicamento`) REFERENCES `medicamento_db`.`medicamento` (`id_medicamento`))
+2026-06-02 06:12:08,264 - ERROR - Error fila 8: 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`inventario_db`.`inventario_medicamento`, CONSTRAINT `FK_inventario_medicamento` FOREIGN KEY (`id_medicamento`) REFERENCES `medicamento_db`.`medicamento` (`id_medicamento`))
+2026-06-02 06:12:08,266 - ERROR - Error fila 9: 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`inventario_db`.`inventario_medicamento`, CONSTRAINT `FK_inventario_medicamento` FOREIGN KEY (`id_medicamento`) REFERENCES `medicamento_db`.`medicamento` (`id_medicamento`))
+2026-06-02 06:12:08,268 - ERROR - Error fila 10: 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`inventario_db`.`inventario_medicamento`, CONSTRAINT `FK_inventario_medicamento` FOREIGN KEY (`id_medicamento`) REFERENCES `medicamento_db`.`medicamento` (`id_medicamento`))
+2026-06-02 06:12:08,271 - ERROR - Error fila 11: 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`inventario_db`.`inventario_medicamento`, CONSTRAINT `FK_inventario_medicamento` FOREIGN KEY (`id_medicamento`) REFERENCES `medicamento_db`.`medicamento` (`id_medicamento`))
+2026-06-02 06:12:08,327 - INFO - ÉXITO - stock.csv: Procesados 0 registros. Errores: 10
+2026-06-02 06:17:23,777 - INFO - Archivo detectado en inventario: stock.csv
+2026-06-02 06:17:23,806 - INFO - Actualizado medicamento ID: 1 (stock: 250)
+2026-06-02 06:17:23,807 - INFO - Actualizado medicamento ID: 2 (stock: 180)
+2026-06-02 06:17:23,809 - INFO - Actualizado medicamento ID: 3 (stock: 500)
+2026-06-02 06:17:23,811 - INFO - Actualizado medicamento ID: 1 (stock: 220)
+2026-06-02 06:17:23,815 - INFO - Actualizado medicamento ID: 2 (stock: 160)
+2026-06-02 06:17:23,817 - INFO - Actualizado medicamento ID: 3 (stock: 450)
+2026-06-02 06:17:23,872 - INFO - ÉXITO - stock.csv: Procesados 6 registros. Errores: 0
+2026-06-03 01:09:31,934 - INFO - ==================================================
+2026-06-03 01:09:31,936 - INFO - Iniciando ETL Service - Standalone (Polling Mode)
+2026-06-03 01:09:31,936 - INFO - ==================================================
+2026-06-03 01:09:31,949 - INFO - ETL Service Iniciado (modo polling)
+2026-06-03 01:09:31,949 - INFO - Monitoreando:
+2026-06-03 01:09:31,949 - INFO -    - Pacientes: /app/uploads/pacientes
+2026-06-03 01:09:31,950 - INFO -    - Inventario: /app/uploads/inventario
+2026-06-03 01:09:31,950 - INFO -  Intervalo de escaneo: 5 segundos
+2026-06-03 01:09:31,951 - INFO - 🔍 Escaneando carpetas en busca de archivos CSV...
+2026-06-04 00:35:48,160 - INFO - ==================================================
+2026-06-04 00:35:48,161 - INFO - Iniciando ETL Service - Standalone (Polling Mode)
+2026-06-04 00:35:48,163 - INFO - ==================================================
+2026-06-04 00:35:48,177 - INFO - ETL Service Iniciado (modo polling)
+2026-06-04 00:35:48,178 - INFO - Monitoreando:
+2026-06-04 00:35:48,180 - INFO -    - Pacientes: /app/uploads/pacientes
+2026-06-04 00:35:48,181 - INFO -    - Inventario: /app/uploads/inventario
+2026-06-04 00:35:48,181 - INFO -  Intervalo de escaneo: 5 segundos
+2026-06-04 00:35:48,182 - INFO - 🔍 Escaneando carpetas en busca de archivos CSV...
+2026-06-05 02:09:28,418 - INFO - ==================================================
+2026-06-05 02:09:28,421 - INFO - Iniciando ETL Service - Standalone (Polling Mode)
+2026-06-05 02:09:28,421 - INFO - ==================================================
+2026-06-05 02:09:28,432 - INFO - ETL Service Iniciado (modo polling)
+2026-06-05 02:09:28,433 - INFO - Monitoreando:
+2026-06-05 02:09:28,433 - INFO -    - Pacientes: /app/uploads/pacientes
+2026-06-05 02:09:28,434 - INFO -    - Inventario: /app/uploads/inventario
+2026-06-05 02:09:28,434 - INFO -  Intervalo de escaneo: 5 segundos
+2026-06-05 02:09:28,434 - INFO - 🔍 Escaneando carpetas en busca de archivos CSV...
+2026-06-05 02:27:55,181 - INFO - ==================================================
+2026-06-05 02:27:55,182 - INFO - Iniciando ETL Service - Standalone (Polling Mode)
+2026-06-05 02:27:55,182 - INFO - ==================================================
+2026-06-05 02:27:55,194 - INFO - ETL Service Iniciado (modo polling)
+2026-06-05 02:27:55,195 - INFO - Monitoreando:
+2026-06-05 02:27:55,195 - INFO -    - Pacientes: /app/uploads/pacientes
+2026-06-05 02:27:55,196 - INFO -    - Inventario: /app/uploads/inventario
+2026-06-05 02:27:55,196 - INFO -  Intervalo de escaneo: 5 segundos
+2026-06-05 02:27:55,197 - INFO - 🔍 Escaneando carpetas en busca de archivos CSV...
+2026-06-05 02:55:18,120 - INFO - Archivo detectado en inventario: inventario_2026-06-05_02-55-14.csv
+2026-06-05 02:55:18,211 - WARNING - Nombre no válido: inventario_2026-06-05_02-55-14.csv movido a /app/logs/error/nombre_invalido_20260605_025518_inventario_2026-06-05_02-55-14.csv
+2026-06-05 02:55:51,741 - INFO - ==================================================
+2026-06-05 02:55:51,741 - INFO - Iniciando ETL Service - Standalone (Polling Mode)
+2026-06-05 02:55:51,742 - INFO - ==================================================
+2026-06-05 02:55:51,751 - INFO - ETL Service Iniciado (modo polling)
+2026-06-05 02:55:51,752 - INFO - Monitoreando:
+2026-06-05 02:55:51,752 - INFO -    - Pacientes: /app/uploads/pacientes
+2026-06-05 02:55:51,752 - INFO -    - Inventario: /app/uploads/inventario
+2026-06-05 02:55:51,753 - INFO -  Intervalo de escaneo: 5 segundos
+2026-06-05 02:55:51,753 - INFO - 🔍 Escaneando carpetas en busca de archivos CSV...
+2026-06-05 02:57:01,884 - INFO - Archivo detectado en inventario: inventario_2026-06-05_02-56-58.csv
+2026-06-05 02:57:01,918 - WARNING - Nombre no válido: inventario_2026-06-05_02-56-58.csv movido a /app/logs/error/nombre_invalido_20260605_025701_inventario_2026-06-05_02-56-58.csv
+2026-06-05 03:06:05,528 - INFO - ==================================================
+2026-06-05 03:06:05,529 - INFO - Iniciando ETL Service - Standalone (Polling Mode)
+2026-06-05 03:06:05,530 - INFO - ==================================================
+2026-06-05 03:06:05,539 - INFO - ETL Service Iniciado (modo polling)
+2026-06-05 03:06:05,540 - INFO - Monitoreando:
+2026-06-05 03:06:05,540 - INFO -    - Pacientes: /app/uploads/pacientes
+2026-06-05 03:06:05,541 - INFO -    - Inventario: /app/uploads/inventario
+2026-06-05 03:06:05,541 - INFO -  Intervalo de escaneo: 5 segundos
+2026-06-05 03:06:05,541 - INFO - 🔍 Escaneando carpetas en busca de archivos CSV...
+2026-06-05 03:06:15,573 - INFO - Archivo detectado en inventario: inventario_2026-06-05_03-06-11.csv
+2026-06-05 03:06:15,753 - INFO - Actualizado medicamento ID: 1 (stock: 250)
+2026-06-05 03:06:15,754 - INFO - Actualizado medicamento ID: 2 (stock: 180)
+2026-06-05 03:06:15,756 - INFO - Actualizado medicamento ID: 3 (stock: 500)
+2026-06-05 03:06:15,758 - INFO - Actualizado medicamento ID: 1 (stock: 220)
+2026-06-05 03:06:15,759 - INFO - Actualizado medicamento ID: 2 (stock: 160)
+2026-06-05 03:06:15,761 - INFO - Actualizado medicamento ID: 3 (stock: 450)
+2026-06-05 03:06:15,829 - INFO - ÉXITO - inventario_2026-06-05_03-06-11.csv: Procesados 6 registros. Errores: 0
+2026-06-05 03:06:25,842 - INFO - Archivo detectado en inventario: inventario_2026-06-05_03-06-25.csv
+2026-06-05 03:06:25,875 - ERROR - Estructura inválida en inventario_2026-06-05_03-06-25.csv: Columnas faltantes: {'id_medicamento', 'unidad_medida', 'stock_actual', 'id_bodega', 'stock_minimo'}
+2026-06-06 00:55:51,346 - INFO - ==================================================
+2026-06-06 00:55:51,347 - INFO - Iniciando ETL Service - Standalone (Polling Mode)
+2026-06-06 00:55:51,348 - INFO - ==================================================
+2026-06-06 00:55:51,358 - INFO - ETL Service Iniciado (modo polling)
+2026-06-06 00:55:51,359 - INFO - Monitoreando:
+2026-06-06 00:55:51,359 - INFO -    - Pacientes: /app/uploads/pacientes
+2026-06-06 00:55:51,360 - INFO -    - Inventario: /app/uploads/inventario
+2026-06-06 00:55:51,360 - INFO -  Intervalo de escaneo: 5 segundos
+2026-06-06 00:55:51,360 - INFO - 🔍 Escaneando carpetas en busca de archivos CSV...
+2026-06-06 01:30:41,606 - INFO - ==================================================
+2026-06-06 01:30:41,606 - INFO - Iniciando ETL Service - Standalone (Polling Mode)
+2026-06-06 01:30:41,607 - INFO - ==================================================
+2026-06-06 01:30:41,616 - INFO - ETL Service Iniciado (modo polling)
+2026-06-06 01:30:41,616 - INFO - Monitoreando:
+2026-06-06 01:30:41,616 - INFO -    - Pacientes: /app/uploads/pacientes
+2026-06-06 01:30:41,617 - INFO -    - Inventario: /app/uploads/inventario
+2026-06-06 01:30:41,617 - INFO -  Intervalo de escaneo: 5 segundos
+2026-06-06 01:30:41,617 - INFO - 🔍 Escaneando carpetas en busca de archivos CSV...
+2026-06-06 14:02:23,599 - INFO - ==================================================
+2026-06-06 14:02:23,600 - INFO - Iniciando ETL Service - Standalone (Polling Mode)
+2026-06-06 14:02:23,601 - INFO - ==================================================
+2026-06-06 14:02:23,614 - INFO - ETL Service Iniciado (modo polling)
+2026-06-06 14:02:23,614 - INFO - Monitoreando:
+2026-06-06 14:02:23,615 - INFO -    - Pacientes: /app/uploads/pacientes
+2026-06-06 14:02:23,616 - INFO -    - Inventario: /app/uploads/inventario
+2026-06-06 14:02:23,616 - INFO -  Intervalo de escaneo: 5 segundos
+2026-06-06 14:02:23,617 - INFO - 🔍 Escaneando carpetas en busca de archivos CSV...
+2026-06-06 19:19:48,064 - INFO - ==================================================
+2026-06-06 19:19:48,066 - INFO - Iniciando ETL Service - Standalone (Polling Mode)
+2026-06-06 19:19:48,066 - INFO - ==================================================
+2026-06-06 19:19:48,075 - INFO - ETL Service Iniciado (modo polling)
+2026-06-06 19:19:48,076 - INFO - Monitoreando:
+2026-06-06 19:19:48,076 - INFO -    - Pacientes: /app/uploads/pacientes
+2026-06-06 19:19:48,077 - INFO -    - Inventario: /app/uploads/inventario
+2026-06-06 19:19:48,077 - INFO -  Intervalo de escaneo: 5 segundos
+2026-06-06 19:19:48,078 - INFO - 🔍 Escaneando carpetas en busca de archivos CSV...

@@ -2,6 +2,7 @@ import {
   faChartLine,
   faUsers,
   faFileLines,
+  faAmbulance,
 } from "@fortawesome/free-solid-svg-icons";
 
 import type { SidebarRoute } from "@/shared/types/sidebarRoute";
@@ -20,6 +21,14 @@ import AppointmentDetailsPage from "@/modules/appointments/ui/pages/AppointmentD
 
 import { PERMISSIONS } from "@/shared/utils/permissions";
 import AttendAppointmentPage from "@/modules/appointments/ui/pages/AttendAppointmentPage";
+import HospitalAdmissionsPage from "@/modules/hospital/ui/pages/HospitalAdmissionsPage";
+import HospitalizationFormPage from "@/modules/hospital/ui/pages/HospitalizationFormPage";
+import TransferHospitalizationPage from "@/modules/hospital/ui/pages/TransferHospitalizationPage";
+import DischargeHospitalizationPage from "@/modules/hospital/ui/pages/DischargeHospitalizationPage";
+import HospitalizationDetailsPage from "@/modules/hospital/ui/pages/HospitalizationDetailsPage";
+import DoctorsPage from "@/modules/hospital/ui/pages/DoctorsPage";
+import ETLAdminPage from "@/modules/admin/ui/pages/ETLAdminPage";
+import AuditLogsPage from "@/modules/audit/ui/pages/AuditLogsPage";
 
 
 const DummyPage = ({ title }: { title: string }) => (
@@ -40,7 +49,7 @@ export const adminRoutes: SidebarRoute[] = [
     showInSidebar: true,
   },
   {
-    label: "Gestión Médica",
+    label: "Gestión pacientes",
     icon: faUsers,
     showInSidebar: true,
     children: [
@@ -108,6 +117,48 @@ export const adminRoutes: SidebarRoute[] = [
     ],
   },
   {
+    label: "Gestion Hospital",
+    icon: faAmbulance,
+    showInSidebar: true,
+    permissions: [PERMISSIONS.HOSPITAL.MODULE_ACCESS],
+    children: [
+      // Gestion hospitalaria
+      {
+        path: "hospital",
+        element: HospitalAdmissionsPage,
+        showInSidebar: true,
+        label: "Ingresos",
+        permissions: [PERMISSIONS.HOSPITAL.VIEW_ALL_ADMISSIONS],
+      },
+      {
+        path: "hospital/admission/new",
+        element: HospitalizationFormPage,
+        showInSidebar: false,
+        permissions: [PERMISSIONS.HOSPITAL.CREATE_ADMISION],
+      },
+      {
+        path: "hospital/admission/:id/discharge",
+        element: DischargeHospitalizationPage,
+        showInSidebar: false,
+        // permissions: [PERMISSIONS.HOSPITAL.EGRESS_PATIENT],
+      },
+      {
+        path: "hospital/admission/:id/detail",
+        element: HospitalizationDetailsPage,
+        showInSidebar: false,
+        permissions: [PERMISSIONS.HOSPITAL.VIEW_ADMISSION_DETAIL],
+      },
+      {
+        path: "doctors",
+        element: DoctorsPage,
+        showInSidebar: true,
+        label: "Doctores"
+        // permissions: [PERMISSIONS.HOSPITAL.VIEW_ADMISSION_DETAIL],
+      },
+    ]
+
+  },
+  {
     label: "Administración",
     icon: faFileLines,
     showInSidebar: true,
@@ -148,6 +199,28 @@ export const adminRoutes: SidebarRoute[] = [
         label: "Usuarios",
         permissions: [PERMISSIONS.ADMIN.USERS],
       },
+      {
+        path: "cargas-etl",
+        element: ETLAdminPage,
+        label: "Cargas ETL",
+        permissions: [PERMISSIONS.ADMIN.USERS],
+      },
     ],
+    
+  },
+  {
+    label: "Auditoria",
+    icon: faFileLines,
+    showInSidebar: true,
+    permissions: [PERMISSIONS.ADMIN.MODULE_ACCESS],
+    children: [
+      {
+        path: "audit",
+        element: AuditLogsPage,
+        label: "Auditoria",
+        permissions: [PERMISSIONS.ADMIN.ROLES],
+      }
+    ],
+    
   },
 ];

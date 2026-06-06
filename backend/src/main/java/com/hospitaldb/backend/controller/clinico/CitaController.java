@@ -76,7 +76,7 @@ public class CitaController {
             HttpServletRequest request) {
 
         log.info("POST /api/citas - Creando nueva cita");
-        CitaDTO created = citaService.create(requestDTO);
+        CitaDTO created = citaService.create(requestDTO, request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 EntityResponse.success(created, "CitaDTO creada exitosamente", request.getRequestURI())
@@ -90,7 +90,7 @@ public class CitaController {
             HttpServletRequest request) {
 
         log.info("PUT /api/citas/{} - Actualizando cita", id);
-        CitaDTO updated = citaService.update(id, requestDTO);
+        CitaDTO updated = citaService.update(id, requestDTO, request);
 
         return ResponseEntity.ok(
                 EntityResponse.success(updated, "CitaDTO actualizada exitosamente", request.getRequestURI())
@@ -100,7 +100,7 @@ public class CitaController {
     @PatchMapping("/{id}/cancelar")
     public ResponseEntity<EntityResponse<CitaDTO>> cancel(@PathVariable Long id, HttpServletRequest request) {
         log.info("PATCH /api/citas/{}/cancelar - Cancelando cita", id);
-        citaService.cancel(id);
+        citaService.cancel(id, request);
         CitaDTO cita = citaService.findById(id);
 
         return ResponseEntity.ok(
@@ -111,7 +111,7 @@ public class CitaController {
     @DeleteMapping("/{id}")
     public ResponseEntity<EntityResponse<Void>> delete(@PathVariable Long id, HttpServletRequest request) {
         log.info("DELETE /api/citas/{} - Eliminando cita", id);
-        citaService.delete(id);
+        citaService.delete(id, request);
 
         return ResponseEntity.ok(
                 EntityResponse.success(null, "CitaDTO eliminada exitosamente", request.getRequestURI())

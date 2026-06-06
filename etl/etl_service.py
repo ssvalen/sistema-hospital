@@ -312,25 +312,52 @@ class CSVProcessor:
 
 def procesar_archivo(file_path):
     file_name = os.path.basename(file_path).lower()
+
+    tipo = None
+
+    if file_name.startswith("pacientes_"):
+        tipo = "paciente"
+
+    elif file_name.startswith("inventario_"):
+        tipo = "inventario"
+
+    else:
+        # Nombres no válidos se mueven a error
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        quarantine_path = os.path.join(
+            config.ERROR_DIR,
+            f"nombre_invalido_{timestamp}_{file_name}"
+        )
+        shutil.move(file_path, quarantine_path)
+        logger.warning(f"Nombre no válido: {file_name} movido a {quarantine_path}")
+        return
     
     if not os.path.exists(file_path) or not file_path.endswith(".csv"):
         return
     
     # Determinar tipo de archivo
     tipo = None
-    if file_name in config.VALID_PACIENTE_FILES:
+
+    if file_name.startswith("pacientes"):
         tipo = "paciente"
-    elif file_name in config.VALID_INVENTARIO_FILES:
+
+    elif file_name.startswith("inventario"):
         tipo = "inventario"
-    elif file_name in config.VALID_BODEGA_FILES:
-        tipo = "bodega"
-    elif file_name in config.VALID_MEDICAMENTO_FILES:
-        tipo = "medicamento"
+
     else:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        quarantine_path = os.path.join(config.ERROR_DIR, f"nombre_invalido_{timestamp}_{file_name}")
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+
+        quarantine_path = os.path.join(
+            config.ERROR_DIR,
+            f"nombre_invalido_{timestamp}_{file_name}"
+        )
+
         shutil.move(file_path, quarantine_path)
-        logger.warning(f"Nombre no válido: {file_name} movido a {quarantine_path}")
+
+        logger.warning(
+            f"Nombre no válido: {file_name} movido a {quarantine_path}"
+        )
+
         return
     
     # Validar columnas según tipo

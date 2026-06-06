@@ -59,10 +59,10 @@ export function createApiClient(baseUrl = ""): HttpClient {
           credentials: withCredentials ? "include" : "same-origin",
           headers: {
             ...(body !== undefined &&
-              !(body instanceof URLSearchParams)
+              !(body instanceof URLSearchParams) &&
+              !(body instanceof FormData)
               ? {
-                "Content-Type":
-                  "application/json",
+                "Content-Type": "application/json",
               }
               : {}),
             ...(headers ?? {}),
@@ -70,9 +70,11 @@ export function createApiClient(baseUrl = ""): HttpClient {
           body:
             body instanceof URLSearchParams
               ? body
-              : body !== undefined
-                ? JSON.stringify(body)
-                : undefined,
+              : body instanceof FormData 
+                ? body
+                : body !== undefined
+                  ? JSON.stringify(body)
+                  : undefined,
         });
 
         if (res.status === 401) throw new UnauthorizedError();

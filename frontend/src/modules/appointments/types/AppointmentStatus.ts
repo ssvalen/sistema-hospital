@@ -1,0 +1,9 @@
+export const APPOINTMENT_STATUS = {
+  SCHEDULED: "PROGRAMADA",
+  COMPLETED: "COMPLETADA",
+  CANCELLED: "CANCELADA",
+  RESCHEDULED: "REPROGRAMADA"
+} as const;
+
+export type AppointmentStatus =
+  (typeof APPOINTMENT_STATUS)[keyof typeof APPOINTMENT_STATUS];

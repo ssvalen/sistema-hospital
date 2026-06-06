@@ -57,7 +57,6 @@ const PatientsPage = () => {
     });
   }, [patients, search, gender]);
 
-  // 🔥 SOLO FORMATEO DE GÉNERO (SIN render, SIN romper DataTable)
   const formattedPatients = useMemo(() => {
     return filteredPatients.map((p) => ({
       ...p,
@@ -96,14 +95,6 @@ const PatientsPage = () => {
         navigate(`/admin/patients/${patient.id}/edit`, {
           state: { patient }
         })
-    },
-    {
-      title: "Inactivar paciente",
-      label: "Inactivar",
-      icon: faUserSlash,
-      color: BUTTON_COLORS.RED,
-      permission: PERMISSIONS.PATIENT.INACTIVATE_PATIENTS,
-      onClick: (p: Patient) => toggleStatus(p.id)
     }
   ];
 

@@ -22,100 +22,107 @@ import java.util.List;
 @Transactional
 public class AreaService {
 
-    private final IAreaRepository areaRepository;
-    private final ModelMapper modelMapper;
-    private final AuditService auditService;
+        private final IAreaRepository areaRepository;
+        private final ModelMapper modelMapper;
+        private final AuditService auditService;
 
-    @Transactional(readOnly = true)
-    public List<AreaResponseDTO> findAll() {
-        return areaRepository.findAll()
-                .stream()
-                .map(area -> modelMapper.map(area, AreaResponseDTO.class))
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public AreaResponseDTO findById(Long id) {
-        Area area = areaRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(
-                        "No existe el área con id: " + id));
-        return modelMapper.map(area, AreaResponseDTO.class);
-    }
-
-    public AreaResponseDTO create(AreaRequestDTO request, HttpServletRequest httpRequest) {
-        log.info("Creando área: {}", request.getNombreArea());
-
-        if (areaRepository.existsByNombreArea(request.getNombreArea())) {
-            throw new BusinessException(
-                    "Ya existe un área con el nombre: " + request.getNombreArea());
+        @Transactional(readOnly = true)
+        public List<AreaResponseDTO> findAll() {
+                return areaRepository.findAll()
+                                .stream()
+                                .map(area -> modelMapper.map(area, AreaResponseDTO.class))
+                                .toList();
         }
 
-        Area area = modelMapper.map(request, Area.class);
-        Area saved = areaRepository.save(area);
-        log.info("Área creada con id: {}", saved.getIdArea());
+        @Transactional(readOnly = true)
+        public AreaResponseDTO findById(Long id) {
+                Area area = areaRepository.findById(id)
+                                .orElseThrow(() -> new BusinessException(
+                                                "No existe el área con id: " + id));
+                return modelMapper.map(area, AreaResponseDTO.class);
+        }
 
-        auditService.log(
-                AuditAction.CREATE, "Area",
-                String.valueOf(saved.getIdArea()),
-                null,
-                saved.toString(),
-                null,
-                httpRequest
-        );
+        public AreaResponseDTO create(AreaRequestDTO request, HttpServletRequest httpRequest) {
+                log.info("Creando área: {}", request.getNombreArea());
 
-        return modelMapper.map(saved, AreaResponseDTO.class);
-    }
+                if (areaRepository.existsByNombreArea(request.getNombreArea())) {
+                        throw new BusinessException(
+                                        "Ya existe un área con el nombre: " + request.getNombreArea());
+                }
 
-    public AreaResponseDTO update(
-            Long id, AreaRequestDTO request, HttpServletRequest httpRequest) {
-        log.info("Actualizando área id: {}", id);
+                Area area = modelMapper.map(request, Area.class);
+                Area saved = areaRepository.save(area);
 
-        Area area = areaRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(
-                        "No existe el área con id: " + id));
+                AreaResponseDTO after = modelMapper.map(saved, AreaResponseDTO.class);
 
-        Area before = Area.builder()
-                .idArea(area.getIdArea())
-                .nombreArea(area.getNombreArea())
-                .descripcion(area.getDescripcion())
-                .capacidad(area.getCapacidad())
-                .build();
+                auditService.log(
+                                AuditAction.CREATE,
+                                "Area",
+                                String.valueOf(saved.getIdArea()),
+                                null,
+                                after,
+                                null,
+                                httpRequest);
 
-        area.setNombreArea(request.getNombreArea());
-        area.setDescripcion(request.getDescripcion());
-        area.setCapacidad(request.getCapacidad());
+                log.info("Área creada con id: {}", saved.getIdArea());
 
-        Area saved = areaRepository.save(area);
+                return after;
+        }
 
-        auditService.log(
-                AuditAction.UPDATE, "Area",
-                String.valueOf(saved.getIdArea()),
-                before.toString(),
-                saved.toString(),
-                null,
-                httpRequest
-        );
+        public AreaResponseDTO update(
+                        Long id,
+                        AreaRequestDTO request,
+                        HttpServletRequest httpRequest) {
+                log.info("Actualizando área id: {}", id);
 
-        return modelMapper.map(saved, AreaResponseDTO.class);
-    }
+                Area area = areaRepository.findById(id)
+                                .orElseThrow(() -> new BusinessException(
+                                                "No existe el área con id: " + id));
 
-    public void delete(Long id, HttpServletRequest httpRequest) {
-        log.info("Eliminando área id: {}", id);
+                AreaResponseDTO before = modelMapper.map(area, AreaResponseDTO.class);
 
-        Area area = areaRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(
-                        "No existe el área con id: " + id));
+                area.setNombreArea(request.getNombreArea());
+                area.setDescripcion(request.getDescripcion());
+                area.setCapacidad(request.getCapacidad());
 
-        area.setActivo(false);
-        areaRepository.save(area);
+                Area saved = areaRepository.save(area);
 
-        auditService.log(
-                AuditAction.DELETE, "Area",
-                String.valueOf(id),
-                area.toString(),
-                null,
-                null,
-                httpRequest
-        );
-    }
+                AreaResponseDTO after = modelMapper.map(saved, AreaResponseDTO.class);
+
+                auditService.log(
+                                AuditAction.UPDATE,
+                                "Area",
+                                String.valueOf(saved.getIdArea()),
+                                before,
+                                after,
+                                null,
+                                httpRequest);
+
+                return after;
+        }
+
+        public void delete(Long id, HttpServletRequest httpRequest) {
+                log.info("Eliminando área id: {}", id);
+
+                Area area = areaRepository.findById(id)
+                                .orElseThrow(() -> new BusinessException(
+                                                "No existe el área con id: " + id));
+
+                AreaResponseDTO before = modelMapper.map(area, AreaResponseDTO.class);
+
+                area.setActivo(false);
+
+                Area deleted = areaRepository.save(area);
+
+                AreaResponseDTO after = modelMapper.map(deleted, AreaResponseDTO.class);
+
+                auditService.log(
+                                AuditAction.DELETE,
+                                "Area",
+                                String.valueOf(id),
+                                before,
+                                after,
+                                null,
+                                httpRequest);
+        }
 }

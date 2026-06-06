@@ -20,7 +20,13 @@ import {
     faPlus,
     faTrash
 } from "@fortawesome/free-solid-svg-icons";
+
+import { APPOINTMENT_STATUS } from "../../types/AppointmentStatus";
+
+import { useAppointmentById } from "../../hooks/appointments/useAppointmentById";
 import { useCreateTreatment } from "../../hooks/treatment/useCreateTreatment";
+import Skeleton from "@/shared/components/Skeleton";
+import type { CreateTreatmentParams } from "../../types/AppointmentTypes";
 
 type MedicationCatalog = {
     idMedicamento: number;
@@ -43,7 +49,7 @@ type Medication = {
 const AttendAppointmentPage = () => {
 
     const navigate = useNavigate();
-    
+
 
     const { id } = useParams();
     const appointmentId = Number(id);
@@ -52,7 +58,8 @@ const AttendAppointmentPage = () => {
 
 
 
-    const { data: medicamentosData = [], isLoading } = useGetAllMedications();
+    const { data: medicamentosData = [], isLoading: medicamentosLoading } = useGetAllMedications();
+    const { data: appointmentData, isLoading: appointmentLoading } = useAppointmentById(Number(id));
 
 
     const medicamentosDisponibles: MedicationCatalog[] =
@@ -61,7 +68,7 @@ const AttendAppointmentPage = () => {
             nombreComercial: med.commercialName,
             principioActivo: med.activeIngredient,
             unidadMedida: med.medicalUnit,
-            stockTotal: med.stock
+            stockTotal: med.stock ?? 0
         }));
 
     const {
@@ -70,8 +77,9 @@ const AttendAppointmentPage = () => {
     } = useCreateTreatment();
 
     const [diagnostico, setDiagnostico] = useState("");
-    const [fechaInicio, setFechaInicio] = useState("2026-06-02");
-    const [fechaFin, setFechaFin] = useState("2026-06-09");
+    const today = new Date().toISOString().split("T")[0];
+    const [fechaInicio, setFechaInicio] = useState(today);
+    const [fechaFin, setFechaFin] = useState(today);
     const [tratamiento, setTratamiento] = useState("");
     const [observaciones, setObservaciones] = useState("");
 
@@ -81,23 +89,21 @@ const AttendAppointmentPage = () => {
 
     const [medicamentos, setMedicamentos] = useState<Medication[]>([]);
 
-    const appointment = {
-        idCita: 145,
-        fechaHora: "02/06/2026 08:30",
-        estado: "EN ATENCIÓN",
+    if (!appointmentData) {
+        return
+    }
 
-        pacienteNombre: "Juan",
-        pacienteApellido: "Pérez",
-        pacienteTelefono: "5555-1111",
+    const handleFechaInicioChange = (
+        value: string
+    ) => {
+        setFechaInicio(value);
 
-        medicoNombre: "Carlos",
-        medicoApellido: "López",
-        especialidad: "Medicina General",
-
-        edad: 35,
-        genero: "Masculino",
-        alergias: "Penicilina",
-        enfermedades: "Diabetes Tipo 2"
+        if (
+            fechaFin &&
+            new Date(fechaFin) < new Date(value)
+        ) {
+            setFechaFin(value);
+        }
     };
 
     const medicamentoSeleccionado =
@@ -188,11 +194,19 @@ const AttendAppointmentPage = () => {
         );
     };
 
-    const guardarBorrador = () => {
-        showToast(
-            "Consulta guardada temporalmente",
-            TOAST_TYPES.SUCCESS
-        );
+
+
+    const formatDateTime = (date: Date): string => {
+        const pad = (n: number) =>
+            String(n).padStart(2, "0");
+
+        return `${date.getFullYear()}-${pad(
+            date.getMonth() + 1
+        )}-${pad(date.getDate())} ${pad(
+            date.getHours()
+        )}:${pad(date.getMinutes())}:${pad(
+            date.getSeconds()
+        )}`;
     };
 
     const finalizarConsulta = () => {
@@ -212,9 +226,11 @@ const AttendAppointmentPage = () => {
             return;
         }
 
-        const payload = {
-            appointmentId: appointmentId,
-
+        const payload: CreateTreatmentParams = {
+            appointmentId: appointmentData.id,
+            appointmentStatus: APPOINTMENT_STATUS.COMPLETED,
+            patientId: appointmentData.patient.id,
+            medicId: appointmentData.doctor.id,
             description: `
                 Diagnóstico:
                 ${diagnostico}
@@ -228,7 +244,7 @@ const AttendAppointmentPage = () => {
 
             from: fechaInicio,
             to: fechaFin,
-
+            endDate:formatDateTime(new Date(Date.now() + 24 * 60 * 60 * 1000)),
             medications: medicamentos.map((m) => ({
                 medicationId: m.idMedicamento,
                 dosage: m.dosis,
@@ -294,57 +310,87 @@ const AttendAppointmentPage = () => {
                             <div className="flex justify-between items-center mb-4">
 
                                 <h2 className="font-semibold text-slate-700">
-                                    Información del paciente
+                                    Información de cita
                                 </h2>
-
-                                <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
-                                    {appointment.estado}
-                                </span>
-
+                                {appointmentLoading ? (
+                                    <Skeleton width="w-24" height="h-6" />
+                                ) : (
+                                    <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
+                                        {appointmentData?.status}
+                                    </span>
+                                )}
                             </div>
 
                             <div className="space-y-4">
 
                                 <div>
-                                    <p className="text-xs text-slate-400">Paciente</p>
-                                    <p className="font-medium text-slate-700">
-                                        {appointment.pacienteNombre} {appointment.pacienteApellido}
+                                    <p className="text-xs text-slate-400">
+                                        Paciente
                                     </p>
+
+                                    {appointmentLoading ? (
+                                        <Skeleton width="w-48" height="h-5" />
+                                    ) : (
+                                        <p className="font-medium text-slate-700">
+                                            {appointmentData?.patient.fullName}
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div>
-                                    <p className="text-xs text-slate-400">Teléfono</p>
-                                    <p className="font-medium text-slate-700">
-                                        {appointment.pacienteTelefono}
+                                    <p className="text-xs text-slate-400">
+                                        Médico
                                     </p>
+
+                                    {appointmentLoading ? (
+                                        <Skeleton width="w-48" height="h-5" />
+                                    ) : (
+                                        <p className="font-medium text-slate-700">
+                                            Dr. {appointmentData?.doctor.fullName}
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div>
-                                    <p className="text-xs text-slate-400">Edad</p>
-                                    <p className="font-medium text-slate-700">
-                                        {appointment.edad} años
+                                    <p className="text-xs text-slate-400">
+                                        Especialidad
                                     </p>
+
+                                    {appointmentLoading ? (
+                                        <Skeleton width="w-40" height="h-5" />
+                                    ) : (
+                                        <p className="font-medium text-slate-700">
+                                            {appointmentData?.doctor.specialty}
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div>
-                                    <p className="text-xs text-slate-400">Género</p>
-                                    <p className="font-medium text-slate-700">
-                                        {appointment.genero}
+                                    <p className="text-xs text-slate-400">
+                                        Fecha programada
                                     </p>
+
+                                    {appointmentLoading ? (
+                                        <Skeleton width="w-32" height="h-5" />
+                                    ) : (
+                                        <p className="font-medium text-slate-700">
+                                            {appointmentData?.startDate}
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div>
-                                    <p className="text-xs text-slate-400">Alergias</p>
-                                    <p className="font-medium text-red-600">
-                                        {appointment.alergias}
+                                    <p className="text-xs text-slate-400">
+                                        Hora programada
                                     </p>
-                                </div>
 
-                                <div>
-                                    <p className="text-xs text-slate-400">Antecedentes</p>
-                                    <p className="font-medium text-slate-700">
-                                        {appointment.enfermedades}
-                                    </p>
+                                    {appointmentLoading ? (
+                                        <Skeleton width="w-24" height="h-5" />
+                                    ) : (
+                                        <p className="font-medium text-slate-700">
+                                            {appointmentData?.startTime}
+                                        </p>
+                                    )}
                                 </div>
 
                             </div>
@@ -428,7 +474,7 @@ const AttendAppointmentPage = () => {
                                         type="date"
                                         value={fechaInicio}
                                         onChange={(e) =>
-                                            setFechaInicio(e.target.value)
+                                            handleFechaInicioChange(e.target.value)
                                         }
                                     />
                                 </FormField>
@@ -467,13 +513,13 @@ const AttendAppointmentPage = () => {
                                 <FormField label="Medicamento">
                                     <Select
                                         value={medicamentoId}
-                                        disabled={isLoading}
+                                        disabled={medicamentosLoading}
                                         onChange={(e) =>
                                             setMedicamentoId(e.target.value)
                                         }
                                     >
                                         <option value="" disabled>
-                                            {isLoading
+                                            {medicamentosLoading
                                                 ? "Cargando medicamentos..."
                                                 : "Seleccione medicamento"}
                                         </option>
@@ -655,12 +701,7 @@ const AttendAppointmentPage = () => {
 
                 <div className="sticky bottom-0 bg-white border border-slate-100 rounded-2xl shadow-sm p-4 flex flex-col sm:flex-row justify-end gap-3">
 
-                    <Button
-                        icon={faFloppyDisk}
-                        label="Guardar borrador"
-                        color="gray"
-                        onClick={guardarBorrador}
-                    />
+
 
                     <Button
                         icon={faCheck}

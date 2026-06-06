@@ -10,6 +10,10 @@ import com.hospitaldb.backend.exception.ResourceNotFoundException;
 import com.hospitaldb.backend.repository.clinico.ICitaRepository;
 import com.hospitaldb.backend.repository.clinico.IMedicoRepository;
 import com.hospitaldb.backend.repository.clinico.IPacienteRepository;
+import com.hospitaldb.backend.service.auditoria.AuditService;
+import com.hospitaldb.backend.utils.AuditAction;
+
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -32,6 +36,7 @@ public class CitaService {
     private final IPacienteRepository pacienteRepository;
     private final IMedicoRepository medicoRepository;
     private final ModelMapper modelMapper;
+    private final AuditService auditService;
 
     public List<CitaDTO> findAll() {
         log.info("Obteniendo todas las citas");
@@ -43,7 +48,7 @@ public class CitaService {
 
     public Page<CitaDTO> findAll(Pageable pageable) {
         log.info("Obteniendo citas paginadas");
-        Page<Cita> pageResult = citaRepository.findAllByActivo(true,pageable);
+        Page<Cita> pageResult = citaRepository.findAllByActivo(true, pageable);
         return pageResult.map(this::convertToDTO);
     }
 
@@ -53,20 +58,22 @@ public class CitaService {
         return convertToDTO(cita);
     }
 
-    private Cita findCitaEntityById(Long id){
+    private Cita findCitaEntityById(Long id) {
         return citaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cita no encontrada con ID: " + id));
     }
 
     @Transactional
-    public CitaDTO create(CitaRequestDTO request) {
+    public CitaDTO create(CitaRequestDTO request, HttpServletRequest httpRequest) {
         log.info("Creando nueva cita para paciente: {}, médico: {}", request.getIdPaciente(), request.getIdMedico());
 
         Paciente paciente = pacienteRepository.findById(request.getIdPaciente())
-                .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado con ID: " + request.getIdPaciente()));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Paciente no encontrado con ID: " + request.getIdPaciente()));
 
         Medico medico = medicoRepository.findById(request.getIdMedico())
-                .orElseThrow(() -> new ResourceNotFoundException("Médico no encontrado con ID: " + request.getIdMedico()));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Médico no encontrado con ID: " + request.getIdMedico()));
 
         if (request.getFechaHora().isBefore(LocalDateTime.now())) {
             throw new BusinessException("La cita debe ser agendada en una fecha futura");
@@ -79,8 +86,9 @@ public class CitaService {
             throw new BusinessException("El médico ya tiene una cita agendada en esa fecha y hora");
         }
 
-        if(citaRepository.countCitasByDay(request.getIdMedico(),request.getFechaHora()) >= 5)
+        if (citaRepository.countCitasByDay(request.getIdMedico(), request.getFechaHora()) >= 5)
             throw new BusinessException("El médico ya tiene el máximo de citas asignadas durante el día");
+
         Cita cita = new Cita();
         cita.setFechaHora(request.getFechaHora());
         cita.setEstado(request.getEstado() != null ? request.getEstado() : "PENDIENTE");
@@ -88,15 +96,26 @@ public class CitaService {
         cita.setMedico(medico);
 
         Cita saved = citaRepository.save(cita);
+
+        auditService.log(
+                AuditAction.CREATE,
+                "Cita",
+                String.valueOf(saved.getIdCita()),
+                null,
+                convertToDTO(saved),
+                null,
+                httpRequest);
+
         log.info("Cita creada exitosamente con ID: {}", saved.getIdCita());
         return convertToDTO(saved);
     }
 
     @Transactional
-    public CitaDTO update(Long id, CitaRequestDTO request) {
+    public CitaDTO update(Long id, CitaRequestDTO request, HttpServletRequest httpRequest) {
         log.info("Actualizando cita con ID: {}", id);
 
         Cita cita = findCitaEntityById(id);
+        CitaDTO beforeAudit = convertToDTO(cita);
 
         if (request.getFechaHora().isBefore(LocalDateTime.now())) {
             throw new BusinessException("No se puede reprogramar una cita a una fecha pasada");
@@ -104,10 +123,12 @@ public class CitaService {
 
         if (!cita.getMedico().getIdMedico().equals(request.getIdMedico())) {
             Medico nuevoMedico = medicoRepository.findById(request.getIdMedico())
-                    .orElseThrow(() -> new ResourceNotFoundException("Médico no encontrado con ID: " + request.getIdMedico()));
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Médico no encontrado con ID: " + request.getIdMedico()));
 
             boolean tieneCita = citaRepository.findByMedico_IdMedico(nuevoMedico.getIdMedico()).stream()
-                    .anyMatch(c -> c.getFechaHora().equals(request.getFechaHora()) && !c.getIdCita().equals(id));
+                    .anyMatch(c -> c.getFechaHora().equals(request.getFechaHora())
+                            && !c.getIdCita().equals(id));
 
             if (tieneCita) {
                 throw new BusinessException("El nuevo médico ya tiene una cita en esa fecha y hora");
@@ -123,62 +144,98 @@ public class CitaService {
         }
 
         Cita updated = citaRepository.save(cita);
+
+        auditService.log(
+                AuditAction.UPDATE,
+                "Cita",
+                String.valueOf(updated.getIdCita()),
+                beforeAudit,
+                convertToDTO(updated),
+                null,
+                httpRequest);
+
         log.info("Cita actualizada exitosamente: {}", id);
         return convertToDTO(updated);
     }
 
     @Transactional
-    public void cancel(Long id) {
+    public void cancel(Long id, HttpServletRequest httpRequest) {
         log.info("Cancelando cita con ID: {}", id);
+
         Cita cita = findCitaEntityById(id);
+        CitaDTO beforeAudit = convertToDTO(cita);
 
         if (cita.getFechaHora().isBefore(LocalDateTime.now())) {
             throw new BusinessException("No se puede cancelar una cita pasada");
         }
 
         cita.setEstado("CANCELADA");
-        citaRepository.save(cita);
+
+        Cita canceled = citaRepository.save(cita);
+
+        auditService.log(
+                AuditAction.UPDATE,
+                "Cita",
+                String.valueOf(canceled.getIdCita()),
+                beforeAudit,
+                convertToDTO(canceled),
+                "cancelacion",
+                httpRequest);
+
         log.info("Cita cancelada exitosamente: {}", id);
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(Long id, HttpServletRequest httpRequest) {
         log.info("Eliminando cita con ID: {}", id);
+
         Cita cita = findCitaEntityById(id);
+        CitaDTO beforeAudit = convertToDTO(cita);
 
         cita.setActivo(false);
-        citaRepository.save(cita);
+
+        Cita deleted = citaRepository.save(cita);
+
+        auditService.log(
+                AuditAction.DELETE,
+                "Cita",
+                String.valueOf(deleted.getIdCita()),
+                beforeAudit,
+                null,
+                null,
+                httpRequest);
+
         log.info("Cita eliminada exitosamente: {}", id);
     }
 
     public List<CitaDTO> findByPaciente(Long idPaciente) {
         log.info("Buscando citas del paciente: {}", idPaciente);
-        List<Cita> citas = citaRepository.findByPaciente_IdPaciente(idPaciente);
-        return citas.stream()
+        return citaRepository.findByPaciente_IdPaciente(idPaciente)
+                .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     public List<CitaDTO> findByMedico(Long idMedico) {
         log.info("Buscando citas del médico: {}", idMedico);
-        List<Cita> citas = citaRepository.findByMedico_IdMedico(idMedico);
-        return citas.stream()
+        return citaRepository.findByMedico_IdMedico(idMedico)
+                .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     public List<CitaDTO> findCitasFuturasByPaciente(Long idPaciente) {
         log.info("Buscando citas futuras del paciente: {}", idPaciente);
-        List<Cita> citas = citaRepository.findCitasFuturasByPaciente(idPaciente, LocalDateTime.now());
-        return citas.stream()
+        return citaRepository.findCitasFuturasByPaciente(idPaciente, LocalDateTime.now())
+                .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     public List<CitaDTO> findByEstado(String estado) {
         log.info("Buscando citas por estado: {}", estado);
-        List<Cita> citas = citaRepository.findByEstado(estado);
-        return citas.stream()
+        return citaRepository.findByEstado(estado)
+                .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }

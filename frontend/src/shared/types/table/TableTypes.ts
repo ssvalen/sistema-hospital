@@ -24,4 +24,5 @@ export interface TableAction<T> {
     icon?: IconDefinition;
     color?: ButtonColor;
     onClick: (row: T) => void;
+    visible?: (row: T) => boolean;
 }

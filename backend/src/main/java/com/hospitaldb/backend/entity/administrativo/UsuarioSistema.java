@@ -33,6 +33,12 @@ public class UsuarioSistema extends BaseAuditableEntity {
     @Column(name = "id_keycloak", length = 100)
     private String idKeycloak;
 
+    @Column(nullable = false, unique = false, length = 100)
+    private String nombres;
+
+    @Column(nullable = false, unique = false, length = 100)
+    private String apellidos;
+
     // Relación con USUARIO_ROL
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @ToString.Exclude

@@ -27,7 +27,8 @@ public interface IRolPermisoRepository extends JpaRepository<RolPermiso, Long> {
     @Modifying
     @Transactional
     @Query("DELETE FROM RolPermiso rp WHERE rp.rol.idRol = :idRol AND rp.permiso.idPermiso IN :idPermisos")
-    void deleteByRol_IdRolAndPermiso_IdPermisoIn(@Param("idRol") Long idRol, @Param("idPermisos") List<Long> idPermisos);
+    void deleteByRol_IdRolAndPermiso_IdPermisoIn(@Param("idRol") Long idRol,
+            @Param("idPermisos") List<Long> idPermisos);
 
     @Modifying
     @Transactional
@@ -42,6 +43,9 @@ public interface IRolPermisoRepository extends JpaRepository<RolPermiso, Long> {
     @Query("SELECT rp.permiso.idPermiso FROM RolPermiso rp WHERE rp.rol.idRol = :idRol AND rp.permiso.idPermiso IN :idPermisos")
     List<Long> findExistingPermisoIds(@Param("idRol") Long idRol, @Param("idPermisos") List<Long> idPermisos);
 
-
     boolean existsByRolAndPermiso(Rol rol, Permiso permiso);
+
+    @Modifying
+    @Transactional
+    void deleteByRol_IdRol(Long idRol);
 }

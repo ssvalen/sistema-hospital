@@ -24,5 +24,6 @@ export const TOAST_CONFIG: Record<
     color: "bg-emerald-600",
     icon: "✅",
     label: "Éxito",
+    duration: 2000,
   },
 };
