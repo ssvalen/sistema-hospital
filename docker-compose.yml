@@ -143,8 +143,8 @@ services:
       DB_HOST: mysql-hospital
       DB_USER: root                  
       DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      DB_NAME: clinico_db
-      POLLING_INTERVAL: 5
+      DB_NAME: keycloak_db
+      POLLING_INTERVAL: 120
     depends_on:
       mysql-hospital:
         condition: service_healthy
