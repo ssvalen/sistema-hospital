@@ -67,6 +67,8 @@ const DoctorsPage = () => {
     const createDoctor = useCreateDoctor()
     const updateDoctor = useUpdateDoctor()
 
+    const isProcessing = createDoctor.isPending || updateDoctor.isPending
+
 
     const [open, setOpen] = useState(false);
 
@@ -421,7 +423,15 @@ const DoctorsPage = () => {
                             />
 
                             <Button
-                                label="Guardar"
+                                label={
+                                    isProcessing
+                                        ? editing?.id
+                                            ? "Actualizando..."
+                                            : "Guardando..."
+                                        : editing?.id
+                                            ? "Actualizar"
+                                            : "Guardar"
+                                }
                                 color="blue"
                                 onClick={save}
                             />

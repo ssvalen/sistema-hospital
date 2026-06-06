@@ -27,7 +27,11 @@ export function createAuditRepository(http: HttpClient): AuditRepository {
                 signal,
             });
 
-            return auditLogsToDomain(dto.data);
+            
+
+            const x = auditLogsToDomain(dto.data);
+            console.log(x)
+            return x
         },
         async getAuditLogsPaginated(page, size, signal) {
             const dto = await http.request<ApiResponse<PaginatedAuditLogsDTO>>({
@@ -36,7 +40,10 @@ export function createAuditRepository(http: HttpClient): AuditRepository {
                 signal,
             });
 
-            return paginatedAuditLogsToDomain(dto.data);
+            // return paginatedAuditLogsToDomain(dto.data);
+            const x = paginatedAuditLogsToDomain(dto.data);
+            console.log(x)
+            return x
         },
 
     };

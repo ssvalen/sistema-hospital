@@ -1,8 +1,8 @@
 export const APPOINTMENT_STATUS = {
-  SCHEDULED: "Programada",
-  COMPLETED: "Completada",
-  CANCELLED: "Cancelada",
-  RESCHEDULED: "Reprogramada"
+  SCHEDULED: "PROGRAMADA",
+  COMPLETED: "COMPLETADA",
+  CANCELLED: "CANCELADA",
+  RESCHEDULED: "REPROGRAMADA"
 } as const;
 
 export type AppointmentStatus =

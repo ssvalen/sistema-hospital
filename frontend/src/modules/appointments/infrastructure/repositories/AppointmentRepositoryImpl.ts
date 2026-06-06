@@ -138,6 +138,17 @@ export function createAppointmentRepository(http: HttpClient): AppointmentReposi
 
             return appointmentToDomain(dto.data);
         },
+        async cancelAppointment(appointmentId, signal) {
+            const dto = await http.request<ApiResponse<AppointmentResponseDTO>>({
+                url: API_ROUTES.APPOINTMENT_CANCEL(appointmentId),
+                method: "PATCH",
+                withCredentials: false,
+                timeoutMs: 15_000,
+                signal,
+            });
+
+            return appointmentToDomain(dto.data);
+        }
 
     };
 }

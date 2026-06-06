@@ -78,7 +78,7 @@ public class PacienteController {
             HttpServletRequest request) {
 
         log.info("POST /api/pacientes - Creando nuevo paciente: {}", requestDTO.getNombre());
-        PacienteDTO created = pacienteService.create(requestDTO);
+        PacienteDTO created = pacienteService.create(requestDTO, request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 EntityResponse.success(created, "Paciente creado exitosamente", request.getRequestURI())
@@ -92,7 +92,7 @@ public class PacienteController {
             HttpServletRequest request) {
 
         log.info("PUT /api/pacientes/{} - Actualizando paciente", id);
-        PacienteDTO updated = pacienteService.update(id, requestDTO);
+        PacienteDTO updated = pacienteService.update(id, requestDTO, request);
 
         return ResponseEntity.ok(
                 EntityResponse.success(updated, "Paciente actualizado exitosamente", request.getRequestURI())
@@ -103,7 +103,7 @@ public class PacienteController {
     @DeleteMapping("/{id}")
     public ResponseEntity<EntityResponse<Void>> delete(@PathVariable Long id, HttpServletRequest request) {
         log.info("DELETE /api/pacientes/{} - Eliminando paciente", id);
-        pacienteService.delete(id);
+        pacienteService.delete(id, request);
 
         return ResponseEntity.ok(
                 EntityResponse.success(null, "Paciente eliminado exitosamente", request.getRequestURI())

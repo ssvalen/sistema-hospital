@@ -33,6 +33,8 @@ interface DataTableProps<T> {
   onFiltersChange?: (filters: Record<string, string>) => void;
 
   rowKey?: keyof T;
+
+  capitalize?: boolean;
 }
 
 const getNestedValue = (
@@ -59,6 +61,7 @@ const DataTable = <T extends Record<string, any>>({
   loading = false,
   onFiltersChange,
   rowKey,
+  capitalize = false
 }: DataTableProps<T>) => {
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: defaultSort?.key ?? null,
@@ -317,7 +320,7 @@ const DataTable = <T extends Record<string, any>>({
                               getNestedValue(row, col.key)
                             )
                           }
-                          className="block cursor-pointer truncate"
+                          className={`block cursor-pointer truncate ${capitalize ? 'capitalize' : 'capitalize'}`}
                         >
                           {String(
                             getNestedValue(row, col.key) ?? "-"

@@ -109,7 +109,7 @@ export default function AppointmentCalendarPage() {
 
     return data.content.map(normalizeAppointment);
   }, [view, calendarQuery.data, tableQuery.data]);
-
+  
   const filteredAppointments: AppointmentUI[] = useMemo(() => {
     return appointments.filter((a) =>
       doctorId === "all" ? true : a.doctorId === doctorId
@@ -134,6 +134,7 @@ export default function AppointmentCalendarPage() {
     }));
   }, [filteredAppointments]);
 
+
   const actions: TableAction<AppointmentUI>[] = [
     {
       title: "Ver",
@@ -143,14 +144,14 @@ export default function AppointmentCalendarPage() {
       onClick: (row) =>
         navigate(`/admin/appointments/${row.id}`)
     },
-    {
-      title: "Atender",
-      permission: APPOINTMENT_PERMISSIONS.ATTEND,
-      color: "green",
-      icon: faStethoscope,
-      onClick: (row) =>
-        navigate(`/admin/appointments/${row.id}/attend`)
-    }
+    // {
+    //   title: "Atender",
+    //   permission: APPOINTMENT_PERMISSIONS.ATTEND,
+    //   color: "green",
+    //   icon: faStethoscope,
+    //   onClick: (row) =>
+    //     navigate(`/admin/appointments/${row.id}/attend`)
+    // }
   ];
 
   return (
@@ -266,7 +267,7 @@ export default function AppointmentCalendarPage() {
                 { key: "doctorName", label: "Médico" },
                 { key: "start", label: "Fecha" },
                 { key: "reason", label: "Motivo" },
-                { key: "status", label: "Estado" },
+                { key: "status", label: "Estado"},
                 { key: "actions", label: "Acciones", hasActions: true }
               ]}
               data={filteredAppointments}

@@ -41,6 +41,8 @@ const RoleFormPage = () => {
   const { toast, showToast, hideToast } = useToast();
   const putRoleMutation = usePutRole();
 
+  const isSaving = putRoleMutation.isPending
+
   const state = location.state as LocationState | null;
 
   const initialRole = state?.role ?? null;
@@ -60,6 +62,7 @@ const RoleFormPage = () => {
   const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
   const [errors, setErrors] = useState<Errors>({});
 
+  
 
   useEffect(() => {
     if (!initialRole) {
@@ -427,10 +430,15 @@ const RoleFormPage = () => {
               <Button
                 type="submit"
                 label={
-                  isEditMode
-                    ? "Actualizar"
-                    : "Crear"
+                  isSaving
+                    ? isEditMode
+                      ? "Actualizando..."
+                      : "Guardando..."
+                    : isEditMode
+                      ? "Actualizar"
+                      : "Guardar"
                 }
+                disabled={isSaving}
                 color="blue"
               />
             </div>

@@ -47,7 +47,7 @@ public class TratamientoMedicamentoController {
             HttpServletRequest request) {
 
         log.info("POST /api/tratamiento-medicamentos - Asignando medicamento a tratamiento");
-        TratamientoMedicamentoDTO created = tmService.create(requestDTO);
+        TratamientoMedicamentoDTO created = tmService.create(requestDTO, request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 EntityResponse.success(created, "Medicamento asignado exitosamente", request.getRequestURI())
@@ -61,7 +61,7 @@ public class TratamientoMedicamentoController {
             HttpServletRequest request) {
 
         log.info("PUT /api/tratamiento-medicamentos/{} - Actualizando relación", id);
-        TratamientoMedicamentoDTO updated = tmService.update(id, requestDTO);
+        TratamientoMedicamentoDTO updated = tmService.update(id, requestDTO, request);
 
         return ResponseEntity.ok(
                 EntityResponse.success(updated, "Relación actualizada exitosamente", request.getRequestURI())
@@ -71,7 +71,7 @@ public class TratamientoMedicamentoController {
     @DeleteMapping("/{id}")
     public ResponseEntity<EntityResponse<Void>> delete(@PathVariable Long id, HttpServletRequest request) {
         log.info("DELETE /api/tratamiento-medicamentos/{} - Eliminando relación", id);
-        tmService.delete(id);
+        tmService.delete(id, request);
 
         return ResponseEntity.ok(
                 EntityResponse.success(null, "Relación eliminada exitosamente", request.getRequestURI())
@@ -85,7 +85,7 @@ public class TratamientoMedicamentoController {
             HttpServletRequest request) {
 
         log.info("DELETE /api/tratamiento-medicamentos/tratamiento/{}/medicamento/{} - Eliminando relación", idTratamiento, idMedicamento);
-        tmService.deleteByTratamientoAndMedicamento(idTratamiento, idMedicamento);
+        tmService.deleteByTratamientoAndMedicamento(idTratamiento, idMedicamento, request);
 
         return ResponseEntity.ok(
                 EntityResponse.success(null, "Relación eliminada exitosamente", request.getRequestURI())

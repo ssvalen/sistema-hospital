@@ -31,4 +31,5 @@ export interface AppointmentRepository {
         signal?: AbortSignal
     ): Promise<Appointment>;
 
+    cancelAppointment(appointmentId: number, signal?: AbortSignal): Promise<Appointment>;
 }

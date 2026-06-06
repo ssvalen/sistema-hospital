@@ -75,6 +75,8 @@ CREATE TABLE IF NOT EXISTS administrativo_db.usuario_sistema (
     activo BIT NOT NULL,
     email VARCHAR(150) NOT NULL,
     id_keycloak VARCHAR(100),
+    nombres VARCHAR(100) NOT NULL,
+    apellidos VARCHAR(100) NOT NULL,
     username VARCHAR(100) NOT NULL,
     usuario_registro VARCHAR(100) DEFAULT 'system',
     usuario_modificacion VARCHAR(100),

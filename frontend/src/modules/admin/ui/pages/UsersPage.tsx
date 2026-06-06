@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import DataTable from "@/shared/components/DataTable";
 import Modal from "@/shared/components/Modal";
 import Button from "@/shared/components/forms/Button";
@@ -8,43 +8,45 @@ import Input from "@/shared/components/forms/Input";
 import Toast from "@/shared/components/Toast";
 import { useToast } from "@/shared/hooks/useToast";
 import { TOAST_TYPES } from "@/shared/types/ToastType";
+import type { TableColumn } from "@/shared/types/table/TableTypes";
 
-import { faRemove, faUserPlus } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUserPlus } from "@fortawesome/free-solid-svg-icons";
 
 import type { Role } from "@/modules/admin/domain/entities/Role";
+import type { User } from "@/modules/admin/domain/entities/User";
 import { useGetAllRoles } from "@/modules/admin/hooks/roles/useGetAllRoles";
 
-type User = {
-    id: string;
-    name: string;
-    roles: number[];
-    active: boolean;
-};
+import type { UserRequestParams } from "../../types/UserTypes";
+import { usePaginatedUsers } from "../../hooks/user/usePaginatedUsers";
+import { useRolesByUser } from "../../hooks/user/useRolesByUser";
+import { useCreateUser } from "../../hooks/user/useCreateUser";
+import { create } from "zustand";
+import { HttpError } from "@/shared/errors/HttpError";
+import { useUpdateUser } from "../../hooks/user/useUpdateUser";
 
 type UserForm = {
-    id?: string;
-    name: string;
+    id?: number;
+    username: string;
+    firstName: string;
+    lastName: string;
     email: string;
     password: string;
     roles: number[];
 };
 
 type FormErrors = {
-    name?: string;
+    username?: string;
+    firstName?: string;
+    lastName?: string;
     email?: string;
     password?: string;
     roles?: string;
 };
 
-const initialUsers: User[] = [
-    { id: "1", name: "Juan Pérez", roles: [1], active: true },
-    { id: "2", name: "María López", roles: [2], active: true },
-    { id: "3", name: "Carlos Ruiz", roles: [3], active: false }
-];
-
 const initialForm: UserForm = {
-    name: "",
+    username: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
     roles: []
@@ -52,29 +54,81 @@ const initialForm: UserForm = {
 
 const UsersPage = () => {
     const { toast, showToast, hideToast } = useToast();
-    const { data: roles = [] } = useGetAllRoles();
 
-    const [users, setUsers] = useState<User[]>(initialUsers);
+    const [page, setPage] = useState(1);
+    const pageSize = 10;
+
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<UserForm | null>(null);
     const [errors, setErrors] = useState<FormErrors>({});
     const [searchRole, setSearchRole] = useState("");
+    const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+
+    const {
+        items: users,
+        totalElements,
+        isLoading,
+    } = usePaginatedUsers(page - 1, pageSize);
+
+
+    const { data: roles = [] } = useGetAllRoles();
+    const { data: userRoles = [] } = useRolesByUser(selectedUserId ?? 0, {
+        enabled: !!selectedUserId && open
+    });
+
+    const createUser = useCreateUser()
+    const updateUser = useUpdateUser()
+
+    const isSaving = createUser.isPending || updateUser.isPending
+
+    useEffect(() => {
+        if (!editing?.id) return;
+        if (!userRoles) return;
+
+        setEditing((prev) => {
+            if (!prev) return prev;
+
+            const newRoles = userRoles.map((r: any) => r.id);
+
+            if (JSON.stringify(prev.roles) === JSON.stringify(newRoles)) {
+                return prev;
+            }
+
+            return {
+                ...prev,
+                roles: newRoles
+            };
+        });
+    }, [userRoles, editing?.id]);
+
+    const usersData = useMemo(() => {
+        return users.map((user) => ({
+            ...user,
+            statusLabel: user.status ? "ACTIVO" : "INACTIVO"
+        }));
+    }, [users]);
 
     const openCreate = useCallback(() => {
+        setSelectedUserId(null);
         setEditing(initialForm);
         setErrors({});
         setSearchRole("");
         setOpen(true);
     }, []);
 
-    const openEdit = useCallback((u: User) => {
+    const openEdit = useCallback((user: User) => {
+        setSelectedUserId(user.id);
+        console.log(user)
         setEditing({
-            id: u.id,
-            name: u.name,
-            email: "",
+            id: user.id,
+            username: user.username,
+            firstName: user.name,
+            lastName: user.lastname,
+            email: user.email,
             password: "",
-            roles: u.roles
+            roles: []
         });
+
         setErrors({});
         setSearchRole("");
         setOpen(true);
@@ -85,6 +139,7 @@ const UsersPage = () => {
         setEditing(null);
         setErrors({});
         setSearchRole("");
+        setSelectedUserId(null);
     }, []);
 
     const isValidEmail = (email: string) =>
@@ -94,86 +149,86 @@ const UsersPage = () => {
         if (!editing) return false;
 
         const newErrors: FormErrors = {};
-        const name = editing.name.trim();
 
-        if (name.length < 3 || name.length > 20) {
-            newErrors.name = "Debe tener entre 3 y 20 caracteres";
+        if (!editing.username.trim() || editing.username.length < 3)
+            newErrors.username = "Mínimo 3 caracteres";
+
+        if (!editing.email.trim() || !isValidEmail(editing.email))
+            newErrors.email = "Correo inválido";
+
+        if (!editing.id) {
+            if (!editing.firstName.trim() || editing.firstName.length < 3)
+                newErrors.firstName = "Mínimo 3 caracteres";
+
+            if (!editing.lastName.trim() || editing.lastName.length < 3)
+                newErrors.lastName = "Mínimo 3 caracteres";
+
+            if (editing.password.length < 6)
+                newErrors.password = "Mínimo 6 caracteres";
         }
 
-        if (!editing.email.trim() || !isValidEmail(editing.email)) {
-            newErrors.email = "Correo electrónico inválido";
-        }
-
-        if (!editing.id && editing.password.trim().length < 6) {
-            newErrors.password = "Mínimo 6 caracteres";
-        }
-
-        if (editing.roles.length === 0) {
+        if (editing.roles.length === 0)
             newErrors.roles = "Selecciona al menos un rol";
-        }
 
         setErrors(newErrors);
 
         return Object.keys(newErrors).length === 0;
     }, [editing]);
 
-    const save = useCallback(() => {
+    const buildPayload = useCallback((form: UserForm): UserRequestParams => {
+        return {
+            id: form.id,
+            username: form.username.trim(),
+            email: form.email.trim(),
+            status: true,
+            roles: form.roles,
+            name: form.firstName.trim(),
+            lastname: form.lastName.trim(),
+            password: form.password
+        };
+    }, []);
+
+    const save = useCallback(async () => {
         if (!editing || !validate()) return;
 
-        const normalizedRoles = [...editing.roles].sort((a, b) => a - b);
-
-        if (editing.id) {
-            const existing = users.find((u) => u.id === editing.id);
-
-            if (
-                existing &&
-                existing.name === editing.name.trim() &&
-                JSON.stringify([...existing.roles].sort((a, b) => a - b)) ===
-                    JSON.stringify(normalizedRoles)
-            ) {
-                showToast("Sin cambios", TOAST_TYPES.ERROR);
+        const payload = buildPayload(editing);
+        try {
+            if (editing.id) {
+                await updateUser.mutateAsync(payload)
+                showToast("Usuario actualizado exitosamente", TOAST_TYPES.SUCCESS)
                 return;
             }
 
-            setUsers((prev) =>
-                prev.map((u) =>
-                    u.id === editing.id
-                        ? { ...u, name: editing.name.trim(), roles: normalizedRoles }
-                        : u
-                )
-            );
+            await createUser.mutateAsync(payload);
+            showToast("Usuario creado exitosamente", TOAST_TYPES.SUCCESS)
+        } catch (error) {
 
-            showToast("Usuario actualizado", TOAST_TYPES.SUCCESS);
-        } else {
-            setUsers((prev) => [
-                {
-                    id: crypto.randomUUID(),
-                    name: editing.name.trim(),
-                    roles: normalizedRoles,
-                    active: true
-                },
-                ...prev
-            ]);
-
-            showToast("Usuario creado", TOAST_TYPES.SUCCESS);
+            if (error instanceof HttpError) {
+                showToast(error.message, TOAST_TYPES.ERROR)
+            }
+            showToast("Error durante operacion de usuario.", TOAST_TYPES.ERROR)
+        } finally {
+            close()
         }
 
-        close();
-    }, [editing, users, validate, showToast, close]);
+    }, [
+        editing,
+        validate,
+        buildPayload,
+        createUser,
+        updateUser
+    ]);
 
-    const toggleActive = useCallback((id: string) => {
-        setUsers((prev) =>
-            prev.map((u) =>
-                u.id === id ? { ...u, active: !u.active } : u
-            )
-        );
-        showToast("Estado actualizado", TOAST_TYPES.SUCCESS);
+    const toggleActive = useCallback(() => {
+        showToast("Acción futura con mutation", TOAST_TYPES.SUCCESS);
     }, [showToast]);
 
     const toggleRole = useCallback((roleId: number) => {
         setEditing((prev) => {
             if (!prev) return prev;
+
             const exists = prev.roles.includes(roleId);
+
             return {
                 ...prev,
                 roles: exists
@@ -182,81 +237,40 @@ const UsersPage = () => {
             };
         });
 
-        setErrors((prev) => ({ ...prev, roles: undefined }));
+        setErrors((p) => ({ ...p, roles: undefined }));
     }, []);
 
-    const removeRole = useCallback((roleId: number) => {
-        setEditing((prev) =>
-            prev ? { ...prev, roles: prev.roles.filter((r) => r !== roleId) } : prev
+    const filteredRoles = useMemo(() => {
+        return roles.filter((r: Role) =>
+            r.roleName.toLowerCase().includes(searchRole.toLowerCase())
         );
-    }, []);
-
-    const getRole = useCallback(
-        (roleId: number) => roles.find((r: Role) => r.id === roleId),
-        [roles]
-    );
-
-    const filteredRoles = useMemo(
-        () =>
-            roles.filter((r: Role) =>
-                r.roleName.toLowerCase().includes(searchRole.toLowerCase())
-            ),
-        [roles, searchRole]
-    );
+    }, [roles, searchRole]);
 
     const actions = useMemo(
         () => [
             { title: "Editar", label: "Editar", color: "blue", onClick: openEdit },
-            {
-                title: "Inactivar",
-                label: "Inactivar",
-                color: "red",
-                onClick: (u: User) => toggleActive(u.id)
-            }
+            { title: "Inactivar", label: "Inactivar", color: "red", onClick: toggleActive }
         ],
         [openEdit, toggleActive]
     );
 
-    const columns = useMemo(
+    const columns: TableColumn[] = useMemo(
         () => [
-            { key: "name", label: "Nombre" },
-            {
-                key: "roles",
-                label: "Roles",
-                render: (row: User) => (
-                    <div className="flex flex-wrap gap-2">
-                        {row.roles.map((roleId) => {
-                            const role = getRole(roleId);
-                            if (!role) return null;
-                            return (
-                                <span
-                                    key={role.id}
-                                    className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700"
-                                >
-                                    {role.roleName}
-                                </span>
-                            );
-                        })}
-                    </div>
-                )
-            },
-            {
-                key: "active",
-                label: "Estado",
-                render: (row: User) => (
-                    <span className={row.active ? "text-emerald-600" : "text-red-500"}>
-                        {row.active ? "Activo" : "Inactivo"}
-                    </span>
-                )
-            },
+            { key: "username", label: "Usuario" },
+            { key: "fullname", label: "Nombre"},
+            { key: "email", label: "Correo" },
+            { key: "statusLabel", label: "Estado" },
             { key: "actions", label: "Acciones", hasActions: true }
         ],
-        [getRole]
+        []
     );
+
+    if (isLoading) return <div className="p-6">Cargando usuarios...</div>;
 
     return (
         <>
             <div className="p-6 lg:p-8 bg-slate-50 min-h-screen space-y-6">
+
                 <div className="flex justify-between items-center">
                     <div>
                         <h1 className="text-2xl font-semibold text-slate-800">
@@ -278,12 +292,12 @@ const UsersPage = () => {
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
                     <DataTable
                         columns={columns}
-                        data={users}
+                        data={usersData}
                         actions={actions as any}
-                        page={1}
-                        pageSize={10}
-                        total={users.length}
-                        onPageChange={() => {}}
+                        page={page}
+                        pageSize={pageSize}
+                        total={totalElements}
+                        onPageChange={(p) => setPage(p)}
                     />
                 </div>
 
@@ -294,118 +308,128 @@ const UsersPage = () => {
                     size="md"
                 >
                     <div className="space-y-5">
-                        <FormField label="Nombre" error={errors.name}>
+
+                        <FormField label="Usuario" error={errors.username}>
                             <Input
-                                value={editing?.name || ""}
+                                value={editing?.username || ""}
                                 onChange={(e) =>
-                                    setEditing((prev) =>
-                                        prev ? { ...prev, name: e.target.value } : prev
+                                    setEditing((p) =>
+                                        p ? { ...p, username: e.target.value } : p
                                     )
                                 }
                             />
                         </FormField>
+                        <FormField label="Nombre" error={errors.firstName}>
+                            <Input
+                                value={editing?.firstName || ""}
+                                onChange={(e) =>
+                                    setEditing((p) =>
+                                        p ? { ...p, firstName: e.target.value } : p
+                                    )
+                                }
+                            />
+                        </FormField>
+
+                        <FormField label="Apellidos" error={errors.lastName}>
+                            <Input
+                                value={editing?.lastName || ""}
+                                onChange={(e) =>
+                                    setEditing((p) =>
+                                        p ? { ...p, lastName: e.target.value } : p
+                                    )
+                                }
+                            />
+                        </FormField>
+                        {!editing?.id && (
+                            <FormField label="Contraseña" error={errors.password}>
+                                <Input
+                                    type="password"
+                                    value={editing?.password || ""}
+                                    onChange={(e) =>
+                                        setEditing((p) =>
+                                            p ? { ...p, password: e.target.value } : p
+                                        )
+                                    }
+                                />
+                            </FormField>
+                        )}
 
                         <FormField label="Correo" error={errors.email}>
                             <Input
                                 value={editing?.email || ""}
-                                type="email"
                                 onChange={(e) =>
-                                    setEditing((prev) =>
-                                        prev ? { ...prev, email: e.target.value } : prev
-                                    )
-                                }
-                            />
-                        </FormField>
-
-                        <FormField label="Contraseña por defecto" error={errors.password}>
-                            <Input
-                                value={editing?.password || ""}
-                                type="password"
-                                onChange={(e) =>
-                                    setEditing((prev) =>
-                                        prev ? { ...prev, password: e.target.value } : prev
+                                    setEditing((p) =>
+                                        p ? { ...p, email: e.target.value } : p
                                     )
                                 }
                             />
                         </FormField>
 
                         <FormField label="Roles" error={errors.roles}>
-                            <div className="space-y-3">
-                                <Input
-                                    placeholder="Buscar roles..."
-                                    value={searchRole}
-                                    onChange={(e) => setSearchRole(e.target.value)}
-                                />
+                            <Input
+                                placeholder="Buscar roles..."
+                                value={searchRole}
+                                onChange={(e) => setSearchRole(e.target.value)}
+                            />
 
-                                {editing && editing.roles.length > 0 && (
-                                    <div className="flex flex-wrap gap-2">
-                                        {editing.roles.map((roleId) => {
-                                            const role = getRole(roleId);
-                                            if (!role) return null;
+                            <div className="border border-slate-200 rounded-xl max-h-64 overflow-y-auto mt-3">
+                                {filteredRoles.map((role) => {
+                                    const selected = editing?.roles.includes(role.id);
 
-                                            return (
-                                                <div
-                                                    key={role.id}
-                                                    className="flex items-center gap-2 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm"
-                                                >
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeRole(role.id)}
-                                                        className="flex items-center gap-2"
-                                                    >
-                                                        <span>{role.roleName}</span>
-                                                        <FontAwesomeIcon icon={faRemove} />
-                                                    </button>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-
-                                <div className="border border-slate-200 rounded-xl max-h-64 overflow-y-auto">
-                                    {filteredRoles.map((role) => {
-                                        const selected = editing?.roles.includes(role.id);
-
-                                        return (
-                                            <button
-                                                type="button"
-                                                key={role.id}
-                                                onClick={() => toggleRole(role.id)}
-                                                className={`w-full text-left px-4 py-3 border-b border-slate-100 ${
-                                                    selected ? "bg-blue-50" : "hover:bg-slate-50"
+                                    return (
+                                        <button
+                                            key={role.id}
+                                            type="button"
+                                            onClick={() => toggleRole(role.id)}
+                                            className={`w-full text-left px-4 py-3 border-b border-slate-100 transition-colors ${selected
+                                                ? "bg-blue-50"
+                                                : "hover:bg-slate-50"
                                                 }`}
-                                            >
-                                                <div className="flex justify-between">
-                                                    <div className="font-medium text-slate-700">
-                                                        {role.roleName}
-                                                    </div>
-                                                    {selected && (
-                                                        <div className="text-blue-600 text-sm">
-                                                            Seleccionado
-                                                        </div>
-                                                    )}
+                                        >
+                                            <div className="flex justify-between items-center">
+                                                <div className="font-medium text-slate-700">
+                                                    {role.roleName}
                                                 </div>
-                                            </button>
-                                        );
-                                    })}
 
-                                    {filteredRoles.length === 0 && (
-                                        <div className="p-4 text-sm text-slate-400">
-                                            No se encontraron roles
-                                        </div>
-                                    )}
-                                </div>
+                                                <div
+                                                    className={`text-sm ${selected
+                                                        ? "text-blue-600"
+                                                        : "text-gray-500"
+                                                        }`}
+                                                >
+                                                    {selected ? "Seleccionado" : "Seleccionar"}
+                                                </div>
+                                            </div>
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </FormField>
 
                         <div className="flex justify-end gap-3 pt-2">
-                            <Button
-                                label="Cancelar"
-                                color="gray"
-                                variant="outline"
-                                onClick={close}
-                            />
-                            <Button label="Guardar" color="blue" onClick={save} />
+                            <div className="flex justify-end gap-3 pt-2">
+                                <Button
+                                    label="Cancelar"
+                                    color="gray"
+                                    onClick={close}
+                                    disabled={isSaving}
+                                />
+
+                                <Button
+                                    label={
+                                        isSaving
+                                            ? editing?.id
+                                                ? "Actualizando..."
+                                                : "Guardando..."
+                                            : editing?.id
+                                                ? "Actualizar"
+                                                : "Guardar"
+                                    }
+                                    color="blue"
+                                    onClick={save}
+                                    disabled={isSaving}
+                                />
+                            </div>
                         </div>
                     </div>
                 </Modal>

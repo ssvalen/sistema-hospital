@@ -3,6 +3,7 @@ package com.hospitaldb.backend.service.administrativo;
 import com.hospitaldb.backend.dto.request.AsignacionRolRequestDTO;
 import com.hospitaldb.backend.dto.request.KeycloakUserRequestDTO;
 import com.hospitaldb.backend.dto.request.UsuarioSistemaRequestDTO;
+import com.hospitaldb.backend.dto.request.UsuarioSistemaRequestUpdateDTO;
 import com.hospitaldb.backend.dto.response.administrativo.RolDTO;
 import com.hospitaldb.backend.dto.response.administrativo.UsuarioSistemaDetailDTO;
 import com.hospitaldb.backend.dto.response.administrativo.UsuarioSistemaListDTO;
@@ -99,6 +100,10 @@ public class UsuarioSistemaService {
     public UsuarioSistemaDetailDTO create(UsuarioSistemaRequestDTO request, HttpServletRequest httpRequest) {
         log.info("Creando nuevo usuario: {}", request.getUsername());
 
+        // activo por defecto en keycloak
+        if (request.getActivo() == null)
+            request.setActivo(true);
+
         if (usuarioRepository.existsByUsername(request.getUsername()))
             throw new BusinessException("Ya existe un usuario con el username: " + request.getUsername());
 
@@ -108,7 +113,7 @@ public class UsuarioSistemaService {
         keycloakAdminService.createUser(buildKeycloakUserRequest(request)).block();
         String keycloakId = keycloakAdminService.getUserId(request.getUsername());
 
-        if (keycloakId.isBlank())
+        if (keycloakId.isBlank() || keycloakId == null)
             throw new ResourceNotFoundException("Usuario no encontrado en Keycloak, verifique los logs");
         // log.info("Contraseña: {}, usuario: {}",pass,user);
         UsuarioSistema usuario = new UsuarioSistema();
@@ -136,32 +141,32 @@ public class UsuarioSistemaService {
                 AuditAction.CREATE,
                 "Usuario",
                 String.valueOf(saved.getIdUsuario()),
-                null, // before → null porque es creación
-                saved.toString(), // after
-                null, // reason
+                null,
+                buildUsuarioDetailDTO(saved),
+                null,
                 httpRequest);
         return buildUsuarioDetailDTO(saved);
     }
 
-    private KeycloakUserRequestDTO buildKeycloakUserRequest(
-            UsuarioSistemaRequestDTO user) {
-
+    private KeycloakUserRequestDTO buildKeycloakUserRequest(UsuarioSistemaRequestDTO user) {
+        boolean isEnabled = Boolean.TRUE.equals(user.getActivo());
         return KeycloakUserRequestDTO.builder()
                 .username(user.getUsername())
-                .firstName(user.getPrimerNombre())
-                .lastName(user.getApellidos())
                 .email(user.getEmail())
                 .password(user.getPassword())
-                .enabled(user.getActivo())
+                .enabled(isEnabled)
                 .build();
     }
 
     @Transactional
-    public UsuarioSistemaDetailDTO update(Long id, UsuarioSistemaRequestDTO request, HttpServletRequest httpRequest) {
+    public UsuarioSistemaDetailDTO update(Long id, UsuarioSistemaRequestUpdateDTO request,
+            HttpServletRequest httpRequest) {
         log.info("Actualizando usuario con ID: {}", id);
 
         UsuarioSistema usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + id));
+
+        UsuarioSistemaDetailDTO beforeAudit = buildUsuarioDetailDTO(usuario);
 
         if (!usuario.getUsername().equals(request.getUsername()) &&
                 usuarioRepository.existsByUsername(request.getUsername())) {
@@ -180,49 +185,51 @@ public class UsuarioSistemaService {
             usuario.setActivo(request.getActivo());
         }
 
-        if (request.getIdKeycloak() != null) {
-            usuario.setIdKeycloak(request.getIdKeycloak());
-        }
-
         UsuarioSistema updated = usuarioRepository.save(usuario);
+
         log.info("Usuario actualizado exitosamente: {}", id);
 
         auditService.log(
-                AuditAction.CREATE,
+                AuditAction.UPDATE,
                 "Usuario",
                 String.valueOf(usuario.getIdUsuario()),
-                usuario.toString(), // before
-                updated.toString(), // after
-                null, // reason
+                beforeAudit,
+                buildUsuarioDetailDTO(updated),
+                null,
                 httpRequest);
+
         return buildUsuarioDetailDTO(updated);
     }
 
     @Transactional
     public void delete(Long id, HttpServletRequest request) {
         log.info("Eliminando usuario con ID: {}", id);
+
         UsuarioSistema usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + id));
 
-        // Eliminar de Keycloak
+        UsuarioSistemaDetailDTO beforeAudit = buildUsuarioDetailDTO(usuario);
+
         if (usuario.getIdKeycloak() != null) {
             // keycloakAdminService.deleteKeycloakUser(usuario.getIdKeycloak());
         }
 
-        // Eliminar relaciones locales
         if (!usuario.getUsuarioRoles().isEmpty()) {
             usuarioRolRepository.deleteByUsuario_IdUsuarioAndRol_IdRol(id, null);
         }
+
         usuario.setActivo(false);
         usuarioRepository.save(usuario);
+
         auditService.log(
                 AuditAction.CREATE,
                 "Usuario",
                 String.valueOf(usuario.getIdUsuario()),
-                usuario.toString(), // before
-                null, // after
-                null, // reason
+                beforeAudit,
+                null,
+                null,
                 request);
+
         log.info("Usuario eliminado exitosamente: {}", id);
     }
 

@@ -7,6 +7,9 @@ import com.hospitaldb.backend.exception.BusinessException;
 import com.hospitaldb.backend.exception.ResourceNotFoundException;
 import com.hospitaldb.backend.repository.inventario.IInventarioMedicamentoRepository;
 import com.hospitaldb.backend.repository.medicamentos.IMedicamentoRepository;
+import com.hospitaldb.backend.service.auditoria.AuditService;
+import com.hospitaldb.backend.utils.AuditAction;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -22,12 +25,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-
 public class MedicamentoService {
 
     private final IMedicamentoRepository medicamentoRepository;
     private final IInventarioMedicamentoRepository inventarioRepository;
     private final ModelMapper modelMapper;
+    private final AuditService auditService;
 
     public List<MedicamentoDTO> findAll() {
         log.info("Obteniendo todos los medicamentos");
@@ -37,13 +40,13 @@ public class MedicamentoService {
                 .collect(Collectors.toList());
     }
 
-    private List<Medicamento> findMedicamentoEntityAll(){
+    private List<Medicamento> findMedicamentoEntityAll() {
         return medicamentoRepository.findAllByActivo(true);
     }
 
     public Page<MedicamentoDTO> findAll(Pageable pageable) {
         log.info("Obteniendo medicamentos paginados");
-        Page<Medicamento> pageResult = medicamentoRepository.findAllByActivo(true,pageable);
+        Page<Medicamento> pageResult = medicamentoRepository.findAllByActivo(true, pageable);
         return pageResult.map(this::convertToDTO);
     }
 
@@ -55,11 +58,12 @@ public class MedicamentoService {
     }
 
     @Transactional
-    public MedicamentoDTO create(MedicamentoRequestDTO request) {
+    public MedicamentoDTO create(MedicamentoRequestDTO request, HttpServletRequest httpRequest) {
         log.info("Creando nuevo medicamento: {}", request.getNombreComercial());
 
         if (medicamentoRepository.existsByNombreComercial(request.getNombreComercial())) {
-            throw new BusinessException("Ya existe un medicamento con el nombre comercial: " + request.getNombreComercial());
+            throw new BusinessException(
+                    "Ya existe un medicamento con el nombre comercial: " + request.getNombreComercial());
         }
 
         Medicamento medicamento = new Medicamento();
@@ -68,20 +72,36 @@ public class MedicamentoService {
         medicamento.setUnidadMedida(request.getUnidadMedida());
 
         Medicamento saved = medicamentoRepository.save(medicamento);
+
+        auditService.log(
+                AuditAction.CREATE,
+                "Medicamento",
+                String.valueOf(saved.getIdMedicamento()),
+                null,
+                copyMedicamento(saved),
+                null,
+                httpRequest);
+
         log.info("Medicamento creado exitosamente con ID: {}", saved.getIdMedicamento());
+
         return convertToDTO(saved);
     }
 
     @Transactional
-    public MedicamentoDTO update(Long id, MedicamentoRequestDTO request) {
+    public MedicamentoDTO update(Long id, MedicamentoRequestDTO request, HttpServletRequest httpRequest) {
+
         log.info("Actualizando medicamento con ID: {}", id);
 
         Medicamento medicamento = medicamentoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Medicamento no encontrado con ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Medicamento no encontrado con ID: " + id));
+
+        Medicamento before = copyMedicamento(medicamento);
 
         if (!medicamento.getNombreComercial().equals(request.getNombreComercial()) &&
                 medicamentoRepository.existsByNombreComercial(request.getNombreComercial())) {
-            throw new BusinessException("Ya existe un medicamento con el nombre comercial: " + request.getNombreComercial());
+            throw new BusinessException(
+                    "Ya existe un medicamento con el nombre comercial: " + request.getNombreComercial());
         }
 
         medicamento.setNombreComercial(request.getNombreComercial());
@@ -89,40 +109,82 @@ public class MedicamentoService {
         medicamento.setUnidadMedida(request.getUnidadMedida());
 
         Medicamento updated = medicamentoRepository.save(medicamento);
+
+        auditService.log(
+                AuditAction.UPDATE,
+                "Medicamento",
+                String.valueOf(updated.getIdMedicamento()),
+                before,
+                copyMedicamento(updated),
+                null,
+                httpRequest);
+
         log.info("Medicamento actualizado exitosamente: {}", id);
+
         return convertToDTO(updated);
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(Long id, HttpServletRequest httpRequest) {
+
         log.info("Eliminando medicamento con ID: {}", id);
+
         Medicamento medicamento = medicamentoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Medicamento no encontrado con ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Medicamento no encontrado con ID: " + id));
 
         if (!medicamento.getTratamientoMedicamentos().isEmpty()) {
-            throw new BusinessException("No se puede eliminar un medicamento que está asociado a tratamientos");
+            throw new BusinessException(
+                    "No se puede eliminar un medicamento que está asociado a tratamientos");
         }
 
         if (!medicamento.getInventarios().isEmpty()) {
-            throw new BusinessException("No se puede eliminar un medicamento que tiene inventario");
+            throw new BusinessException(
+                    "No se puede eliminar un medicamento que tiene inventario");
         }
+
+        Medicamento before = copyMedicamento(medicamento);
+
         medicamento.setActivo(false);
-        medicamentoRepository.save(medicamento);
+
+        Medicamento deleted = medicamentoRepository.save(medicamento);
+
+        auditService.log(
+                AuditAction.DELETE,
+                "Medicamento",
+                String.valueOf(id),
+                before,
+                null,
+                null,
+                httpRequest);
+
         log.info("Medicamento eliminado exitosamente: {}", id);
+    }
+
+    private Medicamento copyMedicamento(Medicamento medicamento) {
+        Medicamento copy = new Medicamento();
+
+        copy.setIdMedicamento(medicamento.getIdMedicamento());
+        copy.setNombreComercial(medicamento.getNombreComercial());
+        copy.setPrincipioActivo(medicamento.getPrincipioActivo());
+        copy.setUnidadMedida(medicamento.getUnidadMedida());
+        copy.setActivo(medicamento.getActivo());
+
+        return copy;
     }
 
     public List<MedicamentoDTO> searchByNombre(String nombre) {
         log.info("Buscando medicamentos por nombre: {}", nombre);
-        List<Medicamento> medicamentos = medicamentoRepository.findByNombreComercialContainingIgnoreCase(nombre);
-        return medicamentos.stream()
+        return medicamentoRepository.findByNombreComercialContainingIgnoreCase(nombre)
+                .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     public List<MedicamentoDTO> findByPrincipioActivo(String principioActivo) {
         log.info("Buscando medicamentos por principio activo: {}", principioActivo);
-        List<Medicamento> medicamentos = medicamentoRepository.findByPrincipioActivoContainingIgnoreCase(principioActivo);
-        return medicamentos.stream()
+        return medicamentoRepository.findByPrincipioActivoContainingIgnoreCase(principioActivo)
+                .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
@@ -134,24 +196,24 @@ public class MedicamentoService {
 
     public List<MedicamentoDTO> findMedicamentosConStockBajo() {
         log.info("Obteniendo medicamentos con stock bajo");
-        List<Medicamento> medicamentos = medicamentoRepository.findMedicamentosConStockBajo();
-        return medicamentos.stream()
+        return medicamentoRepository.findMedicamentosConStockBajo()
+                .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     public List<MedicamentoDTO> findMedicamentosSinInventario() {
         log.info("Obteniendo medicamentos sin inventario");
-        List<Medicamento> medicamentos = medicamentoRepository.findMedicamentosSinInventario();
-        return medicamentos.stream()
+        return medicamentoRepository.findMedicamentosSinInventario()
+                .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     public List<MedicamentoDTO> searchMedicamentos(String busqueda) {
         log.info("Búsqueda general de medicamentos: {}", busqueda);
-        List<Medicamento> medicamentos = medicamentoRepository.searchMedicamentos(busqueda);
-        return medicamentos.stream()
+        return medicamentoRepository.searchMedicamentos(busqueda)
+                .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
@@ -164,8 +226,9 @@ public class MedicamentoService {
                 .nombreComercial(medicamento.getNombreComercial())
                 .principioActivo(medicamento.getPrincipioActivo())
                 .unidadMedida(medicamento.getUnidadMedida())
-                .cantidadTratamientos(medicamento.getTratamientoMedicamentos() != null ?
-                        medicamento.getTratamientoMedicamentos().size() : 0)
+                .cantidadTratamientos(medicamento.getTratamientoMedicamentos() != null
+                        ? medicamento.getTratamientoMedicamentos().size()
+                        : 0)
                 .stockTotal(stockTotal != null ? stockTotal : 0)
                 .build();
     }

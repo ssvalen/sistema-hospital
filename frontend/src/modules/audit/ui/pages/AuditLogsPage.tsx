@@ -18,33 +18,16 @@ const AuditLogsPage = () => {
     const [page, setPage] = useState(1);
     const pageSize = 10;
 
-
-
     const {
         items: auditLogs,
         totalElements,
         isLoading,
         isFetching
-    } = usePaginatedAuditLogs(page - 1, pageSize)
+    } = usePaginatedAuditLogs(page - 1, pageSize);
 
     const [selectedLog, setSelectedLog] = useState<any | null>(null);
     const [open, setOpen] = useState(false);
     const [viewMode, setViewMode] = useState<"before" | "after">("after");
-
-    const data = Array.from({ length: 10 }).map((_, i) => ({
-        id: `${page}-${i}`,
-        timestamp: new Date().toISOString(),
-        action: ["CREATE", "UPDATE", "DELETE"][i % 3],
-        entityType: "PATIENT",
-        entityId: `ID-${page}-${i}`,
-        user: {
-            username: `user_${i}`
-        },
-        change: {
-            before: { name: "Old Name", age: 20 },
-            after: { name: "New Name", age: 25 }
-        }
-    }));
 
     const getActionStyle = (action: string) => {
         switch (action) {
@@ -127,7 +110,6 @@ const AuditLogsPage = () => {
                             <h1 className="text-3xl font-bold text-slate-800">
                                 Auditoría del sistema
                             </h1>
-
                             <p className="text-slate-500">
                                 Monitoreo de acciones del sistema
                             </p>
@@ -140,17 +122,13 @@ const AuditLogsPage = () => {
                         <div className="px-6 py-5 border-b border-slate-100 flex items-center gap-3">
 
                             <div className="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center">
-                                <FontAwesomeIcon
-                                    icon={faDatabase}
-                                    className="text-blue-600"
-                                />
+                                <FontAwesomeIcon icon={faDatabase} className="text-blue-600" />
                             </div>
 
                             <div>
                                 <h2 className="font-semibold text-slate-800">
                                     Logs de auditoría
                                 </h2>
-
                                 <p className="text-sm text-slate-500">
                                     Historial de acciones
                                 </p>
@@ -169,17 +147,6 @@ const AuditLogsPage = () => {
                                 onPageChange={setPage}
                                 actions={actions}
                             />
-                            {/* <DataTable
-                                columns={columns}
-                                data={data}
-                                actions={actions}
-                                page={page}
-                                pageSize={10}
-                                total={42}
-                                onPageChange={setPage}
-                                rowKey="id"
-                            /> */}
-
                         </div>
 
                     </div>
@@ -203,13 +170,15 @@ const AuditLogsPage = () => {
                             <div>
                                 <p className="text-xs text-slate-400">Acción</p>
 
-                                <span className={`px-2 py-1 rounded-lg text-xs font-medium ${getActionStyle(selectedLog.action)}`}>
-                                    {selectedLog.action}
+                                <span className={`px-2 py-1 rounded-lg text-xs font-medium ${getActionStyle(selectedLog?.action || "")}`}>
+                                    {selectedLog?.action || "-"}
                                 </span>
                             </div>
 
                             <span className="text-xs text-slate-500">
-                                {new Date(selectedLog.timestamp).toLocaleString()}
+                                {selectedLog?.timestamp
+                                    ? new Date(selectedLog.timestamp).toLocaleString()
+                                    : "-"}
                             </span>
 
                         </div>
@@ -219,14 +188,14 @@ const AuditLogsPage = () => {
                             <div className="bg-slate-50 rounded-xl p-4">
                                 <p className="text-xs text-slate-400">Usuario</p>
                                 <p className="font-medium text-slate-700">
-                                    {selectedLog.user.username}
+                                    {selectedLog?.user?.username || "-"}
                                 </p>
                             </div>
 
                             <div className="bg-slate-50 rounded-xl p-4">
                                 <p className="text-xs text-slate-400">Entidad</p>
                                 <p className="font-medium text-slate-700">
-                                    {selectedLog.entityType}
+                                    {selectedLog?.entityType || "-"}
                                 </p>
                             </div>
 
@@ -261,21 +230,21 @@ const AuditLogsPage = () => {
                             <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
 
                                 <p className="text-xs font-semibold text-slate-600 mb-2">
-                                    {viewMode === "before"
-                                        ? "Estado anterior"
-                                        : "Estado actual"}
+                                    {viewMode === "before" ? "Estado anterior" : "Estado actual"}
                                 </p>
 
                                 <div className="max-h-80 overflow-auto bg-white p-3 rounded-lg border text-xs text-slate-700">
 
                                     <pre>
-                                        {JSON.stringify(
-                                            viewMode === "before"
-                                                ? selectedLog.change.before
-                                                : selectedLog.change.after,
-                                            null,
-                                            2
-                                        )}
+                                        {selectedLog
+                                            ? JSON.stringify(
+                                                viewMode === "before"
+                                                    ? selectedLog?.changes?.before ?? {}
+                                                    : selectedLog?.changes?.after ?? {},
+                                                null,
+                                                2
+                                            )
+                                            : "Cargando..."}
                                     </pre>
 
                                 </div>

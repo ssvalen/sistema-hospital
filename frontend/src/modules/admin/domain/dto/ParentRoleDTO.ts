@@ -1,4 +1,4 @@
 export type ParentRoleResponseDTO = {
-  idRolPadre: number;
-  nombreRolPadre: string;
-};
+    idRolPadre: number;
+    nombreRolPadre: string;
+}

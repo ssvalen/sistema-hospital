@@ -12,21 +12,21 @@ export function createEtlRepository(http: HttpClient): EtlRepository {
     return {
         async putFile(params, signal) {
 
-            // const formData = new FormData();
+            const formData = new FormData();
 
-            // formData.append("file", params.file);
-            // formData.append("loadType", params.loadType);
+            formData.append("file", params.file);
+            formData.append("loadType", params.loadType);
 
-            // const dto = await http.request<ApiResponse<PutEtlFileResponseDTO>>({
-            //     url: API_ROUTES.ROLE_CREATE,
-            //     method: "POST",
-            //     body: formData,
-            //     withCredentials: false,
-            //     timeoutMs: 15_000,
-            //     signal,
-            // });
+            const dto = await http.request<ApiResponse<PutEtlFileResponseDTO>>({
+                url: API_ROUTES.ROLE_CREATE,
+                method: "POST",
+                body: formData,
+                withCredentials: false,
+                timeoutMs: 15_000,
+                signal,
+            });
 
-            // return dto.success
+            return dto.success
             return true
         },
     };

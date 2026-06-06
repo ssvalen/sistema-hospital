@@ -16,6 +16,7 @@ import java.time.LocalDate;
 @RequestMapping("/api/hospitaldb/auditoria/logs")
 @RequiredArgsConstructor
 @Slf4j
+@CrossOrigin(origins = "*")
 public class AuditLogController {
 
     private final AuditLogService auditLogService;

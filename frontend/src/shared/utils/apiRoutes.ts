@@ -26,6 +26,8 @@ export const API_ROUTES = {
   PATIENT_PUT: '/api/hospitaldb/clinico/pacientes',
   PATIENT_GET_BY_ID: '/api/hospitaldb/clinico/pacientes',
   // APPOINTMENTS
+  APPOINTMENT_ENDPOINT: '',
+  APPOINTMENT_CANCEL: (id:number) => `/api/hospitaldb/clinico/citas/${id}/cancelar`,
   APPOINTMENT_GET_ALL: '/api/hospitaldb/clinico/citas',
   APPOINTMENT_GET_PAGINATED: '/api/hospitaldb/clinico/citas/paginado',
   APPOINTMENT_GET_BY_ID: '/api/hospitaldb/clinico/citas',
@@ -62,5 +64,9 @@ export const API_ROUTES = {
   HOSPITAL_AREA_CREATE: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/areas',
   HOSPITAL_AREA_UPDATE: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/areas',
   // AUDIT LOGS
-  AUDIT_ENDPOINT: ''
+  AUDIT_ENDPOINT: '/api/hospitaldb/auditoria/logs/paginado',
+  // USERS
+  USER_ENDPOINT: '/api/hospitaldb/administrativo/usuarios',
+  USER_GET_PAGINATED: '/api/hospitaldb/administrativo/usuarios/paginado',
+  USER_GET_ROLES: (id: number) => `/api/hospitaldb/administrativo/usuarios/${id}/roles`,
 } as const;

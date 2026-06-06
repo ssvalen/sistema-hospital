@@ -103,7 +103,7 @@ public class RolController {
                         HttpServletRequest request) {
 
                 log.info("POST /api/roles - Creando nuevo rol: {}", requestDTO.getNombreRol());
-                RolDTO created = rolService.create(requestDTO);
+                RolDTO created = rolService.create(requestDTO,request);
 
                 return ResponseEntity.status(HttpStatus.CREATED).body(
                                 EntityResponse.success(created, "Rol creado exitosamente", request.getRequestURI()));
@@ -116,7 +116,7 @@ public class RolController {
                         HttpServletRequest request) {
 
                 log.info("PUT /api/roles/{} - Actualizando rol", id);
-                RolDTO updated = rolService.update(id, requestDTO);
+                RolDTO updated = rolService.update(id, requestDTO, request);
 
                 return ResponseEntity.ok(
                                 EntityResponse.success(updated, "Rol actualizado exitosamente",
@@ -126,7 +126,7 @@ public class RolController {
         @DeleteMapping("/{id}")
         public ResponseEntity<EntityResponse<Void>> delete(@PathVariable Long id, HttpServletRequest request) {
                 log.info("DELETE /api/roles/{} - Eliminando rol", id);
-                rolService.delete(id);
+                rolService.delete(id, request);
 
                 return ResponseEntity.ok(
                                 EntityResponse.success(null, "Rol eliminado exitosamente", request.getRequestURI()));
@@ -139,7 +139,7 @@ public class RolController {
 
                 log.info("POST /api/roles/asignar-permisos - Asignando {} permisos al rol",
                                 requestDTO.getIdPermisos() != null ? requestDTO.getIdPermisos().size() : 0);
-                List<RolPermisoDTO> asignaciones = rolService.asignarPermisos(requestDTO);
+                List<RolPermisoDTO> asignaciones = rolService.asignarPermisos(requestDTO, request);
 
                 return ResponseEntity.status(HttpStatus.CREATED).body(
                                 EntityResponse.success(asignaciones, "Permisos asignados exitosamente",
@@ -154,7 +154,7 @@ public class RolController {
 
                 log.info("DELETE /api/roles/{}/permisos - Removiendo {} permisos del rol", idRol,
                                 idPermisos != null ? idPermisos.size() : 0);
-                rolService.removerPermisos(idRol, idPermisos);
+                rolService.removerPermisos(idRol, idPermisos, request);
 
                 return ResponseEntity.ok(
                                 EntityResponse.success(null, "Permisos removidos exitosamente",
@@ -169,7 +169,7 @@ public class RolController {
                         HttpServletRequest request) {
 
                 log.info("DELETE /api/roles/{}/permisos/{} - Removiendo permiso del rol", idRol, idPermiso);
-                rolService.removerPermiso(idRol, idPermiso);
+                rolService.removerPermiso(idRol, idPermiso, request);
 
                 return ResponseEntity.ok(
                                 EntityResponse.success(null, "Permiso removido exitosamente", request.getRequestURI()));
