@@ -18,13 +18,15 @@ export function createEtlRepository(http: HttpClient): EtlRepository {
             formData.append("loadType", params.loadType);
 
             const dto = await http.request<ApiResponse<PutEtlFileResponseDTO>>({
-                url: API_ROUTES.ROLE_CREATE,
+                url: API_ROUTES.ETL_LOAD,
                 method: "POST",
                 body: formData,
                 withCredentials: false,
                 timeoutMs: 15_000,
                 signal,
             });
+
+           
 
             return dto.success
             return true

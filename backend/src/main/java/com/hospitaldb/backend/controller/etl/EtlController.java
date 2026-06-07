@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "ETL")
+@CrossOrigin(origins = "*")
 public class EtlController {
 
         private final EtlService etlService;
@@ -27,15 +28,16 @@ public class EtlController {
         @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
         public ResponseEntity<EntityResponse<EtlUploadResponseDTO>> upload(
                         @RequestPart("file") MultipartFile file,
-                        @RequestParam("loadType") EtlLoadType loadType,
+                        @RequestPart("loadType") String loadType,
                         HttpServletRequest request) {
-
+                EtlLoadType type = EtlLoadType.valueOf(loadType);
+                
                 log.info("ETL upload iniciado - tipo: {}", loadType);
-
                 return ResponseEntity.ok(
                                 EntityResponse.success(
-                                                etlService.uploadFile(file, loadType),
+                                                etlService.uploadFile(file, type, request),
                                                 "Archivo subido correctamente",
                                                 request.getRequestURI()));
         }
+
 }

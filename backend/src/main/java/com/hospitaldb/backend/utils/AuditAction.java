@@ -7,6 +7,7 @@ public final class AuditAction {
     public static final String RESTORE = "RESTORE";
     public static final String LOGIN   = "LOGIN";
     public static final String LOGOUT  = "LOGOUT";
+    public static final String UPLOAD  = "UPLOAD";
 
     private AuditAction() {}
 }

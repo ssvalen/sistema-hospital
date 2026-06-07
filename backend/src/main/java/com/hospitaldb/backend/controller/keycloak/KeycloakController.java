@@ -20,4 +20,5 @@ public class KeycloakController {
     public ResponseEntity<String> getUserByUsername(@RequestParam String username){
         return ResponseEntity.ok(keycloakService.getUserId(username));
     }
+    
 }

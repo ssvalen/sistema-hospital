@@ -40,7 +40,7 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://keycloak:8080/realms/hotel-db
-          jwk-set-uri: http://keycloak:8080/realms/hotel-db/protocol/openid-connect/certs
+          # jwk-set-uri: http://keycloak:8080/realms/hotel-db/protocol/openid-connect/certs
     client:
       registration:
         keycloak:

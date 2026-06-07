@@ -10,15 +10,11 @@ import { API_ROUTES } from "@/shared/utils/apiRoutes";
 export function createAuthRepository(http: HttpClient): AuthRepository {
   return {
     async login(username: string, password: string, signal) {
-      const dtoBody: LoginRequestDto = {
-        grant_type: "password",
-        client_id: import.meta.env.VITE_KEYCLOAK_CLIENT_ID,
+      const body: LoginRequestDto = {
         username,
-        password,
-        scope: import.meta.env.VITE_KEYCLOAK_SCOPE,
-        client_secret: import.meta.env.VITE_KEYCLOAK_CLIENTE_SECRET
+        password
       }
-      const body = new URLSearchParams(dtoBody)
+      // const body = new URLSearchParams(dtoBody)
 
       const dto = await http.request<LoginResponseDto>({
         url: API_ROUTES.KEYCLOAK_LOGIN,
@@ -65,9 +61,6 @@ export function createAuthRepository(http: HttpClient): AuthRepository {
     async logout(refreshToken: string, signal: AbortSignal) {
 
       const dtoBody : LogoutRequestDto = {
-        grant_type: "refresh_token",
-        client_id: import.meta.env.VITE_KEYCLOAK_CLIENT_ID,
-        client_secret: import.meta.env.VITE_KEYCLOAK_CLIENTE_SECRET,
         refresh_token: refreshToken,
       }
 
@@ -85,6 +78,8 @@ export function createAuthRepository(http: HttpClient): AuthRepository {
         timeoutMs: 15000,
         signal,
       });
+
+      
     },
   };
 }

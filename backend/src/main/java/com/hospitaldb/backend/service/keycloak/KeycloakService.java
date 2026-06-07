@@ -1,6 +1,7 @@
 package com.hospitaldb.backend.service.keycloak;
 
 import com.hospitaldb.backend.dto.request.KeycloakUserRequestDTO;
+import com.hospitaldb.backend.dto.request.auth.LoginRequestDTO;
 import com.hospitaldb.backend.dto.response.keycloak.KeycloakRoleResponseDTO;
 import com.hospitaldb.backend.dto.response.keycloak.KeycloakTokenResponse;
 import com.hospitaldb.backend.dto.response.keycloak.KeycloakUserResponseDTO;
@@ -30,25 +31,25 @@ public class KeycloakService {
 
         private final WebClient keycloakWebClient;
 
-    private Mono<String> getAdminToken() {
-        return keycloakWebClient.post()
-                .uri("/realms/" + keycloakAdminProperties.getRealm() + "/protocol/openid-connect/token")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .bodyValue("grant_type=password" +
-                        "&client_id=" + keycloakAdminProperties.getClientId() +
-                        "&username=" + keycloakAdminProperties.getUser() +
-                        "&password=" + keycloakAdminProperties.getPassword())
-                .retrieve()
-                .onStatus(HttpStatusCode::isError, response ->
-                        response.bodyToMono(String.class)
-                                .flatMap(error -> Mono.error(
-                                        new RuntimeException("Error obteniendo token admin: " + error))))
-                .bodyToMono(KeycloakTokenResponse.class)  // ← DTO en lugar de JsonNode
-                .map(KeycloakTokenResponse::getAccessToken)
-                .retryWhen(reactor.util.retry.Retry.backoff(10, java.time.Duration.ofSeconds(3)))
-                .doOnError(e -> log.error("Error obteniendo token de admin: {}", e.getMessage()));
-                
-    }
+        private Mono<String> getAdminToken() {
+                return keycloakWebClient.post()
+                                .uri("/realms/" + keycloakAdminProperties.getRealm() + "/protocol/openid-connect/token")
+                                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                                .bodyValue("grant_type=password" +
+                                                "&client_id=" + keycloakAdminProperties.getClientId() +
+                                                "&username=" + keycloakAdminProperties.getUser() +
+                                                "&password=" + keycloakAdminProperties.getPassword())
+                                .retrieve()
+                                .onStatus(HttpStatusCode::isError, response -> response.bodyToMono(String.class)
+                                                .flatMap(error -> Mono.error(
+                                                                new RuntimeException("Error obteniendo token admin: "
+                                                                                + error))))
+                                .bodyToMono(KeycloakTokenResponse.class) // ← DTO en lugar de JsonNode
+                                .map(KeycloakTokenResponse::getAccessToken)
+                                .retryWhen(reactor.util.retry.Retry.backoff(10, java.time.Duration.ofSeconds(3)))
+                                .doOnError(e -> log.error("Error obteniendo token de admin: {}", e.getMessage()));
+
+        }
 
         public Mono<Void> createUser(KeycloakUserRequestDTO request) {
                 return getAdminToken()
@@ -190,4 +191,6 @@ public class KeycloakService {
                                 .doOnError(e -> log.error("Error creando rol {}: {}", roleName, e.getMessage()));
         }
 
+
+        
 }
