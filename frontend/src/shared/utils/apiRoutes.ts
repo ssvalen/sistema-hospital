@@ -2,9 +2,9 @@ import { APPOINTMENT_PERMISSIONS } from "@/modules/appointments/ui/utils/appoint
 
 export const API_ROUTES = {
   // AUTH
-  KEYCLOAK_LOGIN: '/realms/hotel-db/protocol/openid-connect/token',
-  KEYCLOAK_LOGOUT: '/realms/hotel-db/protocol/openid-connect/logout',
-  KEYCLOAK_REFRESH: '/realms/hotel-db/protocol/openid-connect/token',
+  KEYCLOAK_LOGIN: '/api/hospitaldb/auth/login',
+  KEYCLOAK_LOGOUT: '/api/hospitaldb/auth/logout',
+  KEYCLOAK_REFRESH: '/api/hospitaldb/auth/refresh',
   // ROLES
   ROLE_ENDPOINT: '/api/hospitaldb/administrativo/roles',
   ROLE_GET_ALL: '/api/hospitaldb/administrativo/roles',
@@ -69,4 +69,6 @@ export const API_ROUTES = {
   USER_ENDPOINT: '/api/hospitaldb/administrativo/usuarios',
   USER_GET_PAGINATED: '/api/hospitaldb/administrativo/usuarios/paginado',
   USER_GET_ROLES: (id: number) => `/api/hospitaldb/administrativo/usuarios/${id}/roles`,
+  // ETL
+  ETL_LOAD: '/api/hospitaldb/etl/upload'
 } as const;

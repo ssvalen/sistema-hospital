@@ -68,6 +68,14 @@ public class OpenApiConfig {
                                                                                                 """)));
         }
 
+        @Bean
+        public GroupedOpenApi authApi() {
+                return GroupedOpenApi.builder()
+                                .group("00 - Auth")
+                                .pathsToMatch("/api/hospitaldb/auth/**")
+                                .build();
+        }
+
         /**
          * Grupo: APIs Administrativas
          * Incluye: usuarios, roles, permisos, crypto

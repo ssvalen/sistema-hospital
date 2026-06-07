@@ -2,6 +2,9 @@ package com.hospitaldb.backend.service.etl;
 
 import com.hospitaldb.backend.dto.response.etl.EtlUploadResponseDTO;
 import com.hospitaldb.backend.enums.EtlLoadType;
+import com.hospitaldb.backend.service.auditoria.AuditService;
+import com.hospitaldb.backend.utils.AuditAction;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -11,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -18,8 +22,9 @@ import java.time.format.DateTimeFormatter;
 public class EtlService {
 
     private static final String BASE_PATH = "/app/uploads";
+    private final AuditService auditService;
 
-    public EtlUploadResponseDTO uploadFile(MultipartFile file, EtlLoadType loadType) {
+    public EtlUploadResponseDTO uploadFile(MultipartFile file, EtlLoadType loadType, HttpServletRequest httpRequest) {
 
         try {
             String folder = loadType.name().toLowerCase();
@@ -39,8 +44,18 @@ public class EtlService {
                     StandardCopyOption.REPLACE_EXISTING);
 
             log.info("Archivo guardado correctamente: {}", target);
+            EtlUploadResponseDTO response = new EtlUploadResponseDTO(filename, target.toString());
+            auditService.log(
+                    "UPLOAD",
+                    "ETL_FILE",
+                    filename,
+                    null,
+                    response,
+                    "Carga de archivo ETL tipo: " + loadType,
+                    null 
+            );
 
-            return new EtlUploadResponseDTO(filename, target.toString());
+            return response;
 
         } catch (IOException e) {
             log.error("Error almacenando archivo ETL", e);
