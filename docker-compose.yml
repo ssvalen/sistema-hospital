@@ -69,7 +69,7 @@ services:
       mysql-hospital:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready"]
+      test: ["CMD", "/opt/keycloak/bin/kc.sh", "show-config"]
       interval: 10s
       timeout: 5s
       retries: 30
