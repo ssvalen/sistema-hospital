@@ -104,7 +104,7 @@ services:
       mysql-hospital:
         condition: service_healthy
       keycloak:
-        condition: service_started
+        condition: service_healthy
     user: root
     networks:
       - hospital-network
