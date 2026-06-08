@@ -12,7 +12,7 @@ export const useCancelAppointment = () => {
 
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["appointments", "appointment"],
+        queryKey: ["appointment"],
       });
     },
   });

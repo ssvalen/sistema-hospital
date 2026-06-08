@@ -191,6 +191,4 @@ public class KeycloakService {
                                 .doOnError(e -> log.error("Error creando rol {}: {}", roleName, e.getMessage()));
         }
 
-
-        
 }

@@ -4,6 +4,7 @@ import { HttpError } from "@/shared/errors/HttpError";
 
 function mergeSignals(signals: Array<AbortSignal | undefined>) {
   const valid = signals.filter(Boolean) as AbortSignal[];
+
   if (valid.length === 0) return undefined;
   if (valid.length === 1) return valid[0];
 
@@ -16,6 +17,7 @@ function mergeSignals(signals: Array<AbortSignal | undefined>) {
       controller.abort();
       break;
     }
+
     s.addEventListener("abort", onAbort, { once: true });
   }
 
@@ -34,25 +36,30 @@ export function createApiClient(baseUrl = "") {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       };
 
-      // JSON auto header (SIN romper FormData)
+      // Solo agregar Content-Type JSON cuando realmente es JSON
       if (
         req.body &&
         !(req.body instanceof FormData) &&
-        !(req.body instanceof URLSearchParams)
+        !(req.body instanceof URLSearchParams) &&
+        !headers["Content-Type"]
       ) {
         headers["Content-Type"] = "application/json";
       }
 
+      const body =
+        req.body instanceof FormData ||
+        req.body instanceof URLSearchParams
+          ? req.body
+          : req.body != null
+          ? JSON.stringify(req.body)
+          : undefined;
+
       const res = await fetch(`${baseUrl}${req.url}`, {
         method: req.method ?? "GET",
         headers,
-        body:
-          req.body instanceof FormData
-            ? req.body
-            : req.body
-            ? JSON.stringify(req.body)
-            : undefined,
+        body,
         signal: finalSignal,
+        credentials: req.withCredentials ? "include" : "same-origin",
       });
 
       if (res.status === 401) {
@@ -64,10 +71,17 @@ export function createApiClient(baseUrl = "") {
         throw new HttpError(res.status, text);
       }
 
-      const ct = res.headers.get("content-type") || "";
-      if (!ct.includes("application/json")) return undefined as T;
+      if (res.status === 204) {
+        return undefined as T;
+      }
 
-      return res.json();
+      const contentType = res.headers.get("content-type") ?? "";
+
+      if (!contentType.includes("application/json")) {
+        return undefined as T;
+      }
+
+      return (await res.json()) as T;
     },
   };
 }

@@ -249,7 +249,6 @@ const UsersPage = () => {
     const actions = useMemo(
         () => [
             { title: "Editar", label: "Editar", color: "blue", onClick: openEdit },
-            { title: "Inactivar", label: "Inactivar", color: "red", onClick: toggleActive }
         ],
         [openEdit, toggleActive]
     );
@@ -284,6 +283,7 @@ const UsersPage = () => {
                     <Button
                         icon={faUserPlus}
                         label="Crear usuario"
+                        title="Crear nuevo usuario"
                         color="blue"
                         onClick={openCreate}
                     />

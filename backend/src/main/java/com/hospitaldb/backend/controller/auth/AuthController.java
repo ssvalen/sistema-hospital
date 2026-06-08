@@ -1,6 +1,7 @@
 package com.hospitaldb.backend.controller.auth;
 
 import com.hospitaldb.backend.dto.request.auth.LoginRequestDTO;
+import com.hospitaldb.backend.dto.request.auth.RefreshRequestDTO;
 import com.hospitaldb.backend.dto.response.EntityResponse;
 import com.hospitaldb.backend.dto.response.auth.LoginResponseDTO;
 import com.hospitaldb.backend.service.auditoria.AuditService;
@@ -45,12 +46,12 @@ public class AuthController {
 
         @PostMapping("/refresh")
         public ResponseEntity<EntityResponse<LoginResponseDTO>> refresh(
-                        @RequestParam String refreshToken,
+                        @RequestBody RefreshRequestDTO refreshToken,
                         HttpServletRequest request) {
 
                 log.info("POST /api/auth/refresh - Refrescando token");
 
-                LoginResponseDTO response = authService.refreshToken(refreshToken);
+                LoginResponseDTO response = authService.refreshToken(refreshToken.getRefreshToken());
 
                 auditService.log(
                                 "REFRESH_TOKEN",
@@ -68,14 +69,13 @@ public class AuthController {
 
         @PostMapping("/logout")
         public ResponseEntity<EntityResponse<Void>> logout(
-                        @RequestParam String refreshToken,
+                        @RequestBody RefreshRequestDTO refreshToken,
                         HttpServletRequest request) {
 
                 log.info("POST /api/auth/logout - Cerrando sesión");
 
-                authService.logout(refreshToken);
 
-                authService.logout(refreshToken);
+                authService.logout(refreshToken.getRefreshToken());
 
                 auditService.log(
                                 "LOGOUT",

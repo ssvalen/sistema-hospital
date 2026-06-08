@@ -1,8 +1,9 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "../modules/auth/store/authStore";
+import type { Role } from "@/shared/types/auth/RolesTypes";
 
 type Props = {
-  allowedRoles?: string[];
+  allowedRoles?: readonly Role[];
   requiredPermissions?: string[];
   children?: React.ReactNode;
 };
@@ -15,49 +16,28 @@ export const ProtectedRoute = ({
   const user = useAuthStore((state) => state.user);
   const hasHydrated = useAuthStore.persist.hasHydrated();
 
-  if (!hasHydrated) {
-    return null
-  }
+  if (!hasHydrated) return null;
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  // activar esto cuando se implemente api
-  // if (user.token && isTokenExpired(user.token)) {
-  //   const logout = useAuthStore((s) => s.logout);
-  //   logout();
-  //   return <Navigate to="/login" replace />;
-  // }
+  if (!user) return <Navigate to="/login" replace />;
 
   const userRoles = Array.isArray(user.roles)
-    ? user.roles.map((r: any) => String(r).toLowerCase())
+    ? (user.roles.map(String) as Role[])
     : [];
 
   const userPermissions = Array.isArray(user.permissions)
-    ? user.permissions
+    ? user.permissions.map((p) => p.permissionName)
     : [];
 
-  // ROLES
   if (allowedRoles?.length) {
-    const hasRole = userRoles.some((role) =>
-      allowedRoles.map((r) => r.toLowerCase()).includes(role)
-    );
-
-    if (!hasRole) {
-      return <Navigate to="/unauthorized" replace />;
-    }
+    const hasRole = userRoles.some((r) => allowedRoles.includes(r));
+    if (!hasRole) return <Navigate to="/unauthorized" replace />;
   }
 
-  // PERMISOS
   if (requiredPermissions?.length) {
     const hasPermissions = requiredPermissions.every((p) =>
       userPermissions.includes(p)
     );
-
-    if (!hasPermissions) {
-      return <Navigate to="/unauthorized" replace />;
-    }
+    if (!hasPermissions) return <Navigate to="/unauthorized" replace />;
   }
 
   return children ? <>{children}</> : <Outlet />;

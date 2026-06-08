@@ -12,24 +12,41 @@ export function useAccess({
   roles = [],
   requireAll = true,
 }: UseAccessParams = {}) {
-  const hasRole = useAuthStore((s) => s.hasRole);
-  const hasPermission = useAuthStore((s) => s.hasPermission);
+  const user = useAuthStore((s) => s.user);
 
   return useMemo(() => {
+    if (!user) return false;
+
     const permissionCheck =
       permissions.length === 0
         ? true
         : requireAll
-          ? permissions.every(hasPermission)
-          : permissions.some(hasPermission);
+          ? permissions.every((permission) =>
+              user.permissions.some(
+                (p) => p.permissionName === permission
+              )
+            )
+          : permissions.some((permission) =>
+              user.permissions.some(
+                (p) => p.permissionName === permission
+              )
+            );
 
     const roleCheck =
       roles.length === 0
         ? true
         : requireAll
-          ? roles.every(hasRole)
-          : roles.some(hasRole);
+          ? roles.every((role) =>
+              user.roles.some(
+                (r) => r.toLowerCase() === role.toLowerCase()
+              )
+            )
+          : roles.some((role) =>
+              user.roles.some(
+                (r) => r.toLowerCase() === role.toLowerCase()
+              )
+            );
 
     return permissionCheck && roleCheck;
-  }, [permissions, roles, requireAll, hasRole, hasPermission]);
+  }, [user, permissions, roles, requireAll]);
 }

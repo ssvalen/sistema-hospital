@@ -38,4 +38,14 @@ public interface IPermisoRepository extends JpaRepository<Permiso, Long> {
 
     Page<Permiso> findAllByActivo(boolean activo, Pageable pageable);
 
+    @Query("""
+                SELECT DISTINCT p
+                FROM Permiso p
+                JOIN p.rolPermisos rp
+                JOIN UsuarioRol ur ON ur.rol = rp.rol
+                JOIN ur.usuario u
+                WHERE u.idKeycloak = :idKeycloak
+            """)
+    List<Permiso> findPermisosByIdKeycloak(@Param("idKeycloak") String idKeycloak);
+
 }

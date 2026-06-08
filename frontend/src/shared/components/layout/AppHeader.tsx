@@ -143,7 +143,7 @@ const AppHeader = ({
                 capitalize
               "
             >
-              {user?.roles?.[0]}
+              {user?.fullname}
             </p>
 
           </div>

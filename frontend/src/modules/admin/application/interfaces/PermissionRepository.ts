@@ -5,6 +5,7 @@ import type { PaginatedResponse } from "@/shared/types/pagination/PaginatedRespo
 export interface PermissionsRepository {
     getAllPermissions(signal?: AbortSignal): Promise<Permission[]>;
     getPermissionsByRole(roleId: number, signal?: AbortSignal): Promise<Permission[]>;
+    getPermissionsByidKeycloak(id: string, signal?: AbortSignal): Promise<Permission[]>;
     getPermissionsPaginated(
         page: number,
         size: number,

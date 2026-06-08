@@ -23,6 +23,7 @@ import { usePutRole } from "../../hooks/roles/usePutRole";
 
 import type { CreateRoleParams } from "../../types/AdminTypes";
 import { useRoleById } from "../../hooks/roles/useRoleById";
+import { HttpError } from "@/shared/errors/HttpError";
 
 interface LocationState {
   role?: Role;
@@ -62,7 +63,7 @@ const RoleFormPage = () => {
   const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
   const [errors, setErrors] = useState<Errors>({});
 
-  
+
 
   useEffect(() => {
     if (!initialRole) {
@@ -256,7 +257,14 @@ const RoleFormPage = () => {
         () => navigate(-1),
         TOAST_CONFIG.success.duration
       );
-    } catch {
+    } catch (error) {
+
+      if (error instanceof HttpError) {
+
+        showToast(`${error.message}`, TOAST_TYPES.ERROR)
+        return
+      }
+
       showToast(
         `Error al ${isEditMode ? "editar" : "crear"
         } rol`,
@@ -314,7 +322,7 @@ const RoleFormPage = () => {
               </FormField>
 
               <FormField
-                label="Rol modelo"
+                label="Nivel de acceso"
                 error={errors.parentRole}
               >
                 <Select

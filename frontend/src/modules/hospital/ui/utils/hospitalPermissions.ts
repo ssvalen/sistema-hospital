@@ -6,7 +6,8 @@ export const HOSPITAL_PERMISSIONS = {
     EGRESS_PATIENT: 'hospital.egress',
     VIEW_TRANSFER_HISTORICAL: 'hospital.transfer.historical',
     VIEW_ADMISSION_DETAIL: 'hospital.view.admission.detail',
-    VIEW_ALL_ADMISSIONS: 'hospital.admission.view.all'
+    VIEW_ALL_ADMISSIONS: 'hospital.admission.view.all',
+    MANAGE_DOCTORS: 'hospital.manage.doctors'
 
 } as const
 

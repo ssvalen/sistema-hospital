@@ -6,12 +6,14 @@ import {
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
+import { useMemo } from "react";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 
 import type { SidebarRoute } from "@/shared/types/sidebarRoute";
 
 import AppSidebarItem from "./AppSidebarItem";
 import AppSidebarDropdown from "./AppSidebarDropdown";
+import { useLogout } from "@/modules/auth/hooks/useLogout";
 
 type Props = {
   title: string;
@@ -28,32 +30,37 @@ const AppSidebar = ({
   open,
   onClose,
 }: Props) => {
+  
+  const { mutate: logout } = useLogout();
 
-  const logout =
+  const permissions =
     useAuthStore(
-      (state) => state.logout
+      (state) => state.user?.permissions
     );
 
-  const hasPermission =
-    useAuthStore(
-      (state) =>
-        state.hasPermission
-    );
+  const permissionNames = useMemo(
+    () =>
+      permissions?.map(
+        (p) => p.permissionName
+      ) ?? [],
+    [permissions]
+  );
 
   const canAccessRoute = (
-    permissions?: string[]
+    routePermissions?: string[]
   ) => {
-
     if (
-      !permissions ||
-      permissions.length === 0
+      !routePermissions ||
+      routePermissions.length === 0
     ) {
       return true;
     }
 
-    return permissions.every(
+    return routePermissions.every(
       (permission) =>
-        hasPermission(permission)
+        permissionNames.includes(
+          permission
+        )
     );
   };
 
@@ -63,7 +70,6 @@ const AppSidebar = ({
         onClick={onClose}
         className={`
           fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity
-
           ${
             open
               ? "opacity-100 visible"
@@ -85,7 +91,6 @@ const AppSidebar = ({
           border-slate-800
           transition-transform
           duration-300
-
           ${
             open
               ? "translate-x-0"
@@ -93,7 +98,6 @@ const AppSidebar = ({
           }
         `}
       >
-
         <div
           className="
             h-20
@@ -105,9 +109,7 @@ const AppSidebar = ({
             border-slate-800
           "
         >
-
           <div className="flex items-center gap-3">
-
             <div
               className="
                 w-11
@@ -120,16 +122,13 @@ const AppSidebar = ({
                 shadow-lg
               "
             >
-
               <FontAwesomeIcon
                 icon={faHeartPulse}
                 className="text-white text-xl"
               />
-
             </div>
 
             <div>
-
               <h1 className="font-bold text-lg leading-none">
                 {title}
               </h1>
@@ -137,9 +136,7 @@ const AppSidebar = ({
               <p className="text-slate-400 text-sm mt-1">
                 {subtitle}
               </p>
-
             </div>
-
           </div>
 
           <button
@@ -152,58 +149,76 @@ const AppSidebar = ({
               hover:bg-slate-800
             "
           >
-
             <FontAwesomeIcon
               icon={faXmark}
             />
-
           </button>
-
         </div>
 
         <nav className="flex-1 p-4 space-y-2 overflow-auto">
+          {routes.map((route) => {
+            if (!route.showInSidebar) {
+              return null;
+            }
 
-          {
-            routes.map((route) => {
-
-              if (!route.showInSidebar) {
-                return null;
-              }
-
-              if (route.children && canAccessRoute(route.permissions)) {
-                return (
-                  <AppSidebarDropdown
-                    key={route.label}
-                    label={route.label}
-                    icon={route.icon}
-                    routes={
-                      route.children
-                    }
-                  />
+            if (route.children) {
+              const allowedChildren =
+                route.children.filter(
+                  (child) =>
+                    child.showInSidebar !== false &&
+                    canAccessRoute(
+                      child.permissions
+                    )
                 );
-              }
 
-              if (!canAccessRoute(route.permissions) || !route.path) {
+              if (
+                allowedChildren.length === 0
+              ) {
                 return null;
               }
 
               return (
-                <AppSidebarItem
-                  key={route.path}
-                  to={route.path}
-                  label={route.label}
+                <AppSidebarDropdown
+                  key={
+                    route.label ??
+                    route.path
+                  }
+                  label={
+                    route.label ?? ""
+                  }
                   icon={route.icon}
+                  routes={
+                    allowedChildren
+                  }
                 />
               );
-            })
-          }
+            }
 
+            if (
+              !route.path ||
+              !canAccessRoute(
+                route.permissions
+              )
+            ) {
+              return null;
+            }
+
+            return (
+              <AppSidebarItem
+                key={route.path}
+                to={route.path}
+                label={
+                  route.label ?? ""
+                }
+                icon={route.icon}
+              />
+            );
+          })}
         </nav>
 
         <div className="p-4 border-t border-slate-800">
-
           <button
-            onClick={logout}
+            onClick={() => logout()}
             className="
               w-full
               flex
@@ -218,7 +233,6 @@ const AppSidebar = ({
               duration-200
             "
           >
-
             <FontAwesomeIcon
               icon={
                 faRightFromBracket
@@ -228,11 +242,8 @@ const AppSidebar = ({
             <span>
               Cerrar sesión
             </span>
-
           </button>
-
         </div>
-
       </aside>
     </>
   );

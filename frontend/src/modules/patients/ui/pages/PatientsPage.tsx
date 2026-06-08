@@ -34,7 +34,6 @@ const PatientsPage = () => {
   const pageSize = 10;
 
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("all");
   const [gender, setGender] = useState("all");
 
   const { items: patients, totalElements } =
@@ -64,14 +63,11 @@ const PatientsPage = () => {
         p.genero === "M"
           ? "Masculino"
           : p.genero === "F"
-          ? "Femenino"
-          : p.genero
+            ? "Femenino"
+            : p.genero
     }));
   }, [filteredPatients]);
 
-  const toggleStatus = (id: number) => {
-    showToast("Acción pendiente backend", TOAST_TYPES.SUCCESS);
-  };
 
   const actions: TableAction<Patient>[] = [
     {
@@ -110,13 +106,14 @@ const PatientsPage = () => {
               Gestión de pacientes del sistema
             </p>
           </div>
-
-          <Button
-            icon={faUserPlus}
-            label="Nuevo paciente"
-            color="blue"
-            onClick={() => navigate("create")}
-          />
+          <CanAccess permission={PERMISSIONS.PATIENT.CREATE}>
+            <Button
+              icon={faUserPlus}
+              label="Nuevo paciente"
+              color="blue"
+              onClick={() => navigate("create")}
+            />
+          </CanAccess>
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
@@ -127,17 +124,6 @@ const PatientsPage = () => {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
-            </FormField>
-
-            <FormField label="Estado">
-              <Select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-              >
-                <option value="all">Todos</option>
-                <option value="active">Activos</option>
-                <option value="inactive">Inactivos</option>
-              </Select>
             </FormField>
 
             <FormField label="Género">
@@ -161,7 +147,7 @@ const PatientsPage = () => {
               {
                 key: "fechaNacimiento",
                 label: "Fecha de Nacimiento",
-                hasInput: true, 
+                hasInput: true,
                 inputType: "date",
                 // sortable: true
               },

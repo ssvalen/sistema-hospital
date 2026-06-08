@@ -137,21 +137,13 @@ export default function AppointmentCalendarPage() {
 
   const actions: TableAction<AppointmentUI>[] = [
     {
-      title: "Ver",
+      title: "Ver detalle de cita",
       permission: APPOINTMENT_PERMISSIONS.VIEW_DETAIL,
       color: "blue",
       icon: faEye,
       onClick: (row) =>
         navigate(`/admin/appointments/${row.id}`)
     },
-    // {
-    //   title: "Atender",
-    //   permission: APPOINTMENT_PERMISSIONS.ATTEND,
-    //   color: "green",
-    //   icon: faStethoscope,
-    //   onClick: (row) =>
-    //     navigate(`/admin/appointments/${row.id}/attend`)
-    // }
   ];
 
   return (
@@ -244,8 +236,6 @@ export default function AppointmentCalendarPage() {
                   return;
                 }
 
-                console.log(start)
-
                 navigate("/admin/appointments/new", {
                   state: {
                     start: toDatetimeLocal(info.start)
@@ -263,11 +253,11 @@ export default function AppointmentCalendarPage() {
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
             <DataTable
               columns={[
-                { key: "patientName", label: "Paciente" },
+                { key: "patientName", label: "Paciente", hasInput: true},
                 { key: "doctorName", label: "Médico" },
-                { key: "start", label: "Fecha" },
-                { key: "reason", label: "Motivo" },
-                { key: "status", label: "Estado"},
+                { key: "start", label: "Fecha", hasInput: true, inputType: "date", sortable: true},
+                // { key: "reason", label: "Motivo" },
+                { key: "status", label: "Estado", hasInput: true},
                 { key: "actions", label: "Acciones", hasActions: true }
               ]}
               data={filteredAppointments}

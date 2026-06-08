@@ -21,7 +21,7 @@ export function createPermissionsRepository(http: HttpClient): PermissionsReposi
   return {
     async getAllPermissions(signal?: AbortSignal) {
       const dto = await http.request<ApiResponse<PermissionResponseDTO[]>>({
-        url: API_ROUTES.PERMISSION_GET_ALL,
+        url: API_ROUTES.PERMISSION_ENDPOINT,
         method: "GET",
         withCredentials: false,
         timeoutMs: 15_000,
@@ -45,6 +45,16 @@ export function createPermissionsRepository(http: HttpClient): PermissionsReposi
 
       return permissionsToDomain(dto.data);
     },
+    async getPermissionsByidKeycloak(id, signal) {
+      const dto = await http.request<ApiResponse<PermissionResponseDTO[]>>({
+        url: `${API_ROUTES.PERMISSION_KEYCLOAK}/${id}`,
+        method: "GET",
+        withCredentials: false,
+        timeoutMs: 15_000,
+        signal,
+      });
+      return permissionsToDomain(dto.data);
+    },
 
     async getPermissionsPaginated(page, size, signal) {
       const dto = await http.request<ApiResponse<PaginatedPermissionsDTO>>({
@@ -60,7 +70,7 @@ export function createPermissionsRepository(http: HttpClient): PermissionsReposi
       const dto = await http.request<
         ApiResponse<CreatePermissionResponseDTO>
       >({
-        url: API_ROUTES.PERMISSION_CREATE,
+        url: API_ROUTES.PERMISSION_ENDPOINT,
         method: "POST",
         body: {
           nombrePermiso: name,
@@ -74,7 +84,7 @@ export function createPermissionsRepository(http: HttpClient): PermissionsReposi
       const dto = await http.request<
         ApiResponse<CreatePermissionResponseDTO>
       >({
-        url: `${API_ROUTES.PERMISSION_UPDATE}/${id}`,
+        url: `${API_ROUTES.PERMISSION_ENDPOINT}/${id}`,
         method: "PUT",
         body: {
           nombrePermiso: name,
@@ -94,7 +104,8 @@ export function createPermissionsRepository(http: HttpClient): PermissionsReposi
 
       return dto.success
 
-    }
+    },
+    
   };
 }
 

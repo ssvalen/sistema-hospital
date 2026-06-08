@@ -33,21 +33,19 @@ interface DataTableProps<T> {
   onFiltersChange?: (filters: Record<string, string>) => void;
 
   rowKey?: keyof T;
-
-  capitalize?: boolean;
 }
 
-const getNestedValue = (
-  obj: Record<string, any>,
-  path: string
-): unknown => {
-  return path
-    .split(".")
-    .reduce<any>(
-      (acc, part) => (acc == null ? undefined : acc[part]),
-      obj
-    );
+const getNestedValue = (obj: Record<string, any>, path: string): any => {
+  return path.split(".").reduce((acc, part) => {
+    if (acc == null) return undefined;
+    return acc[part];
+  }, obj);
 };
+
+const isDateLike = (v: any) =>
+  typeof v === "string" ||
+  typeof v === "number" ||
+  v instanceof Date;
 
 const DataTable = <T extends Record<string, any>>({
   columns,
@@ -61,7 +59,6 @@ const DataTable = <T extends Record<string, any>>({
   loading = false,
   onFiltersChange,
   rowKey,
-  capitalize = false
 }: DataTableProps<T>) => {
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: defaultSort?.key ?? null,
@@ -103,15 +100,14 @@ const DataTable = <T extends Record<string, any>>({
     onFiltersChange?.(newFilters);
   };
 
-  const filteredData = useMemo(() => {
-    if (!data) return [];
+  const safeData = data ?? [];
 
-    return data.filter((row) =>
+  const filteredData = useMemo(() => {
+    return safeData.filter((row) =>
       Object.entries(filters).every(([key, value]) => {
         if (!value) return true;
 
         const cellValue = getNestedValue(row, key);
-
         if (cellValue == null) return false;
 
         const col = columns.find((c) => c.key === key);
@@ -122,11 +118,10 @@ const DataTable = <T extends Record<string, any>>({
 
           if (typeof cellValue === "string") {
             dateStr = cellValue.slice(0, 10);
-          } else if (
-            typeof cellValue === "number" ||
-            cellValue instanceof Date
-          ) {
-            dateStr = new Date(cellValue)
+          } else if (isDateLike(cellValue)) {
+            dateStr = new Date(
+              cellValue as string | number | Date
+            )
               .toISOString()
               .slice(0, 10);
           }
@@ -139,7 +134,7 @@ const DataTable = <T extends Record<string, any>>({
           .includes(value.toLowerCase());
       })
     );
-  }, [data, filters, columns]);
+  }, [safeData, filters, columns]);
 
   const sortedData = useMemo(() => {
     if (!sortConfig.key) return filteredData;
@@ -151,19 +146,13 @@ const DataTable = <T extends Record<string, any>>({
       if (aVal == null) return 1;
       if (bVal == null) return -1;
 
-      const aDate =
-        typeof aVal === "string" ||
-          typeof aVal === "number" ||
-          aVal instanceof Date
-          ? new Date(aVal).getTime()
-          : NaN;
+      const aDate = isDateLike(aVal)
+        ? new Date(aVal as any).getTime()
+        : NaN;
 
-      const bDate =
-        typeof bVal === "string" ||
-          typeof bVal === "number" ||
-          bVal instanceof Date
-          ? new Date(bVal).getTime()
-          : NaN;
+      const bDate = isDateLike(bVal)
+        ? new Date(bVal as any).getTime()
+        : NaN;
 
       const isDate =
         !isNaN(aDate) &&
@@ -192,11 +181,13 @@ const DataTable = <T extends Record<string, any>>({
   const totalPages = Math.ceil(total / pageSize);
 
   const goPrev = () => page > 1 && onPageChange(page - 1);
-  const goNext = () => page < totalPages && onPageChange(page + 1);
+  const goNext = () =>
+    page < totalPages && onPageChange(page + 1);
 
-  const isInitialLoading = loading && (!data || data.length === 0);
+  const isInitialLoading =
+    loading && safeData.length === 0;
 
-  if (!loading && (!data || data.length === 0)) {
+  if (!loading && safeData.length === 0) {
     return (
       <div className="flex items-center justify-center py-16 text-sm text-gray-500">
         No hay datos disponibles
@@ -223,8 +214,9 @@ const DataTable = <T extends Record<string, any>>({
                   className="px-4 py-3 text-left font-semibold border-b border-slate-700"
                 >
                   <div
-                    className={`flex items-center gap-2 select-none ${col.sortable ? "cursor-pointer" : ""
-                      }`}
+                    className={`flex items-center gap-2 select-none ${
+                      col.sortable ? "cursor-pointer" : ""
+                    }`}
                     onClick={() =>
                       col.sortable && handleSort(col.key)
                     }
@@ -283,7 +275,11 @@ const DataTable = <T extends Record<string, any>>({
             ) : (
               sortedData.map((row, idx) => (
                 <tr
-                  key={rowKey ? String(row[rowKey]) : idx}
+                  key={
+                    rowKey
+                      ? String(row[rowKey])
+                      : idx
+                  }
                   className="hover:bg-blue-50/50 transition"
                 >
                   {columns.map((col) => (
@@ -308,7 +304,9 @@ const DataTable = <T extends Record<string, any>>({
                                   label={action.label}
                                   title={action.title}
                                   color={action.color}
-                                  onClick={() => action.onClick(row)}
+                                  onClick={() =>
+                                    action.onClick(row)
+                                  }
                                 />
                               </CanAccess>
                             ))}
@@ -317,13 +315,19 @@ const DataTable = <T extends Record<string, any>>({
                         <span
                           onClick={() =>
                             copyToClipboard(
-                              getNestedValue(row, col.key)
+                              getNestedValue(
+                                row,
+                                col.key
+                              )
                             )
                           }
-                          className={`block cursor-pointer truncate ${capitalize ? 'capitalize' : 'capitalize'}`}
+                          className="block cursor-pointer truncate"
                         >
                           {String(
-                            getNestedValue(row, col.key) ?? "-"
+                            getNestedValue(
+                              row,
+                              col.key
+                            ) ?? "-"
                           )}
                         </span>
                       )}
@@ -348,7 +352,6 @@ const DataTable = <T extends Record<string, any>>({
             onClick={goPrev}
             disabled={page === 1}
           />
-          { }
           <Button
             label="Siguiente"
             color="blue"

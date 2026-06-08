@@ -116,6 +116,7 @@ const RolesPages = () => {
           <CanAccess permission={PERMISSIONS.ADMIN.ROLES_CREATE}>
             <Button
               label="Crear rol"
+              title="Crearción de nuevo rol"
               icon={faUserLock}
               color="blue"
               onClick={() => navigate("/admin/roles/new")}

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+
 import type { User } from "../domain/entities/User";
 
 type AuthState = {
@@ -19,25 +20,51 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       user: null,
 
-      setUser: (user) => set({ user }),
+      setUser: (user) => {
+        localStorage.setItem("auth-sync", Date.now().toString());
+        set({ user });
+      },
 
-      logout: () => set({ user: null }),
+      logout: () => {
+        localStorage.setItem("auth-sync", Date.now().toString());
+        set({ user: null });
+      },
 
-      updateToken: (tokenMetadata) =>
+      updateToken: (tokenMetadata) => {
+        localStorage.setItem("auth-sync", Date.now().toString());
+
         set((state) => ({
-          user: state.user ? { ...state.user, tokenMetadata } : null,
-        })),
+          user: state.user
+            ? {
+                ...state.user,
+                tokenMetadata,
+              }
+            : null,
+        }));
+      },
 
       hasRole: (role) => {
         const user = get().user;
-        return !!user?.roles?.includes(role);
+
+        return (
+          user?.roles?.some(
+            (r) => r.toLowerCase() === role.toLowerCase()
+          ) ?? false
+        );
       },
 
       hasPermission: (permission) => {
         const user = get().user;
-        return !!user?.permissions?.includes(permission);
+
+        return (
+          user?.permissions?.some(
+            (p) => p.permissionName === permission
+          ) ?? false
+        );
       },
     }),
-    { name: "auth-storage" }
+    {
+      name: "auth-storage",
+    }
   )
 );

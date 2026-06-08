@@ -38,9 +38,10 @@ public class AuthService {
 
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "password");
-        body.add("client_id",keycloakAdminProperties.getClientId() );
+        body.add("client_id",keycloakHospitalProperties.getClientId() );
         body.add("username", request.getUsername());
         body.add("password", request.getPassword());
+        body.add("scope", "openid profile email");
 
         if (keycloakHospitalProperties.getClientSecret() != null && !keycloakHospitalProperties.getClientSecret().isEmpty()) {
             body.add("client_secret", keycloakHospitalProperties.getClientSecret());
@@ -81,7 +82,7 @@ public class AuthService {
 
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "refresh_token");
-        body.add("client_id", keycloakAdminProperties.getClientId());
+        body.add("client_id", keycloakHospitalProperties.getClientId());
         body.add("refresh_token", refreshToken);
 
         if (keycloakHospitalProperties.getClientSecret() != null && !keycloakHospitalProperties.getClientSecret().isEmpty()) {
@@ -118,7 +119,7 @@ public class AuthService {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("client_id", keycloakAdminProperties.getClientId());
+        body.add("client_id", keycloakHospitalProperties.getClientId());
         body.add("refresh_token", refreshToken);
 
         if (keycloakHospitalProperties.getClientSecret() != null && !keycloakHospitalProperties.getClientSecret().isEmpty()) {

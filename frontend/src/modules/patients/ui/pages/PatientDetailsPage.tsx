@@ -194,9 +194,7 @@ const PatientDetailsPage = () => {
 
                         </div>
 
-                        <p className="text-sm text-slate-500">
-                            Expediente: {patient.code}
-                        </p>
+                    
 
                     </div>
 
@@ -242,74 +240,20 @@ const PatientDetailsPage = () => {
                     </div>
 
                     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-                        <p className="text-sm text-slate-400">Tipo sangre</p>
-                        <p className="text-lg font-semibold text-slate-700">
-                            {patient.bloodType}
-                        </p>
-                    </div>
-
-                    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
                         <p className="text-sm text-slate-400">Teléfono</p>
                         <p className="text-lg font-semibold text-slate-700">
                             {patient.phone}
                         </p>
                     </div>
 
-                </div>
-
-                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-
-                    <h2 className="text-lg font-semibold text-slate-700 mb-6">
-                        Información general
-                    </h2>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                        <div className="space-y-5">
-
-                            <div>
-                                <p className="text-xs text-slate-400">
-                                    Correo electrónico
-                                </p>
-                                <p className="font-medium text-slate-700">
-                                    {patient.email}
-                                </p>
-                            </div>
-
-                            <div>
-                                <p className="text-xs text-slate-400">
-                                    Dirección
-                                </p>
-                                <p className="font-medium text-slate-700">
-                                    {patient.address}
-                                </p>
-                            </div>
-
-                        </div>
-
-                        <div className="space-y-5">
-
-                            <div>
-                                <p className="text-xs text-slate-400">
-                                    Alergias
-                                </p>
-                                <p className="font-medium text-slate-700">
-                                    {patient.allergies}
-                                </p>
-                            </div>
-
-                            <div>
-                                <p className="text-xs text-slate-400">
-                                    Enfermedades crónicas
-                                </p>
-                                <p className="font-medium text-slate-700">
-                                    {patient.chronicDiseases}
-                                </p>
-                            </div>
-
-                        </div>
-
+                    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                        <p className="text-sm text-slate-400">Dirección</p>
+                        <p className="text-lg font-semibold text-slate-700">
+                            {patient.address}
+                        </p>
                     </div>
+
+
 
                 </div>
 
@@ -330,6 +274,7 @@ const PatientDetailsPage = () => {
                             <Button
                                 icon={faUserDoctor}
                                 label="Nueva consulta"
+                                title="Agendar nueva consulta"
                                 color="blue"
                                 onClick={() =>
                                     navigate("/admin/appointments/new", {

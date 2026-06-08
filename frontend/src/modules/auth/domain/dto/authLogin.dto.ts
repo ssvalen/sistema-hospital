@@ -15,5 +15,5 @@ export type LoginResponseDto = {
 };
 
 export type LogoutRequestDto = {
-  refresh_token: string;
+  refreshToken: string;
 };
