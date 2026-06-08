@@ -9,7 +9,7 @@ export const ADMIN_PERMISSIONS = {
     PERMISSIONS_EDIT: 'admin.manager.permissions.edit',
     PERMISSIONS_CREATE: 'admin.manager.permissions.create',
     PERMISSIONS_INACTIVATE: 'admin.manager.permissions.inactivate',
-    
+    ETL_LOADS: 'admin.etl.loads'
 } as const
 
 export type AdminPermission =

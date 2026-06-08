@@ -166,4 +166,16 @@ public class PermisoService {
                 .map(permiso -> modelMapper.map(permiso, PermisoDTO.class))
                 .collect(Collectors.toList());
     }
+
+    public List<PermisoDTO> findPermisosByIdKeycloak(String idKeycloak) {
+
+        log.info("Buscando permisos para idKeycloak: {}", idKeycloak);
+
+        List<Permiso> permisos = permisoRepository.findPermisosByIdKeycloak(idKeycloak);
+
+        return permisos.stream()
+                .map(permiso -> modelMapper.map(permiso, PermisoDTO.class))
+                .toList();
+    }
+
 }

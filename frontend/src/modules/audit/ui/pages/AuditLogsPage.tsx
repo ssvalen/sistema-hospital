@@ -12,6 +12,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { TableColumn, TableAction } from "@/shared/types/table/TableTypes";
 import { usePaginatedAuditLogs } from "../../hooks/usePaginatedAuditLogs";
 import type { AuditLog } from "../../domain/entities/AuditLog";
+import { PERMISSIONS } from "@/shared/utils/permissions";
 
 const AuditLogsPage = () => {
 
@@ -24,7 +25,7 @@ const AuditLogsPage = () => {
         isLoading,
         isFetching
     } = usePaginatedAuditLogs(page - 1, pageSize);
-
+    console.log(auditLogs)
     const [selectedLog, setSelectedLog] = useState<any | null>(null);
     const [open, setOpen] = useState(false);
     const [viewMode, setViewMode] = useState<"before" | "after">("after");
@@ -86,6 +87,7 @@ const AuditLogsPage = () => {
             title: "Ver detalle",
             icon: faEye,
             color: "blue",
+            permission: PERMISSIONS.AUDIT.VIEW_PAYLOAD,
             onClick: (row) => {
                 setSelectedLog(row);
                 setViewMode("after");
@@ -102,9 +104,6 @@ const AuditLogsPage = () => {
 
                     <div className="flex items-center gap-4">
 
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
-                            <FontAwesomeIcon icon={faDatabase} className="text-white text-xl" />
-                        </div>
 
                         <div>
                             <h1 className="text-3xl font-bold text-slate-800">
@@ -119,22 +118,7 @@ const AuditLogsPage = () => {
 
                     <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
 
-                        <div className="px-6 py-5 border-b border-slate-100 flex items-center gap-3">
-
-                            <div className="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center">
-                                <FontAwesomeIcon icon={faDatabase} className="text-blue-600" />
-                            </div>
-
-                            <div>
-                                <h2 className="font-semibold text-slate-800">
-                                    Logs de auditoría
-                                </h2>
-                                <p className="text-sm text-slate-500">
-                                    Historial de acciones
-                                </p>
-                            </div>
-
-                        </div>
+                
 
                         <div className="p-6">
                             <DataTable<AuditLog>

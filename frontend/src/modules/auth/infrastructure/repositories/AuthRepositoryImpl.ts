@@ -6,6 +6,7 @@ import type { LoginRequestDto, LoginResponseDto, LogoutRequestDto } from "../../
 import type { RefreshRequestDto, RefreshResponseDto } from "../../domain/dto/authRefresh.dto";
 import { loginDtoToUser, refreshDtoToTokenMetadata } from "../mappers/authMapper";
 import { API_ROUTES } from "@/shared/utils/apiRoutes";
+import type { ApiResponse } from "@/shared/http/ApiResponse";
 
 export function createAuthRepository(http: HttpClient): AuthRepository {
   return {
@@ -14,65 +15,45 @@ export function createAuthRepository(http: HttpClient): AuthRepository {
         username,
         password
       }
-      // const body = new URLSearchParams(dtoBody)
 
-      const dto = await http.request<LoginResponseDto>({
+      const dto = await http.request<ApiResponse<LoginResponseDto>>({
         url: API_ROUTES.KEYCLOAK_LOGIN,
         method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
         body,
         withCredentials: false,
         timeoutMs: 15_000,
         signal
       });
 
-      return loginDtoToUser(dto);
+      return loginDtoToUser(dto.data);
     },
 
     async refresh(refreshToken: string, signal: AbortSignal) {
 
-      const dtoBody : RefreshRequestDto = {
-        grant_type: "refresh_token",
-        client_id: import.meta.env.VITE_KEYCLOAK_CLIENT_ID,
-        client_secret: import.meta.env.VITE_KEYCLOAK_CLIENTE_SECRET,
-        refresh_token: refreshToken,
+      const body : RefreshRequestDto = {
+        refreshToken : refreshToken,
       }
 
-      const body = new URLSearchParams(dtoBody);
-
-      const dto = await http.request<RefreshResponseDto>({
+      const dto = await http.request<ApiResponse<RefreshResponseDto>>({
         url: API_ROUTES.KEYCLOAK_REFRESH,
         method: "POST",
-        headers: {
-          "Content-Type":
-            "application/x-www-form-urlencoded",
-        },
         body,
         withCredentials: false,
         timeoutMs: 15000,
         signal,
       });
 
-      return refreshDtoToTokenMetadata(dto);
+      return refreshDtoToTokenMetadata(dto.data);
     },
 
     async logout(refreshToken: string, signal: AbortSignal) {
 
-      const dtoBody : LogoutRequestDto = {
-        refresh_token: refreshToken,
+      const body : LogoutRequestDto = {
+        refreshToken: refreshToken,
       }
-
-      const body = new URLSearchParams(dtoBody);
-
       const dto = await http.request<void>({
         url: API_ROUTES.KEYCLOAK_LOGOUT,
         method: "POST",
-        headers: {
-          "Content-Type":
-            "application/x-www-form-urlencoded",
-        },
         body,
         withCredentials: false,
         timeoutMs: 15000,
@@ -85,5 +66,5 @@ export function createAuthRepository(http: HttpClient): AuthRepository {
 }
 
 
-const httpClient = createApiClient(import.meta.env.VITE_KEYCLOAK_URL ?? "");
+const httpClient = createApiClient(import.meta.env.VITE_API_BACKEND_URL ?? "");
 export const authRepository: AuthRepository = createAuthRepository(httpClient);

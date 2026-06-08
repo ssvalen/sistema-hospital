@@ -1,4 +1,4 @@
-export type EtlLoadTypes = "PATIENTS" | "INVENTORY";
+export type EtlLoadTypes = "PACIENTES" | "INVENTARIO";
 
 export type EtlLoadRequestParams = {
     file: File;

@@ -153,7 +153,7 @@ const PermissionsPage = () => {
       icon: faTrash,
       permission: PERMISSIONS.ADMIN.PERMISSIONS_INACTIVATE,
       onClick: openModal,
-   
+
     },
   ];
 
@@ -179,7 +179,7 @@ const PermissionsPage = () => {
 
         <DataTable<Permission>
           columns={[
-            { key: "permissionName", label: "Permiso" },
+            { key: "permissionName", label: "Permiso", hasInput: true },
             { key: "actions", label: "Acciones", hasActions: true },
           ]}
           loading={isLoading || isFetching}
@@ -191,60 +191,61 @@ const PermissionsPage = () => {
           actions={actions}
         />
 
-        <Modal
-          abierto={open}
-          onClose={close}
-          titulo={editing?.id ? "Editar permiso" : "Crear permiso"}
-          size="md"
-        >
-          <div className="space-y-4">
 
-            <FormField label="Nombre">
-              <Input
-                value={editing?.name || ""}
-                onChange={(e) =>
-                  setEditing((prev) =>
-                    prev ? { ...prev, name: e.target.value } : prev
-                  )
-                }
-              />
-            </FormField>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <Button
-                label="Cancelar"
-                color="gray"
-                variant="outline"
-                onClick={close}
-              />
-
-              <Button
-                label="Guardar"
-                color="blue"
-                onClick={save}
-                disabled={
-                  createPermission.isPending ||
-                  updatePermission.isPending
-                }
-              />
-            </div>
-
-          </div>
-        </Modal>
-
-        <ConfirmationModal
-          open={openConfirmation}
-          title="Eliminar permiso"
-          message={`¿Estás seguro de que deseas permiso el permiso "${selectedPermission?.permissionName ?? ""}"?`}
-          confirmText="Eliminar"
-          cancelText="Cancelar"
-          confirmColor="red"
-          icon={faTrash}
-          onConfirm={onConfirm}
-          onCancel={onCancel}
-        />
 
       </div>
+      <Modal
+        abierto={open}
+        onClose={close}
+        titulo={editing?.id ? "Editar permiso" : "Crear permiso"}
+        size="md"
+      >
+        <div className="space-y-4">
+
+          <FormField label="Nombre">
+            <Input
+              value={editing?.name || ""}
+              onChange={(e) =>
+                setEditing((prev) =>
+                  prev ? { ...prev, name: e.target.value } : prev
+                )
+              }
+            />
+          </FormField>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              label="Cancelar"
+              color="gray"
+              variant="outline"
+              onClick={close}
+            />
+
+            <Button
+              label="Guardar"
+              color="blue"
+              onClick={save}
+              disabled={
+                createPermission.isPending ||
+                updatePermission.isPending
+              }
+            />
+          </div>
+
+        </div>
+      </Modal>
+
+      <ConfirmationModal
+        open={openConfirmation}
+        title="Eliminar permiso"
+        message={`¿Estás seguro de que deseas permiso el permiso "${selectedPermission?.permissionName ?? ""}"?`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        confirmColor="red"
+        icon={faTrash}
+        onConfirm={onConfirm}
+        onCancel={onCancel}
+      />
       <div className="fixed top-4 right-4 z-[9999]">
         <Toast
           show={toast.show}

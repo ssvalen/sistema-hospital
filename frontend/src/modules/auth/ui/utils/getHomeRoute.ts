@@ -1,9 +1,18 @@
-export const getHomeRoute = (roles: string[]) => {
-  if (roles.includes("admin") || roles.includes("ROLE_ADMIN")) {
+import {
+  adminAccessRoles,
+  userAccessRoles,
+  type AdminRole,
+  type UserRole,
+} from "@/shared/types/auth/RolesTypes";
+
+type Role = AdminRole | UserRole;
+
+export const getHomeRoute = (roles: Role[]) => {
+  if (roles.some((r) => adminAccessRoles.includes(r as AdminRole))) {
     return "/admin";
   }
 
-  if (roles.includes("user") || roles.includes("ROLE_USER")) {
+  if (roles.some((r) => userAccessRoles.includes(r as UserRole))) {
     return "/app";
   }
 

@@ -115,6 +115,7 @@ const AppointmentDetailsPage = () => {
                                 <Button
                                     icon={faPen}
                                     label="Editar"
+                                    title="Cambiar datos de cita"
                                     color="blue"
                                     onClick={() =>
                                         navigate(
@@ -178,6 +179,7 @@ const AppointmentDetailsPage = () => {
                                     <Button
                                         icon={faStethoscope}
                                         label="Atender cita"
+                                        title="Atender cita de paciente"
                                         color="green"
                                         onClick={() =>
                                             navigate(
@@ -191,6 +193,7 @@ const AppointmentDetailsPage = () => {
                                 <Button
                                     icon={faUser}
                                     label="Ver expediente"
+                                    title="Ver historial médico de paciente"
                                     color="gray"
                                     onClick={() =>
                                         navigate(`/admin/patients/${appointmentData.patient.id}`)
@@ -202,6 +205,7 @@ const AppointmentDetailsPage = () => {
                                     <Button
                                         icon={faBan}
                                         label="Cancelar cita"
+                                        title="Cancelar cita"
                                         color="gray"
                                         onClick={openCancelConfirmation}
                                         variant="outline"

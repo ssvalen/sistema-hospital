@@ -1,9 +1,10 @@
 import type { KeycloakToken } from "./KeycloakToken";
+import type { Permission } from "./Permissions";
 export type User = {
-  id: number;
+  idKeycloak: string;
   username: string;
   roles: string[];
-  permissions: string[];
-  status: boolean;
+  permissions: Permission[];
   tokenMetadata?: KeycloakToken;
+  fullname: string;
 };
