@@ -1,4 +1,4 @@
-export const adminAccessRoles = ["admin", "auxiliar", "doctor", "ROLE_ADMIN"] as const;
+export const adminAccessRoles = ["admin", "auxiliar", "doctor", "ROLE_ADMIN", "SUPERADMIN"] as const;
 export const userAccessRoles = ["paciente", "user", "ROLE_USER"] as const;
 
 export type AdminRole = typeof adminAccessRoles[number];
