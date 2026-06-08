@@ -2,47 +2,36 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 import { ProtectedRoute } from "@/routes/ProtectedRoutes";
 import { PublicRoute } from "@/routes/PublicRoute";
-import { useAuthStore } from "@/modules/auth/store/authStore";
+
 import AdminLayout from "@/layouts/AdminLayout";
-import AuthLayout from "@/layouts/AuthLayout";
 import UserLayout from "@/layouts/UserLayout";
+import AuthLayout from "@/layouts/AuthLayout";
 
 import LoginPage from "@/modules/auth/ui/pages/LoginPage";
 import NotFound from "@/shared/pages/NotFound";
 
 import { adminRoutes } from "@/routes/adminRoutes";
+import {
+  adminAccessRoles,
+  userAccessRoles,
+} from "@/shared/types/auth/RolesTypes";
+import { PERMISSIONS } from "@/shared/utils/permissions";
 
-const renderAdminRoutes = (routes: any[]) => {
-  const hasPermission = useAuthStore.getState().hasPermission;
-
-  return routes.map((r) => {
-    // Validar permisos del padre
-    if (r.permissions?.length) {
-      const allowed = r.permissions.some((p: string) =>
-        hasPermission(p)
-      );
-
-      if (!allowed) return null;
-    }
-
-    // Ruta con hijos
+const renderAdminRoutes = (routes: any[]) =>
+  routes.flatMap((r) => {
     if (r.children) {
       return r.children.map((c: any) => {
-        if (c.permissions?.length) {
-          const allowed = c.permissions.some((p: string) =>
-            hasPermission(p)
-          );
-
-          if (!allowed) return null;
-        }
-
         const Component = c.element;
 
         return (
           <Route
             key={c.path}
             path={c.path}
-            element={<Component />}
+            element={
+              <ProtectedRoute requiredPermissions={c.permissions}>
+                <Component />
+              </ProtectedRoute>
+            }
           />
         );
       });
@@ -54,28 +43,29 @@ const renderAdminRoutes = (routes: any[]) => {
       <Route
         key={r.path}
         path={r.path}
-        element={<Component />}
+        element={
+          <ProtectedRoute requiredPermissions={r.permissions}>
+            <Component />
+          </ProtectedRoute>
+        }
       />
     );
   });
-};
 
 export const AppRoutes = () => {
+  console.log(PERMISSIONS)
   return (
     <Routes>
-
-      {/* ================= AUTH ================= */}
       <Route element={<PublicRoute />}>
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
         </Route>
       </Route>
 
-      {/* ================= ADMIN ================= */}
       <Route
         path="/admin"
         element={
-          <ProtectedRoute allowedRoles={["admin", "ROLE_ADMIN"]}>
+          <ProtectedRoute allowedRoles={adminAccessRoles}>
             <AdminLayout />
           </ProtectedRoute>
         }
@@ -83,20 +73,17 @@ export const AppRoutes = () => {
         {renderAdminRoutes(adminRoutes)}
       </Route>
 
-      {/* ================= USER ================= */}
       <Route
         path="/app"
         element={
-          <ProtectedRoute allowedRoles={["user", "ROLE_ADMIN"]}>
+          <ProtectedRoute allowedRoles={userAccessRoles}>
             <UserLayout />
           </ProtectedRoute>
         }
       />
 
-      {/* ================= DEFAULT ================= */}
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<NotFound />} />
-
     </Routes>
   );
 };

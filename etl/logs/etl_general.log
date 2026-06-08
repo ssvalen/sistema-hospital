@@ -203,3 +203,18 @@
 2026-06-07 03:17:35,604 - INFO -    - Inventario: /app/uploads/inventario
 2026-06-07 03:17:35,604 - INFO -  Intervalo de escaneo: 5 segundos
 2026-06-07 03:17:35,605 - INFO - 🔍 Escaneando carpetas en busca de archivos CSV...
+2026-06-07 22:13:49,791 - INFO - ==================================================
+2026-06-07 22:13:49,792 - INFO - Iniciando ETL Service - Standalone (Polling Mode)
+2026-06-07 22:13:49,793 - INFO - ==================================================
+2026-06-07 22:13:49,807 - INFO - ETL Service Iniciado (modo polling)
+2026-06-07 22:13:49,808 - INFO - Monitoreando:
+2026-06-07 22:13:49,808 - INFO -    - Pacientes: /app/uploads/pacientes
+2026-06-07 22:13:49,809 - INFO -    - Inventario: /app/uploads/inventario
+2026-06-07 22:13:49,809 - INFO -  Intervalo de escaneo: 5 segundos
+2026-06-07 22:13:49,810 - INFO - 🔍 Escaneando carpetas en busca de archivos CSV...
+2026-06-07 22:50:53,211 - INFO - Archivo detectado en inventario: inventario_2026-06-07_22-50-51.csv
+2026-06-07 22:50:53,303 - INFO - Actualizado medicamento ID: 4 (stock: 10)
+2026-06-07 22:50:53,354 - INFO - ÉXITO - inventario_2026-06-07_22-50-51.csv: Procesados 1 registros. Errores: 0
+2026-06-07 23:26:51,752 - INFO - Archivo detectado en inventario: inventario_2026-06-07_23-26-51.csv
+2026-06-07 23:26:51,780 - INFO - Actualizado medicamento ID: 4 (stock: 10)
+2026-06-07 23:26:51,825 - INFO - ÉXITO - inventario_2026-06-07_23-26-51.csv: Procesados 1 registros. Errores: 0

@@ -3,6 +3,7 @@ import {
   faUsers,
   faFileLines,
   faAmbulance,
+  faCartFlatbed,
 } from "@fortawesome/free-solid-svg-icons";
 
 import type { SidebarRoute } from "@/shared/types/sidebarRoute";
@@ -29,6 +30,8 @@ import HospitalizationDetailsPage from "@/modules/hospital/ui/pages/Hospitalizat
 import DoctorsPage from "@/modules/hospital/ui/pages/DoctorsPage";
 import ETLAdminPage from "@/modules/admin/ui/pages/ETLAdminPage";
 import AuditLogsPage from "@/modules/audit/ui/pages/AuditLogsPage";
+import InventoryPage from "@/modules/inventory/ui/pages/InventoryPage";
+import StorePage from "@/modules/inventory/ui/pages/StorePage";
 
 
 const DummyPage = ({ title }: { title: string }) => (
@@ -140,7 +143,7 @@ export const adminRoutes: SidebarRoute[] = [
         path: "hospital/admission/:id/discharge",
         element: DischargeHospitalizationPage,
         showInSidebar: false,
-        // permissions: [PERMISSIONS.HOSPITAL.EGRESS_PATIENT],
+        permissions: [PERMISSIONS.HOSPITAL.EGRESS_PATIENT],
       },
       {
         path: "hospital/admission/:id/detail",
@@ -152,8 +155,8 @@ export const adminRoutes: SidebarRoute[] = [
         path: "doctors",
         element: DoctorsPage,
         showInSidebar: true,
-        label: "Doctores"
-        // permissions: [PERMISSIONS.HOSPITAL.VIEW_ADMISSION_DETAIL],
+        label: "Doctores",
+        permissions: [PERMISSIONS.HOSPITAL.MANAGE_DOCTORS],
       },
     ]
 
@@ -197,13 +200,15 @@ export const adminRoutes: SidebarRoute[] = [
         path: "users",
         element: UsersPage,
         label: "Usuarios",
+        showInSidebar: true,
         permissions: [PERMISSIONS.ADMIN.USERS],
       },
       {
         path: "cargas-etl",
         element: ETLAdminPage,
         label: "Cargas ETL",
-        permissions: [PERMISSIONS.ADMIN.USERS],
+        showInSidebar: true,
+        permissions: [PERMISSIONS.ADMIN.ETL_LOADS],
       },
     ],
     
@@ -218,8 +223,29 @@ export const adminRoutes: SidebarRoute[] = [
         path: "audit",
         element: AuditLogsPage,
         label: "Auditoria",
-        permissions: [PERMISSIONS.ADMIN.ROLES],
+        permissions: [PERMISSIONS.AUDIT.VIEW_LOGS],
       }
+    ],
+    
+  },
+  {
+    label: "Inventario",
+    icon: faCartFlatbed,
+    showInSidebar: true,
+    permissions: [PERMISSIONS.INVENTORY.MODULE_ACCESS],
+    children: [
+      {
+        path: "inventory",
+        element: InventoryPage,
+        label: "Inventario",
+        permissions: [PERMISSIONS.INVENTORY.MODULE_ACCESS],
+      },
+      {
+        path: "store",
+        element: StorePage,
+        label: "Bodega",
+        permissions: [PERMISSIONS.INVENTORY.MODULE_ACCESS],
+      },
     ],
     
   },

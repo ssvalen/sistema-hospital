@@ -13,6 +13,6 @@ import lombok.NoArgsConstructor;
 public class RefreshRequestDTO {
 
     @NotBlank(message = "El refreshToken es obligatorio")
-    private String RefreshRequestDTO;
+    private String refreshToken;
 
 }

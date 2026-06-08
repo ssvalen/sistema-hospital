@@ -120,6 +120,9 @@ public class UsuarioSistemaService {
         usuario.setUsername(request.getUsername());
         usuario.setEmail(request.getEmail());
         usuario.setActivo(request.getActivo() != null ? request.getActivo() : true);
+
+        usuario.setApellidos(request.getApellidos());
+        usuario.setNombres(request.getPrimerNombre());
         usuario.setIdKeycloak(keycloakId);
 
         UsuarioSistema saved = usuarioRepository.save(usuario);
@@ -154,6 +157,8 @@ public class UsuarioSistemaService {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .password(user.getPassword())
+                .firstName(user.getPrimerNombre())
+                .lastName(user.getApellidos())
                 .enabled(isEnabled)
                 .build();
     }
@@ -180,6 +185,8 @@ public class UsuarioSistemaService {
 
         usuario.setUsername(request.getUsername());
         usuario.setEmail(request.getEmail());
+        usuario.setApellidos(request.getApellidos());
+        usuario.setNombres(request.getPrimerNombre());
 
         if (request.getActivo() != null) {
             usuario.setActivo(request.getActivo());

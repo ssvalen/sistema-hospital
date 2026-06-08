@@ -10,23 +10,23 @@ export async function getValidAccessToken() {
 
   const accessToken = user?.tokenMetadata?.accessToken;
   const refreshToken = user?.tokenMetadata?.refreshToken;
-  const expiresIn = user?.tokenMetadata?.accessTokenExpiresIn;
+  const expiresAt = user?.tokenMetadata?.accessTokenExpiresAt;
 
   if (!accessToken || !refreshToken) return null;
 
-  // token válido
-  if (expiresIn && Date.now() < expiresIn * 1000) {
+  const isExpired =
+    !expiresAt || Date.now() >= expiresAt;
+
+  if (!isExpired) {
     return accessToken;
   }
 
-  // si ya está refrescando → esperar cola
   if (isRefreshing) {
     await new Promise<void>((resolve) => queue.push(resolve));
     return useAuthStore.getState().user?.tokenMetadata?.accessToken;
   }
 
   isRefreshing = true;
-
   try {
     const newTokens = await refreshAccessToken(authRepository, refreshToken);
 

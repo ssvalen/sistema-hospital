@@ -107,7 +107,7 @@ public class UsuarioSistemaController {
 
                 log.info("POST /api/usuarios - Creando nuevo usuario: {}", requestDTO.getUsername());
 
-                // log.info("REQUEST RECIBIDO: {}", requestDTO);
+                log.info("REQUEST RECIBIDO: {}", requestDTO);
                 UsuarioSistemaDetailDTO created = usuarioService.create(requestDTO, request);
 
                 return ResponseEntity.status(HttpStatus.CREATED).body(

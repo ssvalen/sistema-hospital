@@ -14,11 +14,9 @@ export const API_ROUTES = {
   ROLES_GET_PARENT_ROLE: '/api/hospitaldb/administrativo/roles/rol-padre',
   // PERMISSIONS
   PERMISSION_ENDPOINT: '/api/hospitaldb/administrativo/permisos',
-  PERMISSION_GET_ALL: '/api/hospitaldb/administrativo/permisos',
   PERMISSION_GET_BY_ROLE: (roleId: number) => `/api/hospitaldb/administrativo/roles/${roleId}/permisos`,
   PERMISSION_GET_PAGINATED: '/api/hospitaldb/administrativo/permisos/paginado',
-  PERMISSION_CREATE: '/api/hospitaldb/administrativo/permisos',
-  PERMISSION_UPDATE: '/api/hospitaldb/administrativo/permisos',
+  PERMISSION_KEYCLOAK: '/api/hospitaldb/administrativo/permisos/keycloak',
   //  PATIENTS
   PATIENT_GET_ALL: '/api/hospitaldb/clinico/pacientes',
   PATIENT_GET_PAGINATED: '/api/hospitaldb/clinico/pacientes/paginado',
@@ -70,5 +68,11 @@ export const API_ROUTES = {
   USER_GET_PAGINATED: '/api/hospitaldb/administrativo/usuarios/paginado',
   USER_GET_ROLES: (id: number) => `/api/hospitaldb/administrativo/usuarios/${id}/roles`,
   // ETL
-  ETL_LOAD: '/api/hospitaldb/etl/upload'
+  ETL_LOAD: '/api/hospitaldb/etl/upload',
+  // Medicine
+  MEDICINE_ENDPOINT: '/api/hospitaldb/medicamentos',
+  MEDICINE_PAGINATED: '/api/hospitaldb/medicamentos/paginado',
+  // STORE
+  STORE_ENDPOINT: '/api/hospitaldb/inventario/bodegas',
+  STORE_PAGINATED: '/api/hospitaldb/inventario/bodegas/paginado'
 } as const;

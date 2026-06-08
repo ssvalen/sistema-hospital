@@ -5,16 +5,22 @@ import { authRepository } from "../infrastructure/repositories/AuthRepositoryImp
 import { useAuthStore } from "../store/authStore";
 
 export const useLogout = () => {
-  const clearSession = useAuthStore((state) => state.logout);
+  const clearSession = useAuthStore(
+    (state) => state.logout
+  );
 
   return useMutation({
     mutationFn: async () => {
       const refreshToken =
-        useAuthStore.getState().user?.tokenMetadata.refreshToken;
+        useAuthStore.getState().user?.tokenMetadata
+          ?.refreshToken;
 
       if (!refreshToken) return;
 
-      await logoutUser(authRepository, refreshToken);
+      await logoutUser(
+        authRepository,
+        refreshToken
+      );
     },
 
     onSettled: () => {

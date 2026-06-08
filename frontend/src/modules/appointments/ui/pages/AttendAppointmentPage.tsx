@@ -712,6 +712,7 @@ const AttendAppointmentPage = () => {
                         }
                         color="green"
                         disabled={isPending}
+                        title="Finalizar consulta y recetar tratamiento"
                         onClick={finalizarConsulta}
                     />
 

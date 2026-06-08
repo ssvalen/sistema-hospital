@@ -32,7 +32,7 @@ const ETLAdminPage = () => {
     const uploadFile = useUploadEtl()
 
     const [file, setFile] = useState<File | null>(null);
-    const [processType, setProcessType] = useState<EtlLoadTypes>("PATIENTS");
+    const [processType, setProcessType] = useState<EtlLoadTypes>("PACIENTES");
     const [openConfirm, setOpenConfirm] = useState(false);
 
     const [inputKey, setInputKey] = useState(0);
@@ -111,9 +111,8 @@ const ETLAdminPage = () => {
                 return;
             }
 
-            // ✅ RESET DEL FORMULARIO
             setFile(null);
-            setProcessType("PATIENTS");
+            setProcessType("PACIENTES");
             setInputKey(prev => prev + 1);
 
             setOpenConfirm(false);
@@ -206,11 +205,11 @@ const ETLAdminPage = () => {
                                                 )
                                             }
                                         >
-                                            <option value="PATIENTS">
+                                            <option value="PACIENTES">
                                                 Pacientes
                                             </option>
 
-                                            <option value="INVENTORY">
+                                            <option value="INVENTARIO">
                                                 Inventario
                                             </option>
 

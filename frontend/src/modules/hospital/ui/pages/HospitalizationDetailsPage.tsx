@@ -33,7 +33,7 @@ const HospitalizationDetailsPage = () => {
     const { toast, showToast, hideToast } = useToast();
 
     const { data: hospitalitationData } = useHospitalitationById(Number(id));
-
+    
     const [openDischarge, setOpenDischarge] = useState(false);
     const [saving, setSaving] = useState(false);
     const createEngress = useCreateEgress()
@@ -80,7 +80,7 @@ const HospitalizationDetailsPage = () => {
             className: "bg-gray-100 text-gray-700"
         };
     const validate = () => {
-  
+
 
         if (!form.motive.trim()) {
             showToast("Ingrese motivo de egreso", TOAST_TYPES.ERROR);
@@ -157,6 +157,7 @@ const HospitalizationDetailsPage = () => {
                                 <Button
                                     icon={faArrowRightFromBracket}
                                     label="Egresar"
+                                    title="Egresar paciente"
                                     color="green"
                                     onClick={() => setOpenDischarge(true)}
                                 />
@@ -238,7 +239,7 @@ const HospitalizationDetailsPage = () => {
                         </div>
 
                         <HospitalizationHistory
-                            idHospitalization={hospitalitationData.id}
+                            idHospitalization={hospitalitationData?.patient.id}
                         />
                     </div>
 
@@ -262,18 +263,45 @@ const HospitalizationDetailsPage = () => {
                             </p>
                         </div>
 
-                        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
-                            <p className="text-blue-700 font-semibold">
-                                Hospitalización activa
-                            </p>
+                        {canExecuteHospitalitationAction(
+                            hospitalitationData.hospitalitation.status,
+                            "DISCHARGE"
+                        ) && (
+                                <>
+                                    <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
+                                        <p className="text-blue-700 font-semibold">
+                                            Hospitalización activa
+                                        </p>
 
-                            <p className="text-sm text-blue-600 mt-1">
-                                El paciente continúa en observación médica
-                            </p>
-                        </div>
+                                        <p className="text-sm text-blue-600 mt-1">
+                                            El paciente continúa en observación médica
+                                        </p>
+                                    </div>
+                                </>
+                            )}
+                        {!canExecuteHospitalitationAction(
+                            hospitalitationData.hospitalitation.status,
+                            "DISCHARGE"
+                        ) && (
+                                <>
+                                    <div className="bg-red-50 border border-red-100 rounded-2xl p-5">
+
+                                        <p className="text-red-700 font-semibold">
+                                            Hospitalización finalizada
+                                        </p>
+
+                                        <p className="text-sm text-red-600 mt-1">
+                                            El paciente fue egresado.
+                                        </p>
+                                    </div>
+                                </>
+                            )}
+
+
+
                     </div>
-                </div>
-            </div>
+                </div >
+            </div >
 
             <Modal
                 abierto={openDischarge}
@@ -282,7 +310,7 @@ const HospitalizationDetailsPage = () => {
                 size="md"
             >
                 <div className="space-y-5">
-                 
+
                     <FormField label="Motivo de egreso">
                         <Input
                             value={form.motive}

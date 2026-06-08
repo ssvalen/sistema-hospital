@@ -15,6 +15,8 @@ public class UsuarioSistemaDetailDTO {
     private Long idUsuario;
     private String username;
     private String email;
+    private String nombres;
+    private String apellidos;
     private Boolean activo;
     private String idKeycloak;
     private List<RolDTO> roles;

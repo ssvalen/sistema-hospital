@@ -2,7 +2,6 @@ export const PATIENT_PERMISSIONS = {
     MODULE_ACCESS: 'patient.module',
     CREATE: 'patient.create',
     EDIT: 'patient.edit',
-    FILTER: 'patient.filter',
     VIEW_DETAIL: 'patient.view.detail',
     INACTIVATE_PATIENTS: 'patient.inactivate'
 } as const

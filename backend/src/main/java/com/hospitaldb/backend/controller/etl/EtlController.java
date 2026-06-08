@@ -23,7 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class EtlController {
 
         private final EtlService etlService;
-
+        
         @Operation(summary = "Subir archivo ETL")
         @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
         public ResponseEntity<EntityResponse<EtlUploadResponseDTO>> upload(
