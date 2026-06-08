@@ -7,6 +7,7 @@ DROP DATABASE IF EXISTS medicamento_db;
 DROP DATABASE IF EXISTS clinico_db;
 DROP DATABASE IF EXISTS administrativo_db;
 DROP DATABASE IF EXISTS keycloak_db;
+DROP DATABASE IF EXISTS hospitalario_db;
 
 DROP USER IF EXISTS 'hospital_api_user'@'%';
 
@@ -35,6 +36,9 @@ CREATE DATABASE IF NOT EXISTS keycloak_db
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
 
+CREATE DATABASE IF NOT EXISTS hospitalario_db
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
 
 -- ==========================================================
 -- USUARIO DE APLICACIÓN
@@ -48,6 +52,7 @@ GRANT ALL PRIVILEGES ON clinico_db.* TO 'hospital_api_user'@'%';
 GRANT ALL PRIVILEGES ON medicamento_db.* TO 'hospital_api_user'@'%';
 GRANT ALL PRIVILEGES ON inventario_db.* TO 'hospital_api_user'@'%';
 GRANT SELECT ON keycloak_db.* TO 'hospital_api_user'@'%';
+GRANT ALL PRIVILEGES ON hospitalario_db.* TO 'hospital_api_user'@'%';
 
 FLUSH PRIVILEGES;
 
@@ -70,6 +75,8 @@ CREATE TABLE IF NOT EXISTS administrativo_db.usuario_sistema (
     activo BIT NOT NULL,
     email VARCHAR(150) NOT NULL,
     id_keycloak VARCHAR(100),
+    nombres VARCHAR(100) NOT NULL,
+    apellidos VARCHAR(100) NOT NULL,
     username VARCHAR(100) NOT NULL,
     usuario_registro VARCHAR(100) DEFAULT 'system',
     usuario_modificacion VARCHAR(100),
@@ -314,3 +321,48 @@ CREATE TABLE IF NOT EXISTS inventario_db.inventario_medicamento (
         FOREIGN KEY (id_medicamento)
         REFERENCES medicamento_db.medicamento(id_medicamento)
 ) ENGINE=InnoDB;
+
+-- ===========================================
+-- ESQUEMA HOSPITALARIO
+-- ===========================================
+
+CREATE TABLE IF NOT EXISTS hospitalario_db.area (
+    id_area BIGINT NOT NULL AUTO_INCREMENT,
+    nombre_area VARCHAR(100) NOT NULL,    -- Intensivo, Maternidad, Urgencias, etc.
+    descripcion VARCHAR(200),
+    capacidad INT,
+    usuario_registro VARCHAR(100) DEFAULT 'system',
+    usuario_modificacion VARCHAR(100),
+    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    fecha_modificacion DATETIME ON UPDATE CURRENT_TIMESTAMP,
+    activo BOOLEAN DEFAULT TRUE,
+    PRIMARY KEY (id_area),
+    UNIQUE KEY UK_nombre_area (nombre_area)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS hospitalario_db.ingreso_egreso (
+    id_ingreso BIGINT NOT NULL AUTO_INCREMENT,
+    id_paciente BIGINT NOT NULL,
+    id_area BIGINT NOT NULL,
+    fecha_ingreso DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fecha_egreso DATETIME,                -- NULL mientras sigue internado
+    motivo_ingreso TEXT,
+    motivo_egreso TEXT,                   -- NULL mientras sigue internado
+    estado VARCHAR(20) NOT NULL DEFAULT 'INTERNADO', -- INTERNADO, EGRESADO, TRASLADADO
+    observaciones TEXT,
+    usuario_registro VARCHAR(100) DEFAULT 'system',
+    usuario_modificacion VARCHAR(100),
+    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    fecha_modificacion DATETIME ON UPDATE CURRENT_TIMESTAMP,
+    activo BOOLEAN DEFAULT TRUE,
+    PRIMARY KEY (id_ingreso),
+    FOREIGN KEY (id_paciente) REFERENCES clinico_db.paciente(id_paciente),
+    FOREIGN KEY (id_area) REFERENCES area(id_area)
+) ENGINE=InnoDB;
+
+
+INSERT INTO administrativo_db.rol_padre (nombre_rol_padre,usuario_registro,usuario_modificacion,fecha_creacion,fecha_modificacion,activo) VALUES
+	 ('admin','system',NULL,'2026-05-31 21:50:44',NULL,1),
+	 ('auxiliar','system',NULL,'2026-05-31 21:50:44',NULL,1),
+	 ('doctor','system',NULL,'2026-05-31 21:50:44',NULL,1),
+	 ('paciente','system',NULL,'2026-05-31 21:50:44',NULL,1);

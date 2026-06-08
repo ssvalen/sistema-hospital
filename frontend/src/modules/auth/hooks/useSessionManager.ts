@@ -1,122 +1,46 @@
 import { useEffect, useState, useCallback } from "react";
-
 import { useAuthStore } from "../store/authStore";
-
-import {
-  getTokenTimeLeftMs,
-  isTokenExpired,
-} from "@/shared/utils/jwt";
-
-import { UnauthorizedError } from "@/shared/errors/UnauthorizedError";
-
-import { useRefreshAccessToken } from "./useRefreshAccessToken";
-import { useLogout } from "./useLogout";
+import { getTokenTimeLeftMs, isTokenExpired } from "@/shared/utils/jwt";
 
 export const useSessionManager = (warnBeforeMs = 60_000) => {
   const user = useAuthStore((s) => s.user);
-  const clearSession = useAuthStore((s) => s.logout);
-  const updateToken = useAuthStore((s) => s.updateToken);
-
+  const logout = useAuthStore((s) => s.logout);
   const hasHydrated = useAuthStore.persist.hasHydrated();
 
-  const { mutateAsync: refreshSession, isPending: refreshing } =
-    useRefreshAccessToken();
-
-  const { mutateAsync: logoutSession, isPending: loggingOut } =
-    useLogout();
-
-  const [showRenewModal, setShowRenewModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   const safeLogout = useCallback(() => {
-    setShowRenewModal(false);
-    clearSession();
-  }, [clearSession]);
+    setShowModal(false);
+    logout();
+  }, [logout]);
 
   useEffect(() => {
     if (!hasHydrated) return;
 
-    const accessToken = user?.tokenMetadata?.accessToken;
-    if (!accessToken) return;
+    const token = user?.tokenMetadata?.accessToken;
+    if (!token) return;
 
-    const timeLeft = getTokenTimeLeftMs(accessToken);
+    const timeLeft = getTokenTimeLeftMs(token);
 
-    // si ya expiró, salir inmediato
-    if (timeLeft <= 0 || isTokenExpired(accessToken)) {
+    if (timeLeft <= 0 || isTokenExpired(token)) {
       safeLogout();
       return;
     }
 
     const warningAt = timeLeft - warnBeforeMs;
 
-    let warningTimer: ReturnType<typeof setTimeout> | undefined;
-    let expireTimer: ReturnType<typeof setTimeout> | undefined;
-
-    // warning modal
-    if (warningAt > 0) {
-      warningTimer = setTimeout(() => {
-        setShowRenewModal(true);
-      }, warningAt);
-    } else {
-      setShowRenewModal(true);
-    }
-
-    // 
-    expireTimer = setTimeout(() => {
-      setShowRenewModal(false); 
-      clearSession(); // logout real
-    }, timeLeft);
+    const t1 = setTimeout(() => setShowModal(true), Math.max(warningAt, 0));
+    const t2 = setTimeout(() => safeLogout(), timeLeft);
 
     return () => {
-      if (warningTimer) clearTimeout(warningTimer);
-      if (expireTimer) clearTimeout(expireTimer);
+      clearTimeout(t1);
+      clearTimeout(t2);
     };
-  }, [
-    hasHydrated,
-    user?.tokenMetadata?.accessToken,
-    warnBeforeMs,
-    clearSession,
-    safeLogout,
-  ]);
-
-  const renew = async () => {
-    try {
-      const refreshToken = user?.tokenMetadata?.refreshToken;
-
-      if (!refreshToken) {
-        safeLogout();
-        return;
-      }
-
-      const tokenMetadata = await refreshSession(refreshToken);
-
-      updateToken(tokenMetadata);
-
-      setShowRenewModal(false);
-    } catch (error) {
-      if (error instanceof UnauthorizedError) {
-        safeLogout();
-        return;
-      }
-
-      safeLogout();
-    }
-  };
-
-  const forceLogout = async () => {
-    try {
-      await logoutSession();
-    } finally {
-      safeLogout(); 
-    }
-  };
-
-  const close = () => setShowRenewModal(false);
+  }, [user, hasHydrated, warnBeforeMs, safeLogout]);
 
   return {
-    showRenewModal,
-    renew,
-    forceLogout,
-    close,
-    renewing: refreshing || loggingOut,
+    showModal,
+    close: () => setShowModal(false),
+    logout: safeLogout,
   };
 };

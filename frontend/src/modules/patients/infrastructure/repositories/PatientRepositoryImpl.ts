@@ -4,7 +4,7 @@ import { createApiClient } from "@/shared/http/createApiClient";
 
 
 import type { PatientRepository } from "../../application/interfaces/PatientRepository";
-import { createPatientToDomain, paginatedPatientsToDomain } from "../mappers/patientMapper";
+import { createPatientToDomain, paginatedPatientsToDomain, patientsToDomain } from "../mappers/patientMapper";
 import type { CreatePatientRequestDTO, PaginatedPatientsDTO, PatientResponseDTO, UpdatePatientRequestDTO } from "../../domain/dto/PatientDTO";
 
 import { API_ROUTES } from "@/shared/utils/apiRoutes";
@@ -12,17 +12,17 @@ import { API_ROUTES } from "@/shared/utils/apiRoutes";
 
 export function createPatientsRepository(http: HttpClient): PatientRepository {
   return {
-    // async getAllPatients(signal?: AbortSignal) {
-    //   const dto = await http.request<ApiResponse<PatientResponseDTO[]>>({
-    //     url: API_ROUTES.PATIENT_GET_ALL,
-    //     method: "GET",
-    //     withCredentials: false,
-    //     timeoutMs: 15_000,
-    //     signal,
-    //   });
+    async getAllPatients(signal?: AbortSignal) {
+      const dto = await http.request<ApiResponse<PatientResponseDTO[]>>({
+        url: API_ROUTES.PATIENT_GET_ALL,
+        method: "GET",
+        withCredentials: false,
+        timeoutMs: 15_000,
+        signal,
+      });
 
-    //   return patientsToDomain(dto.data);
-    // },
+      return patientsToDomain(dto.data);
+    },
 
 
     async getPatientById(id, signal) {

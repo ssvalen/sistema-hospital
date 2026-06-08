@@ -2,14 +2,18 @@ import { APPOINTMENT_PERMISSIONS } from "@/modules/appointments/ui/utils/appoint
 
 export const API_ROUTES = {
   // AUTH
-  KEYCLOAK_LOGIN: '/realms/hotel-db/protocol/openid-connect/token',
-  KEYCLOAK_LOGOUT: '/realms/hotel-db/protocol/openid-connect/logout',
-  KEYCLOAK_REFRESH: '/realms/hotel-db/protocol/openid-connect/token',
+  KEYCLOAK_LOGIN: '/api/hospitaldb/auth/login',
+  KEYCLOAK_LOGOUT: '/api/hospitaldb/auth/logout',
+  KEYCLOAK_REFRESH: '/api/hospitaldb/auth/refresh',
   // ROLES
+  ROLE_ENDPOINT: '/api/hospitaldb/administrativo/roles',
   ROLE_GET_ALL: '/api/hospitaldb/administrativo/roles',
   ROLE_CREATE: '/api/hospitaldb/administrativo/roles',
+  ROLE_UPDATE: '/api/hospitaldb/administrativo/roles',
   ROLE_GET_PAGINATED: '/api/hospitaldb/administrativo/roles/paginado',
+  ROLES_GET_PARENT_ROLE: '/api/hospitaldb/administrativo/roles/rol-padre',
   // PERMISSIONS
+  PERMISSION_ENDPOINT: '/api/hospitaldb/administrativo/permisos',
   PERMISSION_GET_ALL: '/api/hospitaldb/administrativo/permisos',
   PERMISSION_GET_BY_ROLE: (roleId: number) => `/api/hospitaldb/administrativo/roles/${roleId}/permisos`,
   PERMISSION_GET_PAGINATED: '/api/hospitaldb/administrativo/permisos/paginado',
@@ -22,6 +26,8 @@ export const API_ROUTES = {
   PATIENT_PUT: '/api/hospitaldb/clinico/pacientes',
   PATIENT_GET_BY_ID: '/api/hospitaldb/clinico/pacientes',
   // APPOINTMENTS
+  APPOINTMENT_ENDPOINT: '',
+  APPOINTMENT_CANCEL: (id:number) => `/api/hospitaldb/clinico/citas/${id}/cancelar`,
   APPOINTMENT_GET_ALL: '/api/hospitaldb/clinico/citas',
   APPOINTMENT_GET_PAGINATED: '/api/hospitaldb/clinico/citas/paginado',
   APPOINTMENT_GET_BY_ID: '/api/hospitaldb/clinico/citas',
@@ -41,4 +47,28 @@ export const API_ROUTES = {
   MEDICATION_GET_BY_TREATMENT: '/api/hospitaldb/medicamentos/tratamiento-medicamentos/tratamiento',
   MEDICATION_CREATE: '/api/hospitaldb/medicamentos/tratamiento-medicamentos',
   MEDICATION_UPDATE: '/api/hospitaldb/medicamentos/tratamiento-medicamentos',
+  // DOCTORS
+  DOCTORS_GET_ALL: '/api/hospitaldb/clinico/medicos',
+  DOCTORS_GET_PAGINATED: '/api/hospitaldb/clinico/medicos/paginado',
+  DOCTORS_CREATE: '/api/hospitaldb/clinico/medicos',
+  DOCTORS_UPDATE: '/api/hospitaldb/clinico/medicos',
+  // HOSPITALITATION 
+  HOSPITALITATION_INGRESS: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/ingresos',
+  HOSPITALITATION_EGRESS:(id: number) => `/api/hospitaldb/hospitalario/ingresos-egresos-areas/ingresos/${id}/egreso`,
+  HOSPITALITATION_GET_ALL: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/ingresos',
+  HOSPITALITATION_GET_BY_ID: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/ingresos',
+  HOSPITALITATION_GET_BY_PATIENT_ID: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/ingresos/paciente',
+  HOSPITALITATION_GET_PAGINATED: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/ingresos/paginado',
+  // HOSPITAL AREAS
+  HOSPITAL_AREA_GET_ALL: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/areas',
+  HOSPITAL_AREA_CREATE: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/areas',
+  HOSPITAL_AREA_UPDATE: '/api/hospitaldb/hospitalario/ingresos-egresos-areas/areas',
+  // AUDIT LOGS
+  AUDIT_ENDPOINT: '/api/hospitaldb/auditoria/logs/paginado',
+  // USERS
+  USER_ENDPOINT: '/api/hospitaldb/administrativo/usuarios',
+  USER_GET_PAGINATED: '/api/hospitaldb/administrativo/usuarios/paginado',
+  USER_GET_ROLES: (id: number) => `/api/hospitaldb/administrativo/usuarios/${id}/roles`,
+  // ETL
+  ETL_LOAD: '/api/hospitaldb/etl/upload'
 } as const;

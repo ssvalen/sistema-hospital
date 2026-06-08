@@ -77,7 +77,7 @@ public class MedicoController {
     ) {
 
         log.info("POST /api/medicos - Creando nuevo médico: {}", requestDTO.getNombre());
-        MedicoDTO created = medicoService.create(requestDTO);
+        MedicoDTO created = medicoService.create(requestDTO, request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 EntityResponse.success(created, "Médico creado exitosamente", request.getRequestURI())
@@ -91,7 +91,7 @@ public class MedicoController {
             HttpServletRequest request) {
 
         log.info("PUT /api/medicos/{} - Actualizando médico", id);
-        MedicoDTO updated = medicoService.update(id, requestDTO);
+        MedicoDTO updated = medicoService.update(id, requestDTO, request);
 
         return ResponseEntity.ok(
                 EntityResponse.success(updated, "Médico actualizado exitosamente", request.getRequestURI())
@@ -101,7 +101,7 @@ public class MedicoController {
     @DeleteMapping("/{id}")
     public ResponseEntity<EntityResponse<Void>> delete(@PathVariable Long id, HttpServletRequest request) {
         log.info("DELETE /api/medicos/{} - Eliminando médico", id);
-        medicoService.delete(id);
+        medicoService.delete(id, request);
 
         return ResponseEntity.ok(
                 EntityResponse.success(null, "Médico eliminado exitosamente", request.getRequestURI())

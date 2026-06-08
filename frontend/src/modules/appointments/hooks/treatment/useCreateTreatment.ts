@@ -6,6 +6,7 @@ import { treatmentRepository } from "../../infrastructure/repositories/Treatment
 import { medicationRepository } from "../../infrastructure/repositories/MedicationRepositoryImpl";
 
 import type { CreateTreatmentParams } from "../../types/AppointmentTypes";
+import { appointmentRepository } from "../../infrastructure/repositories/AppointmentRepositoryImpl";
 
 export const useCreateTreatment = () => {
     const queryClient = useQueryClient();
@@ -15,7 +16,8 @@ export const useCreateTreatment = () => {
             createTreatment(
                 params,
                 treatmentRepository,
-                medicationRepository
+                medicationRepository,
+                appointmentRepository
             ),
 
         onSuccess: () => {

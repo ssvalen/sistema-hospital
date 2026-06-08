@@ -3,6 +3,7 @@ package com.hospitaldb.backend.controller.auth;
 import com.hospitaldb.backend.dto.request.auth.LoginRequestDTO;
 import com.hospitaldb.backend.dto.response.EntityResponse;
 import com.hospitaldb.backend.dto.response.auth.LoginResponseDTO;
+import com.hospitaldb.backend.service.auditoria.AuditService;
 import com.hospitaldb.backend.service.auth.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -18,47 +19,74 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "*")
 public class AuthController {
 
-    private final AuthService authService;
+        private final AuthService authService;
+        private final AuditService auditService;
 
-    @PostMapping("/login")
-    public ResponseEntity<EntityResponse<LoginResponseDTO>> login(
-            @Valid @RequestBody LoginRequestDTO requestDTO,
-            HttpServletRequest request) {
+        @PostMapping("/login")
+        public ResponseEntity<EntityResponse<LoginResponseDTO>> login(
+                        @Valid @RequestBody LoginRequestDTO requestDTO,
+                        HttpServletRequest request) {
 
-        log.info("POST /api/auth/login - Intento de login para usuario: {}", requestDTO.getUsername());
+                log.info("POST /api/auth/login - Intento de login para usuario: {}", requestDTO.getUsername());
 
-        LoginResponseDTO response = authService.login(requestDTO);
+                LoginResponseDTO response = authService.login(requestDTO);
 
-        return ResponseEntity.ok(
-                EntityResponse.success(response, "Login exitoso", request.getRequestURI())
-        );
-    }
+                auditService.log(
+                                "LOGIN",
+                                "AUTH",
+                                requestDTO.getUsername(),
+                                null,
+                                response,
+                                "Login exitoso",
+                                request);
+                return ResponseEntity.ok(
+                                EntityResponse.success(response, "Login exitoso", request.getRequestURI()));
+        }
 
-    @PostMapping("/refresh")
-    public ResponseEntity<EntityResponse<LoginResponseDTO>> refresh(
-            @RequestParam String refreshToken,
-            HttpServletRequest request) {
+        @PostMapping("/refresh")
+        public ResponseEntity<EntityResponse<LoginResponseDTO>> refresh(
+                        @RequestParam String refreshToken,
+                        HttpServletRequest request) {
 
-        log.info("POST /api/auth/refresh - Refrescando token");
+                log.info("POST /api/auth/refresh - Refrescando token");
 
-        LoginResponseDTO response = authService.refreshToken(refreshToken);
+                LoginResponseDTO response = authService.refreshToken(refreshToken);
 
-        return ResponseEntity.ok(
-                EntityResponse.success(response, "Token refrescado exitosamente", request.getRequestURI())
-        );
-    }
+                auditService.log(
+                                "REFRESH_TOKEN",
+                                "AUTH",
+                                null,
+                                null,
+                                response,
+                                "Token renovado",
+                                request);
 
-    @PostMapping("/logout")
-    public ResponseEntity<EntityResponse<Void>> logout(
-            @RequestParam String refreshToken,
-            HttpServletRequest request) {
+                return ResponseEntity.ok(
+                                EntityResponse.success(response, "Token refrescado exitosamente",
+                                                request.getRequestURI()));
+        }
 
-        log.info("POST /api/auth/logout - Cerrando sesión");
+        @PostMapping("/logout")
+        public ResponseEntity<EntityResponse<Void>> logout(
+                        @RequestParam String refreshToken,
+                        HttpServletRequest request) {
 
-        authService.logout(refreshToken);
+                log.info("POST /api/auth/logout - Cerrando sesión");
 
-        return ResponseEntity.ok(
-                EntityResponse.success(null, "Sesión cerrada exitosamente", request.getRequestURI())
-        );
-    }
+                authService.logout(refreshToken);
+
+                authService.logout(refreshToken);
+
+                auditService.log(
+                                "LOGOUT",
+                                "AUTH",
+                                null,
+                                null,
+                                null,
+                                "Logout exitoso",
+                                request);
+
+                return ResponseEntity.ok(
+                                EntityResponse.success(null, "Sesión cerrada exitosamente", request.getRequestURI()));
+        }
 }

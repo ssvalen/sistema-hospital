@@ -15,4 +15,6 @@ public class UsuarioSistemaDTO {
     private String email;
     private Boolean activo;
     private String idKeycloak;
+    private String nombres;
+    private String apellidos;
 }

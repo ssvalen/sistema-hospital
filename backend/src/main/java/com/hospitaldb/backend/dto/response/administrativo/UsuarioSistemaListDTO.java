@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.List;
 
 @Data
 @Builder
@@ -15,4 +16,7 @@ public class UsuarioSistemaListDTO {
     private String email;
     private Boolean activo;
     private String idKeycloak;
+    private String nombres;
+    private String apellidos;
+    private List<RolDTO> roles;
 }
